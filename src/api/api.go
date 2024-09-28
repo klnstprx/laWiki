@@ -18,6 +18,8 @@ func Routes() *chi.Mux {
 	router := chi.NewRouter()
 	router.Mount("/wikis", wikis.Routes()) // Mount the wikis routes
 
+	xlog.Info().Msg("API routes mounted")
+
 	return router
 }
 

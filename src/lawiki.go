@@ -1,9 +1,15 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"lawiki/api"
 	"lawiki/config"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/go-chi/chi/v5"
@@ -27,11 +33,47 @@ func main() {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello, World!"))
 	})
-	router.Mount("/gui", api.Routes())
+	router.Mount("/api", api.Routes())
+
+	// context for graceful shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// graceful shutdown logic
+	signalCaught := false
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-signalChannel
+		if signalCaught {
+			log.Warn().Msg("Caught second signal, terminating immediately")
+			os.Exit(1)
+		}
+		signalCaught = true
+		log.Info().Msg("Caught shutdown signal")
+		cancel()
+	}()
 
 	// server starts here
-	err := http.ListenAndServe(":8080", router)
-	if err != nil {
-		xlog.Fatal().Err(err).Msg("Failed to start server")
+	// starts in a go routine so it doesn't block the main thread
+	httpServer := &http.Server{
+		Addr:    config.App.ListenAddr,
+		Handler: router,
 	}
+	go func() {
+		err := httpServer.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			xlog.Fatal().Err(err).Msg("Failed to start HTTP server")
+		}
+	}()
+	xlog.Info().Str("Listen address", config.App.ListenAddr).Msg("HTTP server started")
+	// Block until context is canceled (waiting for the shutdown signal).
+	<-ctx.Done()
+	// Shutdown logic
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		xlog.Error().Err(err).Msg("HTTP server failed to shutdown")
+	}
+	xlog.Info().Msg("Server shut down successfully")
 }

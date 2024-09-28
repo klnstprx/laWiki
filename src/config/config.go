@@ -11,8 +11,9 @@ import (
 
 type AppConfig struct {
 	Logger     *zerolog.Logger
-	PrettyLogs bool `toml:"pretty_logs"`
-	Debug      bool `toml:"debug"`
+	ListenAddr string `toml:"listen_addr"`
+	PrettyLogs bool   `toml:"pretty_logs"`
+	Debug      bool   `toml:"debug"`
 }
 
 // App holds app configuration
