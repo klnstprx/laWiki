@@ -1,0 +1,11 @@
+<h3>formComentario</h3>
+<form>
+    <div class="form-group" data-bind="css: {'has-error': errors()['texto']}">
+        <label for="componenteaadircomentario_field_0" data-bind="css: {active: fields()['texto']}, attr: {'data-error': errors()['texto']}">texto</label>
+        <input id="componenteaadircomentario_field_0" data-bind="value: fields()['texto']" type="text" class="form-control validate" aria-describedby="componenteaadircomentario_field_0_error">
+        <span id="componenteaadircomentario_field_0_error" class="help-block" data-bind="text: errors()['texto']"></span>
+    </div>
+</form>
+<div class="row">
+    <a class="btn btn-primary" data-bind="click: trigger.bind($data, '9a8d1f88-bee1-40dd-993f-ac54d035c5cf')">añadir comentario</a>
+</div>
