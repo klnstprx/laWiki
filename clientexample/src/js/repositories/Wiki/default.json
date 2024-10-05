@@ -1,0 +1,8 @@
+[
+    { "_id": 0, "id": "0", "descripcion": "Libro de ficción clásica", "genero": "Ficción", "nombre": "El Gran Gatsby", "url": "http://ejemplo.com/gatsby", "descripción": "Una obra maestra literaria."},
+    { "_id": 1, "id": "1", "descripcion": "Película de ciencia ficción", "genero": "Ciencia Ficción", "nombre": "Interstellar", "url": "http://ejemplo.com/interstellar", "descripción": "Exploración espacial épica."},
+    { "_id": 2, "id": "2", "descripcion": "Canción de pop", "genero": "Pop", "nombre": "Blinding Lights", "url": "http://ejemplo.com/blindinglights", "descripción": "Éxito de The Weeknd."},
+    { "_id": 3, "id": "3", "descripcion": "Serie de televisión", "genero": "Drama", "nombre": "Breaking Bad", "url": "http://ejemplo.com/breakingbad", "descripción": "Transformación de un profesor en criminal."},
+    { "_id": 4, "id": "4", "descripcion": "Videojuego de acción", "genero": "Acción", "nombre": "The Last of Us", "url": "http://ejemplo.com/lastofus", "descripción": "Supervivencia en un mundo postapocalíptico."},
+    { "_id": 5, "id": "5", "descripcion": "Podcast sobre tecnología", "genero": "Tecnología", "nombre": "Tech Trends", "url": "http://ejemplo.com/techtrends", "descripción": "Últimas novedades tecnológicas."}
+]

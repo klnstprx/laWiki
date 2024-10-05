@@ -1,0 +1,21 @@
+<h3>ListaComentarios</h3>
+<table class="table table-hover table-sm">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>autor</th>
+            <th>fecha</th>
+            <th>texto</th>
+            <th>valoracion</th>
+        </tr>
+    </thead>
+    <tbody data-bind="foreach: items">
+        <tr data-bind="click: $parent.select">
+            <td data-bind="text: id"></td>
+            <td data-bind="text: $data['autor']" style="white-space: pre-wrap;"></td>
+            <td data-bind="text: $data['fecha']" style="white-space: pre-wrap;"></td>
+            <td data-bind="text: $data['texto']" style="white-space: pre-wrap;"></td>
+            <td data-bind="text: $data['valoracion']" style="white-space: pre-wrap;"></td>
+        </tr>
+    </tbody>
+</table>
