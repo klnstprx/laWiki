@@ -1,1 +1,1391 @@
-{"elements":[{"attributes":{"name":"update","parameters":[],"results":[]},"metadata":{"graphics":{"position":{"x":960,"y":460},"size":{"height":50,"width":75}}},"id":"1b4a9ceb-a03a-4d00-9d08-e6a765e2485e","type":"ifml.Action"},{"attributes":{"name":"append","parameters":[],"results":[]},"metadata":{"graphics":{"position":{"x":1090,"y":70},"size":{"height":50,"width":90}}},"id":"3fd91a41-e222-4d04-a0e1-e3e6883b5b1f","type":"ifml.Action"},{"attributes":{"name":"Perfil","default":false,"landmark":false,"xor":false},"metadata":{"graphics":{"position":{"x":-240,"y":90},"size":{"height":160,"width":220}}},"id":"585c0e1e-5149-49ae-9fc8-c0af80cc414f","type":"ifml.ViewContainer"},{"attributes":{"name":"delete","parameters":[],"results":[]},"metadata":{"graphics":{"position":{"x":860,"y":460},"size":{"height":50,"width":75}}},"id":"5d73955f-0d01-44d3-8dbd-5e84189d93be","type":"ifml.Action"},{"attributes":{"name":"append","parameters":["descripción","email","prioridad"],"results":[]},"metadata":{"graphics":{"position":{"x":210,"y":540},"size":{"height":50,"width":75}}},"id":"appendanuncio","type":"ifml.Action"},{"attributes":{"name":"update","parameters":[],"results":[]},"metadata":{"graphics":{"position":{"x":600,"y":540},"size":{"height":50,"width":75}}},"id":"bf2aebf4-2069-4167-a611-bfd4dc8460f6","type":"ifml.Action"},{"attributes":{"name":"Crear Entrada","default":false,"landmark":false,"xor":false},"metadata":{"graphics":{"position":{"x":850,"y":10},"size":{"height":160,"width":200}}},"id":"containercrearentrada","type":"ifml.ViewContainer"},{"attributes":{"name":"Crear Wiki","default":false,"landmark":false,"xor":false},"metadata":{"graphics":{"position":{"x":150,"y":330},"size":{"height":160,"width":200}}},"id":"containercrearwiki","type":"ifml.ViewContainer"},{"attributes":{"name":"Entrada","default":false,"landmark":false,"xor":false},"metadata":{"graphics":{"position":{"x":830,"y":210},"size":{"height":210,"width":220}}},"id":"containerentrada","type":"ifml.ViewContainer"},{"attributes":{"name":"Indice","default":false,"landmark":true,"xor":false},"metadata":{"graphics":{"position":{"x":150,"y":80},"size":{"height":160,"width":200}}},"id":"containerindice","type":"ifml.ViewContainer"},{"attributes":{"name":"Wiki","default":false,"landmark":false,"xor":false},"metadata":{"graphics":{"position":{"x":470,"y":210},"size":{"height":290,"width":200}}},"id":"containerwiki","type":"ifml.ViewContainer"},{"attributes":{"name":"Comentario","default":false,"landmark":false,"xor":false},"metadata":{"graphics":{"position":{"x":1300,"y":260},"size":{"height":160,"width":200}}},"id":"e69fae44-3279-4d36-bcfa-c168a53a7439","type":"ifml.ViewContainer"},{"attributes":{"name":"delete","parameters":[],"results":[]},"metadata":{"graphics":{"position":{"x":500,"y":620},"size":{"height":50,"width":75}}},"id":"fc018cbe-0455-4a1b-9d3f-deab97b44706","type":"ifml.Action"},{"attributes":{"name":""},"metadata":{"graphics":{"position":{"x":1025,"y":470},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"5ad77dfd-ece3-4b21-84fd-70e8a8605c2b","type":"ifml.Event"},{"attributes":{"name":""},"metadata":{"graphics":{"position":{"x":1170,"y":80},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"eventoappendentrada","type":"ifml.Event"},{"attributes":{"name":""},"metadata":{"graphics":{"position":{"x":850,"y":470},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"eventoeliminarentrada","type":"ifml.Event"},{"attributes":{"name":""},"metadata":{"graphics":{"position":{"x":200,"y":550},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"eventoappendwiki","type":"ifml.Event"},{"attributes":{"name":""},"metadata":{"graphics":{"position":{"x":665,"y":550},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"eventoactualizarwiki","type":"ifml.Event"},{"attributes":{"name":"formEntrada","stereotype":"form","fields":[]},"metadata":{"graphics":{"position":{"x":880,"y":60},"size":{"height":60,"width":150}}},"id":"158cf296-69ec-4e34-b1a5-6006a488bb3d","type":"ifml.ViewComponent"},{"attributes":{"name":"formWiki","stereotype":"form","fields":["desc","genero","nombre","url"]},"metadata":{"graphics":{"position":{"x":170,"y":380},"size":{"height":60,"width":150}}},"id":"componenteformwiki","type":"ifml.ViewComponent"},{"attributes":{"name":"crear"},"metadata":{"graphics":{"position":{"x":240,"y":480},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"botoncrearwiki","type":"ifml.Event"},{"attributes":{"name":"DetallesEntrada","stereotype":"details","fields":["autores","contenido","historial","titulo"],"collection":""},"metadata":{"graphics":{"position":{"x":880,"y":260},"size":{"height":60,"width":150}}},"id":"88bdcf9a-e071-452d-961b-1a59ed4f1caf","type":"ifml.ViewComponent"},{"attributes":{"name":"actualizar"},"metadata":{"graphics":{"position":{"x":990,"y":410},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"botonactualizarentrada","type":"ifml.Event"},{"attributes":{"name":"eliminar"},"metadata":{"graphics":{"position":{"x":890,"y":410},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"botoneliminarentrada","type":"ifml.Event"},{"attributes":{"name":"ListaComentarios","stereotype":"list","fields":[],"collection":"","filters":[]},"metadata":{"graphics":{"position":{"x":880,"y":330},"size":{"height":60,"width":150}}},"id":"7db24ba4-dfbf-4a29-aaff-d566cdf895bc","type":"ifml.ViewComponent"},{"attributes":{"name":"crear wiki"},"metadata":{"graphics":{"position":{"x":240,"y":230},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"botonnuevawiki","type":"ifml.Event"},{"attributes":{"name":"ListaWikis","stereotype":"list","fields":["desc","genero","id","nombre","url"],"collection":"Wiki","filters":[]},"metadata":{"graphics":{"position":{"x":170,"y":120},"size":{"height":60,"width":170}}},"id":"componentelistawikis","type":"ifml.ViewComponent"},{"attributes":{"name":"actualizar"},"metadata":{"graphics":{"position":{"x":630,"y":490},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"botonactualizarwiki","type":"ifml.Event"},{"attributes":{"name":"eliminar"},"metadata":{"graphics":{"position":{"x":530,"y":490},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"botoneliminarwiki","type":"ifml.Event"},{"attributes":{"name":"DetallesWiki","stereotype":"details","fields":["descripción","email","prioridad"],"collection":"Wiki"},"metadata":{"graphics":{"position":{"x":490,"y":260},"size":{"height":60,"width":160}}},"id":"componentewiki","type":"ifml.ViewComponent"},{"attributes":{"name":"ListaEntradas","stereotype":"list","fields":[],"collection":"Entrada","filters":[]},"metadata":{"graphics":{"position":{"x":490,"y":360},"size":{"height":60,"width":160}}},"id":"componentelistaentradas","type":"ifml.ViewComponent"},{"attributes":{"name":"crear entrada"},"metadata":{"graphics":{"position":{"x":660,"y":250},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"botonnuevaentrada","type":"ifml.Event"},{"attributes":{"name":""},"metadata":{"graphics":{"position":{"x":565,"y":630},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"eventoborrarwiki","type":"ifml.Event"},{"attributes":{"name":"selected","stereotype":"selection"},"metadata":{"graphics":{"position":{"x":1020,"y":380},"name":{"horizontal":"right","vertical":"bottom"}}},"id":"eventoseleccionarcomentario","type":"ifml.Event"},{"attributes":{"name":"selected","stereotype":"selection"},"metadata":{"graphics":{"position":{"x":310,"y":170},"name":{"horizontal":"right","vertical":"bottom"}}},"id":"eventoseleccionwiki","type":"ifml.Event"},{"attributes":{"name":"selected","stereotype":"selection"},"metadata":{"graphics":{"position":{"x":630,"y":410},"name":{"horizontal":"right","vertical":"bottom"}}},"id":"eventoseleccionentrada","type":"ifml.Event"},{"attributes":{"bindings":[]},"metadata":{"graphics":{"vertices":[{"x":250,"y":250},{"x":250,"y":290},{"x":250,"y":300}]}},"id":"3a7f211c-dc36-4229-bff6-2069e06bcbc7","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[]},"metadata":{"graphics":{"vertices":[{"x":680,"y":560},{"x":720,"y":560},{"x":720,"y":380},{"x":720,"y":130}]}},"id":"3cd949de-f3c1-4240-a1e8-c6cb592a7042","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[]},"metadata":{"graphics":{}},"id":"45dbf86d-f925-41b4-a3ca-c77ff1785033","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[{"input":"id","output":"id"}]},"metadata":{"graphics":{"vertices":[{"x":570,"y":180}]}},"id":"6248fd3e-9e4f-44aa-849c-94f5a3007437","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[]},"metadata":{"graphics":{}},"id":"70b35cd6-daa3-4f7b-b0af-032ca4ff5cc6","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[]},"metadata":{"graphics":{"vertices":[{"x":540,"y":510},{"x":540,"y":550}]}},"id":"78d9982e-6dd0-4976-992a-60ec0a78c581","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[]},"metadata":{"graphics":{"vertices":[{"x":810,"y":260},{"x":810,"y":100}]}},"id":"7d37cfe7-b6e5-4b7a-9c6d-e7026beb4591","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[]},"metadata":{"graphics":{"vertices":[{"x":1290,"y":90},{"x":1290,"y":240}]}},"id":"81093c96-dbb4-472c-a657-aa0b62d7cfb2","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[{"input":"id","output":"id"}]},"metadata":{"graphics":{"vertices":[{"x":800,"y":420},{"x":800,"y":290}]}},"id":"90cf05d5-519f-442e-8325-97c6aa94ed82","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[]},"metadata":{"graphics":{"vertices":[{"x":1140,"y":480},{"x":1140,"y":420},{"x":1140,"y":290}]}},"id":"ad08821f-7566-4a6e-93f1-56cf429e03a4","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[]},"metadata":{"graphics":{}},"id":"c02eb540-ed7a-4c4a-b58e-42b86daff77f","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[]},"metadata":{"graphics":{"vertices":[{"x":200,"y":560},{"x":70,"y":560},{"x":70,"y":280},{"x":70,"y":180}]}},"id":"d5bb70b2-a212-42e4-b833-1ce5d4608f71","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[]},"metadata":{"graphics":{"vertices":[{"x":700,"y":640},{"x":770,"y":640},{"x":770,"y":160}]}},"id":"db6554d6-7099-4a41-89cc-2079522d8aa7","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[]},"metadata":{"graphics":{"vertices":[{"x":900,"y":430}]}},"id":"e8fc5a70-5bab-492f-95be-48dfedd29280","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[]},"metadata":{"graphics":{"vertices":[]}},"id":"fcb9075d-b45a-48a4-9c6e-724d38e0a243","type":"ifml.NavigationFlow"},{"attributes":{"bindings":[]},"metadata":{"graphics":{}},"id":"fe4bc9ad-e72a-4346-957e-9f889ad701b7","type":"ifml.NavigationFlow"},{"attributes":{"name":"crear"},"metadata":{"graphics":{"position":{"x":1040,"y":80},"name":{"horizontal":"left-outer","vertical":"top"}}},"id":"botoncrearentrada","type":"ifml.Event"},{"attributes":{"bindings":[]},"metadata":{"graphics":{"vertices":[]}},"id":"2ef93f6d-62da-4e3b-8917-bb3f60b713e1","type":"ifml.NavigationFlow"}],"relations":[{"type":"hierarchy","parent":"1b4a9ceb-a03a-4d00-9d08-e6a765e2485e","child":"5ad77dfd-ece3-4b21-84fd-70e8a8605c2b"},{"type":"hierarchy","parent":"3fd91a41-e222-4d04-a0e1-e3e6883b5b1f","child":"eventoappendentrada"},{"type":"hierarchy","parent":"5d73955f-0d01-44d3-8dbd-5e84189d93be","child":"eventoeliminarentrada"},{"type":"hierarchy","parent":"appendanuncio","child":"eventoappendwiki"},{"type":"hierarchy","parent":"bf2aebf4-2069-4167-a611-bfd4dc8460f6","child":"eventoactualizarwiki"},{"type":"hierarchy","parent":"containercrearentrada","child":"158cf296-69ec-4e34-b1a5-6006a488bb3d"},{"type":"hierarchy","parent":"containercrearwiki","child":"componenteformwiki"},{"type":"hierarchy","parent":"containercrearwiki","child":"botoncrearwiki"},{"type":"hierarchy","parent":"containerentrada","child":"88bdcf9a-e071-452d-961b-1a59ed4f1caf"},{"type":"hierarchy","parent":"containerentrada","child":"botonactualizarentrada"},{"type":"hierarchy","parent":"containerentrada","child":"botoneliminarentrada"},{"type":"hierarchy","parent":"containerentrada","child":"7db24ba4-dfbf-4a29-aaff-d566cdf895bc"},{"type":"hierarchy","parent":"containerindice","child":"botonnuevawiki"},{"type":"hierarchy","parent":"containerindice","child":"componentelistawikis"},{"type":"hierarchy","parent":"containerwiki","child":"botonactualizarwiki"},{"type":"hierarchy","parent":"containerwiki","child":"botoneliminarwiki"},{"type":"hierarchy","parent":"containerwiki","child":"componentewiki"},{"type":"hierarchy","parent":"containerwiki","child":"componentelistaentradas"},{"type":"hierarchy","parent":"containerwiki","child":"botonnuevaentrada"},{"type":"hierarchy","parent":"fc018cbe-0455-4a1b-9d3f-deab97b44706","child":"eventoborrarwiki"},{"type":"hierarchy","parent":"7db24ba4-dfbf-4a29-aaff-d566cdf895bc","child":"eventoseleccionarcomentario"},{"type":"hierarchy","parent":"componentelistawikis","child":"eventoseleccionwiki"},{"type":"hierarchy","parent":"componentelistaentradas","child":"eventoseleccionentrada"},{"type":"hierarchy","parent":"containercrearentrada","child":"botoncrearentrada"},{"type":"source","flow":"3a7f211c-dc36-4229-bff6-2069e06bcbc7","source":"botonnuevawiki"},{"type":"source","flow":"3cd949de-f3c1-4240-a1e8-c6cb592a7042","source":"eventoactualizarwiki"},{"type":"source","flow":"45dbf86d-f925-41b4-a3ca-c77ff1785033","source":"botoncrearwiki"},{"type":"source","flow":"6248fd3e-9e4f-44aa-849c-94f5a3007437","source":"eventoseleccionwiki"},{"type":"source","flow":"70b35cd6-daa3-4f7b-b0af-032ca4ff5cc6","source":"botonactualizarwiki"},{"type":"source","flow":"78d9982e-6dd0-4976-992a-60ec0a78c581","source":"botoneliminarwiki"},{"type":"source","flow":"7d37cfe7-b6e5-4b7a-9c6d-e7026beb4591","source":"botonnuevaentrada"},{"type":"source","flow":"81093c96-dbb4-472c-a657-aa0b62d7cfb2","source":"eventoappendentrada"},{"type":"source","flow":"90cf05d5-519f-442e-8325-97c6aa94ed82","source":"eventoseleccionentrada"},{"type":"source","flow":"ad08821f-7566-4a6e-93f1-56cf429e03a4","source":"5ad77dfd-ece3-4b21-84fd-70e8a8605c2b"},{"type":"source","flow":"c02eb540-ed7a-4c4a-b58e-42b86daff77f","source":"eventoeliminarentrada"},{"type":"source","flow":"d5bb70b2-a212-42e4-b833-1ce5d4608f71","source":"eventoappendwiki"},{"type":"source","flow":"db6554d6-7099-4a41-89cc-2079522d8aa7","source":"eventoborrarwiki"},{"type":"source","flow":"e8fc5a70-5bab-492f-95be-48dfedd29280","source":"botoneliminarentrada"},{"type":"source","flow":"fcb9075d-b45a-48a4-9c6e-724d38e0a243","source":"botonactualizarentrada"},{"type":"source","flow":"fe4bc9ad-e72a-4346-957e-9f889ad701b7","source":"eventoseleccionarcomentario"},{"type":"source","flow":"2ef93f6d-62da-4e3b-8917-bb3f60b713e1","source":"botoncrearentrada"},{"type":"target","flow":"3a7f211c-dc36-4229-bff6-2069e06bcbc7","target":"containercrearwiki"},{"type":"target","flow":"3cd949de-f3c1-4240-a1e8-c6cb592a7042","target":"containerindice"},{"type":"target","flow":"45dbf86d-f925-41b4-a3ca-c77ff1785033","target":"appendanuncio"},{"type":"target","flow":"6248fd3e-9e4f-44aa-849c-94f5a3007437","target":"componentewiki"},{"type":"target","flow":"70b35cd6-daa3-4f7b-b0af-032ca4ff5cc6","target":"bf2aebf4-2069-4167-a611-bfd4dc8460f6"},{"type":"target","flow":"78d9982e-6dd0-4976-992a-60ec0a78c581","target":"fc018cbe-0455-4a1b-9d3f-deab97b44706"},{"type":"target","flow":"7d37cfe7-b6e5-4b7a-9c6d-e7026beb4591","target":"containercrearentrada"},{"type":"target","flow":"81093c96-dbb4-472c-a657-aa0b62d7cfb2","target":"containerentrada"},{"type":"target","flow":"90cf05d5-519f-442e-8325-97c6aa94ed82","target":"88bdcf9a-e071-452d-961b-1a59ed4f1caf"},{"type":"target","flow":"ad08821f-7566-4a6e-93f1-56cf429e03a4","target":"containerentrada"},{"type":"target","flow":"c02eb540-ed7a-4c4a-b58e-42b86daff77f","target":"containerwiki"},{"type":"target","flow":"d5bb70b2-a212-42e4-b833-1ce5d4608f71","target":"containerindice"},{"type":"target","flow":"db6554d6-7099-4a41-89cc-2079522d8aa7","target":"containerindice"},{"type":"target","flow":"e8fc5a70-5bab-492f-95be-48dfedd29280","target":"5d73955f-0d01-44d3-8dbd-5e84189d93be"},{"type":"target","flow":"fcb9075d-b45a-48a4-9c6e-724d38e0a243","target":"1b4a9ceb-a03a-4d00-9d08-e6a765e2485e"},{"type":"target","flow":"fe4bc9ad-e72a-4346-957e-9f889ad701b7","target":"e69fae44-3279-4d36-bcfa-c168a53a7439"},{"type":"target","flow":"2ef93f6d-62da-4e3b-8917-bb3f60b713e1","target":"3fd91a41-e222-4d04-a0e1-e3e6883b5b1f"}],"statistics":{"session":{"started_at":"2024-10-10T14:48:31.632Z","ended_at":"2024-10-10T14:56:40.885Z"}}}
+{
+  "elements": [
+    {
+      "attributes": {
+        "name": "append",
+        "parameters": [
+          "descripción",
+          "email",
+          "prioridad"
+        ],
+        "results": []
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 210,
+            "y": 540
+          },
+          "size": {
+            "height": 50,
+            "width": 75
+          }
+        }
+      },
+      "id": "appendanuncio",
+      "type": "ifml.Action"
+    },
+    {
+      "attributes": {
+        "name": "Indice",
+        "default": false,
+        "landmark": true,
+        "xor": false
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 150,
+            "y": 80
+          },
+          "size": {
+            "height": 160,
+            "width": 200
+          }
+        }
+      },
+      "id": "containerindice",
+      "type": "ifml.ViewContainer"
+    },
+    {
+      "attributes": {
+        "name": "Crear Wiki",
+        "default": false,
+        "landmark": false,
+        "xor": false
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 150,
+            "y": 330
+          },
+          "size": {
+            "height": 160,
+            "width": 200
+          }
+        }
+      },
+      "id": "containercrearwiki",
+      "type": "ifml.ViewContainer"
+    },
+    {
+      "attributes": {
+        "name": "Wiki",
+        "default": false,
+        "landmark": false,
+        "xor": false
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 470,
+            "y": 210
+          },
+          "size": {
+            "height": 290,
+            "width": 200
+          }
+        }
+      },
+      "id": "containerwiki",
+      "type": "ifml.ViewContainer"
+    },
+    {
+      "attributes": {
+        "name": ""
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 200,
+            "y": 550
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "7ab2ca93-e115-4144-a4b9-45bf1df5b61f",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "crear wiki"
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 240,
+            "y": 230
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "828bff20-321b-4bd5-a957-4909950c9d72",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "ListaWikis",
+        "stereotype": "list",
+        "fields": [
+          "desc",
+          "genero",
+          "id",
+          "nombre",
+          "url"
+        ],
+        "collection": "Wiki",
+        "filters": []
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 170,
+            "y": 120
+          },
+          "size": {
+            "height": 60,
+            "width": 170
+          }
+        }
+      },
+      "id": "componentelistawikis",
+      "type": "ifml.ViewComponent"
+    },
+    {
+      "attributes": {
+        "name": "formWiki",
+        "stereotype": "form",
+        "fields": [
+          "desc",
+          "genero",
+          "nombre",
+          "url"
+        ]
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 170,
+            "y": 380
+          },
+          "size": {
+            "height": 60,
+            "width": 150
+          }
+        }
+      },
+      "id": "componenteformwiki",
+      "type": "ifml.ViewComponent"
+    },
+    {
+      "attributes": {
+        "name": "crear"
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 240,
+            "y": 480
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "botoncrear",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "actualizar"
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 630,
+            "y": 490
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "botonactualizar",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "eliminar"
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 530,
+            "y": 490
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "botoneliminar",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "selected",
+        "stereotype": "selection"
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 310,
+            "y": 170
+          },
+          "name": {
+            "horizontal": "right",
+            "vertical": "bottom"
+          }
+        }
+      },
+      "id": "5ec8e611-ecdb-4435-bac5-cbc0c9df5557",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "DetallesWiki",
+        "stereotype": "details",
+        "fields": [
+          "descripción",
+          "email",
+          "prioridad"
+        ],
+        "collection": "Wiki"
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 490,
+            "y": 260
+          },
+          "size": {
+            "height": 60,
+            "width": 160
+          }
+        }
+      },
+      "id": "componentewiki",
+      "type": "ifml.ViewComponent"
+    },
+    {
+      "attributes": {
+        "name": "Entrada",
+        "default": false,
+        "landmark": false,
+        "xor": false
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 830,
+            "y": 210
+          },
+          "size": {
+            "height": 210,
+            "width": 220
+          }
+        }
+      },
+      "id": "containerentrada",
+      "type": "ifml.ViewContainer"
+    },
+    {
+      "attributes": {
+        "name": "delete",
+        "parameters": [],
+        "results": []
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 500,
+            "y": 620
+          },
+          "size": {
+            "height": 50,
+            "width": 75
+          }
+        }
+      },
+      "id": "fc018cbe-0455-4a1b-9d3f-deab97b44706",
+      "type": "ifml.Action"
+    },
+    {
+      "attributes": {
+        "name": ""
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 565,
+            "y": 630
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "694fa6a3-8efb-414c-9cad-03032c6b125a",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "update",
+        "parameters": [],
+        "results": []
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 600,
+            "y": 540
+          },
+          "size": {
+            "height": 50,
+            "width": 75
+          }
+        }
+      },
+      "id": "bf2aebf4-2069-4167-a611-bfd4dc8460f6",
+      "type": "ifml.Action"
+    },
+    {
+      "attributes": {
+        "name": ""
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 665,
+            "y": 550
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "acec3b63-2eef-41e5-b6ff-255273583c5d",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "ListaEntradas",
+        "stereotype": "list",
+        "fields": [],
+        "collection": "Entrada",
+        "filters": []
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 490,
+            "y": 360
+          },
+          "size": {
+            "height": 60,
+            "width": 160
+          }
+        }
+      },
+      "id": "componentelistaentradas",
+      "type": "ifml.ViewComponent"
+    },
+    {
+      "attributes": {
+        "name": "selected",
+        "stereotype": "selection"
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 630,
+            "y": 410
+          },
+          "name": {
+            "horizontal": "right",
+            "vertical": "bottom"
+          }
+        }
+      },
+      "id": "ab081863-162c-42a9-9d84-2fdf88f8c3b4",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "DetallesEntrada",
+        "stereotype": "details",
+        "fields": [
+          "autores",
+          "contenido",
+          "historial",
+          "titulo"
+        ],
+        "collection": ""
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 880,
+            "y": 260
+          },
+          "size": {
+            "height": 60,
+            "width": 150
+          }
+        }
+      },
+      "id": "88bdcf9a-e071-452d-961b-1a59ed4f1caf",
+      "type": "ifml.ViewComponent"
+    },
+    {
+      "attributes": {
+        "name": "update",
+        "parameters": [],
+        "results": []
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 960,
+            "y": 460
+          },
+          "size": {
+            "height": 50,
+            "width": 75
+          }
+        }
+      },
+      "id": "1b4a9ceb-a03a-4d00-9d08-e6a765e2485e",
+      "type": "ifml.Action"
+    },
+    {
+      "attributes": {
+        "name": ""
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 1025,
+            "y": 470
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "5ad77dfd-ece3-4b21-84fd-70e8a8605c2b",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "actualizar"
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 990,
+            "y": 410
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "190a21bf-34f5-4d9b-a5e2-ea63ec58f144",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "eliminar"
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 890,
+            "y": 410
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "a5abef6b-4f93-422e-92a9-2a7b14b6ba73",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "delete",
+        "parameters": [],
+        "results": []
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 860,
+            "y": 460
+          },
+          "size": {
+            "height": 50,
+            "width": 75
+          }
+        }
+      },
+      "id": "5d73955f-0d01-44d3-8dbd-5e84189d93be",
+      "type": "ifml.Action"
+    },
+    {
+      "attributes": {
+        "name": ""
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 850,
+            "y": 470
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "f0c54071-1eca-439d-93b6-cee7dca0c2b0",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "Crear Entrada",
+        "default": false,
+        "landmark": false,
+        "xor": false
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 850,
+            "y": 10
+          },
+          "size": {
+            "height": 160,
+            "width": 200
+          }
+        }
+      },
+      "id": "containercrearentrada",
+      "type": "ifml.ViewContainer"
+    },
+    {
+      "attributes": {
+        "name": "formEntrada",
+        "stereotype": "form",
+        "fields": []
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 880,
+            "y": 60
+          },
+          "size": {
+            "height": 60,
+            "width": 150
+          }
+        }
+      },
+      "id": "158cf296-69ec-4e34-b1a5-6006a488bb3d",
+      "type": "ifml.ViewComponent"
+    },
+    {
+      "attributes": {
+        "name": "crear entrada"
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 660,
+            "y": 250
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "2e9fdadb-447b-4152-b3f8-e32ed5ba36f2",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "event"
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 1040,
+            "y": 80
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "4fa3ae10-29f4-4ba6-865e-86f518212c3e",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "append",
+        "parameters": [],
+        "results": []
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 1090,
+            "y": 70
+          },
+          "size": {
+            "height": 50,
+            "width": 90
+          }
+        }
+      },
+      "id": "3fd91a41-e222-4d04-a0e1-e3e6883b5b1f",
+      "type": "ifml.Action"
+    },
+    {
+      "attributes": {
+        "name": ""
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 1170,
+            "y": 80
+          },
+          "name": {
+            "horizontal": "left-outer",
+            "vertical": "top"
+          }
+        }
+      },
+      "id": "44ebb8d5-4fb6-4e45-97d6-2993d3165e00",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "name": "Perfil",
+        "default": false,
+        "landmark": false,
+        "xor": false
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": -240,
+            "y": 90
+          },
+          "size": {
+            "height": 160,
+            "width": 220
+          }
+        }
+      },
+      "id": "585c0e1e-5149-49ae-9fc8-c0af80cc414f",
+      "type": "ifml.ViewContainer"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {
+          "vertices": [
+            {
+              "x": 250,
+              "y": 250
+            },
+            {
+              "x": 250,
+              "y": 290
+            },
+            {
+              "x": 250,
+              "y": 300
+            }
+          ]
+        }
+      },
+      "id": "3a7f211c-dc36-4229-bff6-2069e06bcbc7",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {}
+      },
+      "id": "45dbf86d-f925-41b4-a3ca-c77ff1785033",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": [
+          {
+            "input": "id",
+            "output": "id"
+          }
+        ]
+      },
+      "metadata": {
+        "graphics": {
+          "vertices": [
+            {
+              "x": 570,
+              "y": 180
+            }
+          ]
+        }
+      },
+      "id": "6248fd3e-9e4f-44aa-849c-94f5a3007437",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {}
+      },
+      "id": "70b35cd6-daa3-4f7b-b0af-032ca4ff5cc6",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {
+          "vertices": [
+            {
+              "x": 540,
+              "y": 550
+            }
+          ]
+        }
+      },
+      "id": "78d9982e-6dd0-4976-992a-60ec0a78c581",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {
+          "vertices": [
+            {
+              "x": 70,
+              "y": 560
+            },
+            {
+              "x": 70,
+              "y": 280
+            },
+            {
+              "x": 70,
+              "y": 180
+            }
+          ]
+        }
+      },
+      "id": "d5bb70b2-a212-42e4-b833-1ce5d4608f71",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {
+          "vertices": [
+            {
+              "x": 700,
+              "y": 640
+            },
+            {
+              "x": 770,
+              "y": 640
+            },
+            {
+              "x": 770,
+              "y": 160
+            }
+          ]
+        }
+      },
+      "id": "db6554d6-7099-4a41-89cc-2079522d8aa7",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": [
+          {
+            "input": "id",
+            "output": "id"
+          }
+        ]
+      },
+      "metadata": {
+        "graphics": {
+          "vertices": [
+            {
+              "x": 800,
+              "y": 420
+            },
+            {
+              "x": 800,
+              "y": 290
+            }
+          ]
+        }
+      },
+      "id": "90cf05d5-519f-442e-8325-97c6aa94ed82",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {
+          "vertices": [
+            {
+              "x": 720,
+              "y": 560
+            },
+            {
+              "x": 720,
+              "y": 380
+            },
+            {
+              "x": 720,
+              "y": 130
+            }
+          ]
+        }
+      },
+      "id": "3cd949de-f3c1-4240-a1e8-c6cb592a7042",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {
+          "vertices": [
+            {
+              "x": 1140,
+              "y": 480
+            },
+            {
+              "x": 1140,
+              "y": 420
+            },
+            {
+              "x": 1140,
+              "y": 290
+            }
+          ]
+        }
+      },
+      "id": "ad08821f-7566-4a6e-93f1-56cf429e03a4",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {}
+      },
+      "id": "fcb9075d-b45a-48a4-9c6e-724d38e0a243",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {
+          "vertices": []
+        }
+      },
+      "id": "e8fc5a70-5bab-492f-95be-48dfedd29280",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {}
+      },
+      "id": "c02eb540-ed7a-4c4a-b58e-42b86daff77f",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {
+          "vertices": [
+            {
+              "x": 810,
+              "y": 260
+            },
+            {
+              "x": 810,
+              "y": 100
+            }
+          ]
+        }
+      },
+      "id": "7d37cfe7-b6e5-4b7a-9c6d-e7026beb4591",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {}
+      },
+      "id": "2ef93f6d-62da-4e3b-8917-bb3f60b713e1",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {
+          "vertices": [
+            {
+              "x": 1290,
+              "y": 90
+            },
+            {
+              "x": 1290,
+              "y": 240
+            }
+          ]
+        }
+      },
+      "id": "81093c96-dbb4-472c-a657-aa0b62d7cfb2",
+      "type": "ifml.NavigationFlow"
+    },
+    {
+      "attributes": {
+        "name": "Comentario",
+        "default": false,
+        "landmark": false,
+        "xor": false
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 1300,
+            "y": 260
+          },
+          "size": {
+            "height": 160,
+            "width": 200
+          }
+        }
+      },
+      "id": "e69fae44-3279-4d36-bcfa-c168a53a7439",
+      "type": "ifml.ViewContainer"
+    },
+    {
+      "attributes": {
+        "name": "ListaComentarios",
+        "stereotype": "list",
+        "fields": [],
+        "collection": "",
+        "filters": []
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 880,
+            "y": 330
+          },
+          "size": {
+            "height": 60,
+            "width": 150
+          }
+        }
+      },
+      "id": "7db24ba4-dfbf-4a29-aaff-d566cdf895bc",
+      "type": "ifml.ViewComponent"
+    },
+    {
+      "attributes": {
+        "name": "selected",
+        "stereotype": "selection"
+      },
+      "metadata": {
+        "graphics": {
+          "position": {
+            "x": 1020,
+            "y": 380
+          },
+          "name": {
+            "horizontal": "right",
+            "vertical": "bottom"
+          }
+        }
+      },
+      "id": "d7c0c682-555e-4e85-b141-472096f72f17",
+      "type": "ifml.Event"
+    },
+    {
+      "attributes": {
+        "bindings": []
+      },
+      "metadata": {
+        "graphics": {}
+      },
+      "id": "fe4bc9ad-e72a-4346-957e-9f889ad701b7",
+      "type": "ifml.NavigationFlow"
+    }
+  ],
+  "relations": [
+    {
+      "type": "hierarchy",
+      "parent": "appendanuncio",
+      "child": "7ab2ca93-e115-4144-a4b9-45bf1df5b61f"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containerindice",
+      "child": "828bff20-321b-4bd5-a957-4909950c9d72"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containerindice",
+      "child": "componentelistawikis"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containercrearwiki",
+      "child": "componenteformwiki"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containercrearwiki",
+      "child": "botoncrear"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containerwiki",
+      "child": "botonactualizar"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containerwiki",
+      "child": "botoneliminar"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "componentelistawikis",
+      "child": "5ec8e611-ecdb-4435-bac5-cbc0c9df5557"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containerwiki",
+      "child": "componentewiki"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "fc018cbe-0455-4a1b-9d3f-deab97b44706",
+      "child": "694fa6a3-8efb-414c-9cad-03032c6b125a"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "bf2aebf4-2069-4167-a611-bfd4dc8460f6",
+      "child": "acec3b63-2eef-41e5-b6ff-255273583c5d"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containerwiki",
+      "child": "componentelistaentradas"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "componentelistaentradas",
+      "child": "ab081863-162c-42a9-9d84-2fdf88f8c3b4"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containerentrada",
+      "child": "88bdcf9a-e071-452d-961b-1a59ed4f1caf"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "1b4a9ceb-a03a-4d00-9d08-e6a765e2485e",
+      "child": "5ad77dfd-ece3-4b21-84fd-70e8a8605c2b"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containerentrada",
+      "child": "190a21bf-34f5-4d9b-a5e2-ea63ec58f144"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containerentrada",
+      "child": "a5abef6b-4f93-422e-92a9-2a7b14b6ba73"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "5d73955f-0d01-44d3-8dbd-5e84189d93be",
+      "child": "f0c54071-1eca-439d-93b6-cee7dca0c2b0"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containercrearentrada",
+      "child": "158cf296-69ec-4e34-b1a5-6006a488bb3d"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containerwiki",
+      "child": "2e9fdadb-447b-4152-b3f8-e32ed5ba36f2"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containercrearentrada",
+      "child": "4fa3ae10-29f4-4ba6-865e-86f518212c3e"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "3fd91a41-e222-4d04-a0e1-e3e6883b5b1f",
+      "child": "44ebb8d5-4fb6-4e45-97d6-2993d3165e00"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "containerentrada",
+      "child": "7db24ba4-dfbf-4a29-aaff-d566cdf895bc"
+    },
+    {
+      "type": "hierarchy",
+      "parent": "7db24ba4-dfbf-4a29-aaff-d566cdf895bc",
+      "child": "d7c0c682-555e-4e85-b141-472096f72f17"
+    },
+    {
+      "type": "source",
+      "flow": "3a7f211c-dc36-4229-bff6-2069e06bcbc7",
+      "source": "828bff20-321b-4bd5-a957-4909950c9d72"
+    },
+    {
+      "type": "source",
+      "flow": "45dbf86d-f925-41b4-a3ca-c77ff1785033",
+      "source": "botoncrear"
+    },
+    {
+      "type": "source",
+      "flow": "6248fd3e-9e4f-44aa-849c-94f5a3007437",
+      "source": "5ec8e611-ecdb-4435-bac5-cbc0c9df5557"
+    },
+    {
+      "type": "source",
+      "flow": "70b35cd6-daa3-4f7b-b0af-032ca4ff5cc6",
+      "source": "botonactualizar"
+    },
+    {
+      "type": "source",
+      "flow": "78d9982e-6dd0-4976-992a-60ec0a78c581",
+      "source": "botoneliminar"
+    },
+    {
+      "type": "source",
+      "flow": "d5bb70b2-a212-42e4-b833-1ce5d4608f71",
+      "source": "7ab2ca93-e115-4144-a4b9-45bf1df5b61f"
+    },
+    {
+      "type": "source",
+      "flow": "db6554d6-7099-4a41-89cc-2079522d8aa7",
+      "source": "694fa6a3-8efb-414c-9cad-03032c6b125a"
+    },
+    {
+      "type": "source",
+      "flow": "90cf05d5-519f-442e-8325-97c6aa94ed82",
+      "source": "ab081863-162c-42a9-9d84-2fdf88f8c3b4"
+    },
+    {
+      "type": "source",
+      "flow": "3cd949de-f3c1-4240-a1e8-c6cb592a7042",
+      "source": "acec3b63-2eef-41e5-b6ff-255273583c5d"
+    },
+    {
+      "type": "source",
+      "flow": "ad08821f-7566-4a6e-93f1-56cf429e03a4",
+      "source": "5ad77dfd-ece3-4b21-84fd-70e8a8605c2b"
+    },
+    {
+      "type": "source",
+      "flow": "fcb9075d-b45a-48a4-9c6e-724d38e0a243",
+      "source": "190a21bf-34f5-4d9b-a5e2-ea63ec58f144"
+    },
+    {
+      "type": "source",
+      "flow": "e8fc5a70-5bab-492f-95be-48dfedd29280",
+      "source": "a5abef6b-4f93-422e-92a9-2a7b14b6ba73"
+    },
+    {
+      "type": "source",
+      "flow": "c02eb540-ed7a-4c4a-b58e-42b86daff77f",
+      "source": "f0c54071-1eca-439d-93b6-cee7dca0c2b0"
+    },
+    {
+      "type": "source",
+      "flow": "7d37cfe7-b6e5-4b7a-9c6d-e7026beb4591",
+      "source": "2e9fdadb-447b-4152-b3f8-e32ed5ba36f2"
+    },
+    {
+      "type": "source",
+      "flow": "2ef93f6d-62da-4e3b-8917-bb3f60b713e1",
+      "source": "4fa3ae10-29f4-4ba6-865e-86f518212c3e"
+    },
+    {
+      "type": "source",
+      "flow": "81093c96-dbb4-472c-a657-aa0b62d7cfb2",
+      "source": "44ebb8d5-4fb6-4e45-97d6-2993d3165e00"
+    },
+    {
+      "type": "source",
+      "flow": "fe4bc9ad-e72a-4346-957e-9f889ad701b7",
+      "source": "d7c0c682-555e-4e85-b141-472096f72f17"
+    },
+    {
+      "type": "target",
+      "flow": "3a7f211c-dc36-4229-bff6-2069e06bcbc7",
+      "target": "containercrearwiki"
+    },
+    {
+      "type": "target",
+      "flow": "45dbf86d-f925-41b4-a3ca-c77ff1785033",
+      "target": "appendanuncio"
+    },
+    {
+      "type": "target",
+      "flow": "6248fd3e-9e4f-44aa-849c-94f5a3007437",
+      "target": "componentewiki"
+    },
+    {
+      "type": "target",
+      "flow": "70b35cd6-daa3-4f7b-b0af-032ca4ff5cc6",
+      "target": "bf2aebf4-2069-4167-a611-bfd4dc8460f6"
+    },
+    {
+      "type": "target",
+      "flow": "78d9982e-6dd0-4976-992a-60ec0a78c581",
+      "target": "fc018cbe-0455-4a1b-9d3f-deab97b44706"
+    },
+    {
+      "type": "target",
+      "flow": "d5bb70b2-a212-42e4-b833-1ce5d4608f71",
+      "target": "containerindice"
+    },
+    {
+      "type": "target",
+      "flow": "db6554d6-7099-4a41-89cc-2079522d8aa7",
+      "target": "containerindice"
+    },
+    {
+      "type": "target",
+      "flow": "90cf05d5-519f-442e-8325-97c6aa94ed82",
+      "target": "88bdcf9a-e071-452d-961b-1a59ed4f1caf"
+    },
+    {
+      "type": "target",
+      "flow": "3cd949de-f3c1-4240-a1e8-c6cb592a7042",
+      "target": "containerindice"
+    },
+    {
+      "type": "target",
+      "flow": "ad08821f-7566-4a6e-93f1-56cf429e03a4",
+      "target": "containerentrada"
+    },
+    {
+      "type": "target",
+      "flow": "fcb9075d-b45a-48a4-9c6e-724d38e0a243",
+      "target": "1b4a9ceb-a03a-4d00-9d08-e6a765e2485e"
+    },
+    {
+      "type": "target",
+      "flow": "e8fc5a70-5bab-492f-95be-48dfedd29280",
+      "target": "5d73955f-0d01-44d3-8dbd-5e84189d93be"
+    },
+    {
+      "type": "target",
+      "flow": "c02eb540-ed7a-4c4a-b58e-42b86daff77f",
+      "target": "containerwiki"
+    },
+    {
+      "type": "target",
+      "flow": "7d37cfe7-b6e5-4b7a-9c6d-e7026beb4591",
+      "target": "containercrearentrada"
+    },
+    {
+      "type": "target",
+      "flow": "2ef93f6d-62da-4e3b-8917-bb3f60b713e1",
+      "target": "3fd91a41-e222-4d04-a0e1-e3e6883b5b1f"
+    },
+    {
+      "type": "target",
+      "flow": "81093c96-dbb4-472c-a657-aa0b62d7cfb2",
+      "target": "containerentrada"
+    },
+    {
+      "type": "target",
+      "flow": "fe4bc9ad-e72a-4346-957e-9f889ad701b7",
+      "target": "e69fae44-3279-4d36-bcfa-c168a53a7439"
+    }
+  ],
+  "statistics": {
+    "session": {
+      "started_at": "2024-09-27T16:29:24.235Z",
+      "ended_at": "2024-09-27T17:15:16.848Z"
+    }
+  }
+}
