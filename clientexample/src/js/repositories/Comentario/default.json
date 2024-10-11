@@ -1,0 +1,8 @@
+[
+    { "id": 0, "autor": "user123", "fecha": "2023-09-01", "texto": "Un clásico atemporal que captura la esencia de una era.", "valoracion": "5" },
+    { "id": 1, "autor": "moviefan89", "fecha": "2023-09-15", "texto": "Impresionante viaje espacial, aunque un poco complejo en algunas partes.", "valoracion": "4" },
+    { "id": 2, "autor": "musiclover", "fecha": "2023-09-20", "texto": "La canción es adictiva, perfecta para los amantes del pop retro.", "valoracion": "5" },
+    { "id": 3, "autor": "seriesguru", "fecha": "2023-09-25", "texto": "Una serie fascinante sobre la transformación moral de un hombre común.", "valoracion": "5" },
+    { "id": 4, "autor": "gamer99", "fecha": "2023-10-01", "texto": "El juego tiene una gran historia, pero la dificultad es frustrante.", "valoracion": "3" },
+    { "id": 5, "autor": "techguru", "fecha": "2023-10-05", "texto": "Interesantes temas tecnológicos, pero a veces demasiado técnicos para principiantes.", "valoracion": "3" }
+]
