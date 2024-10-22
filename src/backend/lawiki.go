@@ -9,8 +9,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
-	"strings"
 	"syscall"
 	"time"
 
@@ -18,7 +16,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -53,11 +50,6 @@ func main() {
 
 	// mount the api routes
 	router.Mount("/api", api.Routes())
-
-	// serve static files
-	workDir, _ := os.Getwd()
-	buildPath := filepath.Join(workDir, "frontend", "dist")
-	FileServer(router, "/", http.Dir(buildPath), xlog)
 
 	// context for graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
@@ -100,42 +92,4 @@ func main() {
 		xlog.Error().Err(err).Msg("HTTP server failed to shutdown")
 	}
 	xlog.Info().Msg("Server shut down successfully")
-}
-
-// FileServer serves static files and handles client-side routing
-func FileServer(router chi.Router, path string, root http.FileSystem, xlog zerolog.Logger) {
-	if strings.ContainsAny(path, "{}*") {
-		panic("FileServer does not permit URL parameters.")
-	}
-
-	indexFile := "index.html"
-	fs := http.FileServer(root)
-
-	// Serve static files
-	router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
-		requestPath := r.URL.Path
-		requestPath = strings.TrimPrefix(requestPath, path)
-
-		f, err := root.Open(requestPath)
-		if err != nil {
-			if os.IsNotExist(err) || requestPath == "/" || requestPath == "" {
-				f, err = root.Open(indexFile)
-				if err != nil {
-					xlog.Error().Err(err).Msg("Failed to open index file")
-					http.Error(w, "Index file not found", http.StatusNotFound)
-				}
-				defer f.Close()
-				fi, _ := f.Stat()
-				http.ServeContent(w, r, indexFile, fi.ModTime(), f)
-				return
-			}
-			// for other errors, return the error
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer f.Close()
-
-		// if the request file exists, serve it
-		fs.ServeHTTP(w, r)
-	})
 }

@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
-import { getAllWikis } from "../api";
+import { getAllWikis } from "../api.js";
 
 function Home() {
   const [wikis, setWikis] = useState([]);
@@ -21,22 +21,22 @@ function Home() {
         Wikis
       </Typography>
       {error && <Alert severity="error">{error}</Alert>}
-      {wikis.length > 0 ? (
-        <List>
-          {wikis.map((wiki) => (
-            <ListItem key={wiki.id}>
-              <Typography variant="h2" gutterBottom>
-                {wiki.title}
-              </Typography>
-              <Typography variant="body1" gutterBottom>
-                {wiki.description}
-              </Typography>
-            </ListItem>
-          ))}
-        </List>
-      ) : (
-        <Alert>No wikis found.</Alert>
-      )}
+      {wikis.length > 0
+        ? (
+          <List>
+            {wikis.map((wiki) => (
+              <ListItem key={wiki.id}>
+                <Typography variant="h2" gutterBottom>
+                  {wiki.title}
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                  {wiki.description}
+                </Typography>
+              </ListItem>
+            ))}
+          </List>
+        )
+        : <Alert>No wikis found.</Alert>}
     </div>
   );
 }
