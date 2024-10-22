@@ -1,13 +1,44 @@
-package utils
+package middleware
 
 import (
+	"context"
 	"net/http"
 	"runtime/debug"
 	"time"
 
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
+
+type key int
+
+const requestIDKey key = 0
+
+// RequestID is a middleware that injects a request ID into the context
+func RequestID(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		reqID := r.Header.Get("X-Request-Id")
+		if reqID == "" {
+			reqID = uuid.New().String()
+		}
+		ctx := context.WithValue(r.Context(), requestIDKey, reqID)
+		w.Header().Set("X-Request-Id", reqID)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	}
+	return http.HandlerFunc(fn)
+}
+
+// GetReqID returns the request ID from the context
+func GetReqID(ctx context.Context) string {
+	if ctx == nil {
+		return ""
+	}
+	if reqID, ok := ctx.Value(requestIDKey).(string); ok {
+		return reqID
+	}
+	return ""
+}
 
 // LoggerMiddleware - http logs to zerolog format
 func LoggerMiddleware(logger *zerolog.Logger) func(next http.Handler) http.Handler {

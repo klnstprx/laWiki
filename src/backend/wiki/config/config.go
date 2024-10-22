@@ -5,15 +5,16 @@ import (
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 type AppConfig struct {
 	Logger     *zerolog.Logger
-	ListenAddr string `toml:"listen_addr"`
-	PrettyLogs bool   `toml:"pretty_logs"`
-	Debug      bool   `toml:"debug"`
+	Port       string
+	PrettyLogs bool
+	Debug      bool
 }
 
 // App holds app configuration
@@ -24,10 +25,17 @@ func New() {
 	App = AppConfig{}
 }
 
-// Logs current App configuration
-func (cfg *AppConfig) LogConfig() {
-	xlog := cfg.Logger.With().Str("app", "configuration").Logger()
-	xlog.Info().Str("Logger", cfg.Logger.GetLevel().String()).Msg("Logger level")
+func (cfg *AppConfig) LoadEnv() {
+	err := godotenv.Load()
+	if err != nil {
+		cfg.Logger.Fatal().Msg("No .env file found")
+	}
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8081"
+	}
+
+	cfg.Port = port
 }
 
 // Setups pretty logs and debug level
