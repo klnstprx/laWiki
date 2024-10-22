@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build: ./gateway
+    container_name: api-gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - wiki-service
+      # - entry-service
+    environment:
+      - PORT=8000
+      - WIKI_SERVICE_URL=http://wiki-service:8001
+      # - ENTRY_SERVICE_URL=http://entry-service:8002
+    networks:
+      - app-network
+
+  wiki-service:
+    build: ./wiki
+    container_name: wiki-service
+    ports:
+      - "8001:8001"
+    networks:
+      - app-network
+
+  # entry-service:
+      #   build: ./entry
+  #   container_name: entry-service
+  #   ports:
+  #     - "8002:8002"
+  #   networks:
+  #     - app-network
+
+networks:
+  app-network:
+    driver: bridge
