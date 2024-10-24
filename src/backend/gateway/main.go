@@ -31,6 +31,7 @@ func main() {
 	defer cancel()
 
 	// graceful shutdown logic
+	// esto no es muy importante, pero es bueno tenerlo
 	signalCaught := false
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
@@ -52,6 +53,7 @@ func main() {
 		Handler: r,
 	}
 
+	// lo arrancamos en un go routine para que no bloquee el main thread
 	go func() {
 		err := httpServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
