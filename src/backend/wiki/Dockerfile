@@ -2,14 +2,15 @@ FROM golang:1.23-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache git
+RUN apk update && apk add --no-cache git
 
 COPY go.mod go.sum ./
+
 RUN go mod download
 
 COPY . .
 
-RUN go build -o wiki-service .
+RUN go build -o wiki-service . && chmod +x wiki-service
 
 EXPOSE 8001
 

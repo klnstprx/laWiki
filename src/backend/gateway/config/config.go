@@ -35,7 +35,9 @@ func (cfg *AppConfig) LoadEnv() {
 		port = "8000"
 	}
 
-	cfg.Port = port
+	cfg.Port = ":" + port
+	cfg.PrettyLogs = os.Getenv("PRETTY_LOGS") == "true"
+	cfg.Debug = os.Getenv("DEBUG") == "true"
 }
 
 // Setups pretty logs and debug level

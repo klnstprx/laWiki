@@ -1,4 +1,4 @@
-package gateway
+package main
 
 import (
 	"context"
@@ -18,8 +18,8 @@ import (
 func main() {
 	// config setup
 	config.New()
-	config.SetupLogger(config.App.PrettyLogs, config.App.Debug)
 	config.App.LoadEnv()
+	config.SetupLogger(config.App.PrettyLogs, config.App.Debug)
 	config.App.Logger = &log.Logger
 	xlog := config.App.Logger.With().Str("service", "gateway").Logger()
 
