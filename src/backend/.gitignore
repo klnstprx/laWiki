@@ -1,4 +1,2 @@
-# ignore all files without extension (binary files)
-/[^\.]* 
 # ignore all .exe
 *.exe
