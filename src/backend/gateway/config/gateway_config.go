@@ -28,7 +28,12 @@ func New() {
 func (cfg *AppConfig) LoadEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		cfg.Logger.Fatal().Msg("No .env file found")
+		cfg.Logger.Warn().Msg("No .env file found, setting defaults.")
+
+		cfg.Port = ":8000"
+		cfg.PrettyLogs = true
+		cfg.Debug = true
+		return
 	}
 	port := os.Getenv("PORT")
 	if port == "" {
