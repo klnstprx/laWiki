@@ -38,7 +38,6 @@ func Connect() {
 	}
 
 	Client = client
-	WikiCollection = client.Database("lawikidb").Collection("wikis")
-
-	config.App.Logger.Info().Str("mongoURI", mongoURI).Msg("Connected to mongoDB")
+	WikiCollection = client.Database("laWiki").Collection("wikis")
+	config.App.Logger.Info().Msg("Connected to mongoDB")
 }

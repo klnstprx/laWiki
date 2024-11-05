@@ -1,8 +1,8 @@
-FROM golang:1.23-alpine
+FROM golang:1.23-bullseye
 
 WORKDIR /app
 
-RUN apk update && apk add --no-cache git
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY go.mod go.sum ./
 

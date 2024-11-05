@@ -1,25 +1,30 @@
 services:
   api-gateway:
     build: ./gateway
-    container_name: api-gateway
     ports:
       - "8000:8000"
     depends_on:
       - wiki-service
     networks:
       - app-network
+    env_file:
+        - ./.env.docker
 
   wiki-service:
     build: ./wiki
-    container_name: wiki-service
     networks:
       - app-network
+    expose:
+      - "8001"
+    env_file:
+      - ./.env.docker
 
   # entry-service:
   #   build: ./entry
-  #   container_name: entry-service
   #   networks:
   #     - app-network
+  #   expose:
+  #     - "8002"
 
 networks:
   app-network:

@@ -15,7 +15,6 @@ func NewRouter() http.Handler {
 	r := chi.NewRouter()
 
 	// Middlewares
-	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	// Custom middleware for authentication, etc.
 	r.Use(custommw.RequestID)
@@ -25,12 +24,13 @@ func NewRouter() http.Handler {
 	r.Get("/health", handler.HealthCheck)
 
 	// Define routes to backend services
-	r.Route("/", func(r chi.Router) {
+	// aqui anadimos (con r.Mount()) cada microservico al gateway.
+	r.Route("/api", func(r chi.Router) {
 		// Wiki Service Routes
-		r.Mount("/wikis", proxyHandler("WIKI_SERVICE_URL"))
+		r.Mount("/wikis", proxyHandler("WIKI_SERVICE_URL", "/api/wikis"))
 
 		// Entry Service Routes
-		r.Mount("/entries", proxyHandler("ENTRY_SERVICE_URL"))
+		r.Mount("/entries", proxyHandler("ENTRY_SERVICE_URL", "/api/entries"))
 
 		// Other service routes...
 	})
@@ -39,10 +39,10 @@ func NewRouter() http.Handler {
 }
 
 // proxyHandler returns a handler that proxies requests to the given service
-func proxyHandler(serviceEnvVar string) http.HandlerFunc {
+func proxyHandler(serviceEnvVar string, prefixToStrip string) http.HandlerFunc {
 	serviceURL := os.Getenv(serviceEnvVar)
 	if serviceURL == "" {
 		config.App.Logger.Panic().Msg("Environment variable " + serviceEnvVar + " not set")
 	}
-	return handler.ReverseProxy(serviceURL)
+	return handler.ReverseProxy(serviceURL, prefixToStrip)
 }
