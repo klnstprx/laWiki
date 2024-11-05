@@ -29,22 +29,18 @@ func (cfg *AppConfig) LoadEnv() {
 	_, err := os.Stat(".env")
 	if err != nil {
 		log.Logger.Warn().Msg("No .env file found, setting defaults.")
-
-		cfg.Port = ":8000"
-		cfg.PrettyLogs = true
-		cfg.Debug = true
-		return
+		godotenv.Load(".env.default")
 	} else {
 		godotenv.Load()
-		port := os.Getenv("PORT")
-		if port == "" {
-			port = "8000"
-		}
-
-		cfg.Port = ":" + port
-		cfg.PrettyLogs = os.Getenv("PRETTY_LOGS") == "true"
-		cfg.Debug = os.Getenv("DEBUG") == "true"
 	}
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+
+	cfg.Port = ":" + port
+	cfg.PrettyLogs = os.Getenv("PRETTY_LOGS") == "true"
+	cfg.Debug = os.Getenv("DEBUG") == "true"
 }
 
 // Setups pretty logs and debug level
