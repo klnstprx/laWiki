@@ -23,6 +23,7 @@ func main() {
 	config.App.Logger = &log.Logger
 	xlog := config.App.Logger.With().Str("service", "wiki").Logger()
 
+	xlog.Info().Msg("Connecting to the database...")
 	database.Connect()
 
 	// r setup
@@ -39,11 +40,11 @@ func main() {
 	go func() {
 		<-signalChannel
 		if signalCaught {
-			log.Warn().Msg("Caught second signal, terminating immediately")
+			xlog.Warn().Msg("Caught second signal, terminating immediately")
 			os.Exit(1)
 		}
 		signalCaught = true
-		log.Info().Msg("Caught shutdown signal")
+		xlog.Info().Msg("Caught shutdown signal")
 		cancel()
 	}()
 

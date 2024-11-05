@@ -27,8 +27,8 @@ func New() {
 
 func (cfg *AppConfig) LoadEnv() {
 	_, err := os.Stat(".env")
-	if os.IsNotExist(err) {
-		cfg.Logger.Warn().Msg("No .env file found, setting defaults.")
+	if err != nil {
+		log.Logger.Warn().Msg("No .env file found, setting defaults.")
 
 		cfg.Port = ":8001"
 		cfg.PrettyLogs = true
