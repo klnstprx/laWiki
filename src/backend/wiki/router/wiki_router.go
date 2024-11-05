@@ -10,7 +10,7 @@ import (
 func NewRouter() http.Handler {
 	r := chi.NewRouter()
 
-	r.Route("/wikis", func(r chi.Router) {
+	r.Route("/", func(r chi.Router) {
 		r.Get("/", handler.GetWikis)
 		r.Post("/", handler.PostWiki)
 
