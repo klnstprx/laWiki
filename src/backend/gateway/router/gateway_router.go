@@ -32,7 +32,8 @@ func NewRouter() http.Handler {
 		// Entry Service Routes
 		r.Mount("/entries", proxyHandler("ENTRY_SERVICE_URL", "/api/entries"))
 
-		// Other service routes...
+		// Comment Service Routes
+		r.Mount("/comments", proxyHandler("COMMENT_SERVICE_URL", "/api/comments"))
 	})
 
 	return r

@@ -27,6 +27,15 @@ services:
       - "8002"
     env_file:
       - ./.env.docker
+
+  comment-service:
+    build: ./comment
+    networks:
+      - app-network
+    expose:
+      - "8003"
+    env_file:
+      - ./.env.docker
       
 networks:
   app-network:
