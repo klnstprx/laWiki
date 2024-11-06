@@ -15,11 +15,11 @@ func NewRouter() http.Handler {
 		r.Post("/", handler.PostEntry)
 
 		// TODO: Implement the following routes:
-		/*r.Route("/{id}", func(r chi.Router) {
+		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", handler.GetEntryByID)
 			r.Put("/", handler.PutEntry)
 			r.Delete("/", handler.DeleteEntry)
-		})*/
+		})
 	})
 
 	return r
