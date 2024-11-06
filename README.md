@@ -9,7 +9,7 @@
 5. `docker-compose build`
 6. `docker-compose up`
 
-**Si no funciona "docker-compose" prueba con `docker compose build` (sin "-")**
+**Si no funciona "docker-compose" prueba con `docker compose build` (sin "-")**.
 
 ## Cómo ejecutar sin docker:
 
