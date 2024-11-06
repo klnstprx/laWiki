@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/laWiki/comment/config"
 	"github.com/laWiki/comment/database"
+	"github.com/laWiki/comment/router"
 	"github.com/rs/zerolog/log"
 )
 
@@ -27,7 +27,7 @@ func main() {
 	database.Connect()
 
 	//router setup, no need to mount cause only 1 router
-	r := chi.NewRouter()
+	r := router.NewRouter()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
