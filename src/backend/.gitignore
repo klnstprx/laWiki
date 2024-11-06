@@ -1,0 +1,6 @@
+# ignore all .exe
+*.exe
+.env
+.env.docker
+config.toml
+config.docker.toml

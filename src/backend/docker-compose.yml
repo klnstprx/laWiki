@@ -1,0 +1,50 @@
+services:
+  api-gateway:
+    build: ./gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - wiki-service
+    networks:
+      - app-network
+    volumes:
+      - ./config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+
+  wiki-service:
+    build: ./wiki
+    networks:
+      - app-network
+    expose:
+      - "8001"
+    volumes:
+      - ./config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+
+  # entry-service:
+  #   build: ./entry
+  #   networks:
+  #     - app-network
+  #   expose:
+  #     - "8002"
+  #   volumes:
+  #     - ./config.docker.toml:/app/config.toml
+  #   environment:
+  #     - DOCKER=true
+
+  auth-service:
+    build: ./auth
+    networks:
+      - app-network
+    expose:
+      - "8003"
+    volumes:
+      - ./config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+
+networks:
+  app-network:
+    driver: bridge

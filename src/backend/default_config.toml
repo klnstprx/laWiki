@@ -1,0 +1,24 @@
+[gateway]
+PORT = 8000
+WIKI_SERVICE_URL = "http://localhost:8001"
+ENTRY_SERVICE_URL = "http://localhost:8002"
+AUTH_SERVICE_URL = "http://localhost:8003"
+PRETTY_LOGS = true
+DEBUG = true
+
+[wiki]
+PORT = 8001
+MONGODB_URI = ""
+DB_COLLECTION_NAME = "wikis"
+DB_NAME = "laWiki"
+PRETTY_LOGS = true
+DEBUG = true
+
+[auth]
+PORT = 8003
+GOOGLE_OAUTH_CLIENT_ID = ""
+GOOGLE_OAUTH_CLIENT_SECRET = ""
+GOOGLE_OAUTH_REDIRECT_URL = ""
+JWT_SECRET = ""
+PRETTY_LOGS = true
+DEBUG = true
