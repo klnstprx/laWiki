@@ -5,6 +5,7 @@ services:
       - "8000:8000"
     depends_on:
       - wiki-service
+      - entry-service
     networks:
       - app-network
     volumes:
@@ -23,16 +24,16 @@ services:
     environment:
       - DOCKER=true
 
-  # entry-service:
-  #   build: ./entry
-  #   networks:
-  #     - app-network
-  #   expose:
-  #     - "8002"
-  #   volumes:
-  #     - ./config.docker.toml:/app/config.toml
-  #   environment:
-  #     - DOCKER=true
+  entry-service:
+    build: ./entry
+    networks:
+      - app-network
+    expose:
+      - "8002"
+    volumes:
+      - ./config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
 
   auth-service:
     build: ./auth
