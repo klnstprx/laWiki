@@ -15,6 +15,15 @@ import (
 )
 
 /*
+* GET /health
+* checks if the service is up
+ */
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
+}
+
+/*
 * POST /
 * creates a new version
 * expects a json object in the request body

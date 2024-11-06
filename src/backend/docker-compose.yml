@@ -8,8 +8,10 @@ services:
       - entry-service
     networks:
       - app-network
-    env_file:
-        - ./.env.docker
+    volumes:
+      - ./config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
 
   wiki-service:
     build: ./wiki
@@ -17,8 +19,10 @@ services:
       - app-network
     expose:
       - "8001"
-    env_file:
-      - ./.env.docker
+    volumes:
+      - ./config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
 
   entry-service:
     build: ./entry
@@ -26,9 +30,33 @@ services:
       - app-network
     expose:
       - "8002"
-    env_file:
-      - ./.env.docker
-      
+    volumes:
+      - ./config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+
+  # auth-service:
+  #   build: ./auth
+  #   networks:
+  #     - app-network
+  #   expose:
+  #     - "8003"
+  #   volumes:
+  #     - ./config.docker.toml:/app/config.toml
+  #   environment:
+  #     - DOCKER=true
+
+  version-service:
+    build: ./version
+    networks:
+      - app-network
+    expose:
+      - "8005"
+    volumes:
+      - ./config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+
 networks:
   app-network:
     driver: bridge

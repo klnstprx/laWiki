@@ -2,7 +2,6 @@ package router
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -27,25 +26,22 @@ func NewRouter() http.Handler {
 	// aqui anadimos (con r.Mount()) cada microservico al gateway.
 	r.Route("/api", func(r chi.Router) {
 		// Wiki Service Routes
-		r.Mount("/wikis", proxyHandler("WIKI_SERVICE_URL", "/api/wikis"))
+		r.Mount("/wikis", proxyHandler(config.App.WikiServiceURL, "/api/wikis"))
 
 		// Entry Service Routes
-		r.Mount("/entries", proxyHandler("ENTRY_SERVICE_URL", "/api/entries"))
+		r.Mount("/entries", proxyHandler(config.App.EntryServiceURL, "/api/entries"))
 
-		//Version Service Routes
-		r.Mount("/entries", proxyHandler("VERSION_SERVICE_URL", "/api/versions"))
+		// Auth Service Routes
+		r.Mount("/auth", proxyHandler(config.App.AuthServiceURL, "/api/auth"))
 
-		// Other service routes...
+		// Version Service Routes
+		r.Mount("/versions", proxyHandler(config.App.VersionServiceURL, "/api/versions"))
 	})
 
 	return r
 }
 
 // proxyHandler returns a handler that proxies requests to the given service
-func proxyHandler(serviceEnvVar string, prefixToStrip string) http.HandlerFunc {
-	serviceURL := os.Getenv(serviceEnvVar)
-	if serviceURL == "" {
-		config.App.Logger.Panic().Msg("Environment variable " + serviceEnvVar + " not set")
-	}
+func proxyHandler(serviceURL string, prefixToStrip string) http.HandlerFunc {
 	return handler.ReverseProxy(serviceURL, prefixToStrip)
 }

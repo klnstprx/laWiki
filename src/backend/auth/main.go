@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/laWiki/version/config"
-	"github.com/laWiki/version/database"
-	"github.com/laWiki/version/router"
+	"github.com/laWiki/auth/config"
+	"github.com/laWiki/auth/router"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -28,12 +28,9 @@ func main() {
 	config.App.LoadConfig(configPath)
 	config.SetupLogger(config.App.PrettyLogs, config.App.Debug)
 	config.App.Logger = &log.Logger
-	xlog := config.App.Logger.With().Str("service", "version").Logger()
+	xlog := config.App.Logger.With().Str("service", "auth").Logger()
 
-	xlog.Info().Msg("Connecting to the database...")
-	database.Connect()
-
-	// r setup
+	// router setup
 	r := router.NewRouter()
 
 	// context for graceful shutdown
@@ -41,6 +38,7 @@ func main() {
 	defer cancel()
 
 	// graceful shutdown logic
+	// esto no es muy importante, pero es bueno tenerlo
 	signalCaught := false
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
@@ -62,6 +60,7 @@ func main() {
 		Handler: r,
 	}
 
+	// lo arrancamos en un go routine para que no bloquee el main thread
 	go func() {
 		err := httpServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {

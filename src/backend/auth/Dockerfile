@@ -10,8 +10,8 @@ RUN go mod tidy
 
 COPY . .
 
-RUN go build -o version-service . && chmod +x version-service
+RUN go build -o auth-service . && chmod +x auth-service
 
-EXPOSE 8005
+EXPOSE 8003
 
-CMD ["./version-service"]
+CMD ["./auth-service"]
