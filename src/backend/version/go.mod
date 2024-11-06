@@ -1,4 +1,4 @@
-module github.com/laWiki/wiki
+module github.com/laWiki/version
 
 go 1.21.4
 
