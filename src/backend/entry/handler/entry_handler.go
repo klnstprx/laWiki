@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/laWiki/wiki/config"
-	"github.com/laWiki/wiki/database"
-	"github.com/laWiki/wiki/model"
+	"github.com/laWiki/entry/config"
+	"github.com/laWiki/entry/database"
+	"github.com/laWiki/entry/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

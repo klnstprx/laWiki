@@ -19,12 +19,12 @@ services:
     env_file:
       - ./.env.docker
 
-  # entry-service:
-  #   build: ./entry
-  #   networks:
-  #     - app-network
-  #   expose:
-  #     - "8002"
+  entry-service:
+    build: ./entry
+    networks:
+      - app-network
+    expose:
+      - "8002"
 
 networks:
   app-network:
