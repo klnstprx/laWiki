@@ -92,8 +92,6 @@ func GetEntries(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Implement other CRUD operations (GetEntryByID, PutEntry, DeleteEntry) similarly
-
 func GetEntryByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
@@ -122,7 +120,6 @@ func GetEntryByID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func DeleteEntry(w http.ResponseWriter, r *http.Request) {
@@ -177,10 +174,10 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 
 	update := bson.M{
 		"$set": bson.M{
-			"title":     entry.Title,
-			"content":   entry.Content,
-			"authors":   entry.Authors,
-			"createdAt": entry.CreatedAt,
+			"title":       entry.Title,
+			"version_ids": entry.VersionIDs,
+			"authors":     entry.Authors,
+			"createdAt":   entry.CreatedAt,
 		},
 	}
 

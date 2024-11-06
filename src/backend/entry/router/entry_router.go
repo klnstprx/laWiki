@@ -14,7 +14,6 @@ func NewRouter() http.Handler {
 		r.Get("/", handler.GetEntries)
 		r.Post("/", handler.PostEntry)
 
-		// TODO: Implement the following routes:
 		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", handler.GetEntryByID)
 			r.Put("/", handler.PutEntry)
