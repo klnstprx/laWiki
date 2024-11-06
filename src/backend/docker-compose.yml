@@ -35,12 +35,23 @@ services:
     environment:
       - DOCKER=true
 
-  auth-service:
-    build: ./auth
+  # auth-service:
+  #   build: ./auth
+  #   networks:
+  #     - app-network
+  #   expose:
+  #     - "8003"
+  #   volumes:
+  #     - ./config.docker.toml:/app/config.toml
+  #   environment:
+  #     - DOCKER=true
+
+  version-service:
+    build: ./version
     networks:
       - app-network
     expose:
-      - "8003"
+      - "8005"
     volumes:
       - ./config.docker.toml:/app/config.toml
     environment:

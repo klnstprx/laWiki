@@ -3,8 +3,8 @@ module github.com/laWiki/version
 go 1.21.4
 
 require (
+	github.com/BurntSushi/toml v1.4.0
 	github.com/go-chi/chi/v5 v5.1.0
-	github.com/joho/godotenv v1.5.1
 	github.com/rs/zerolog v1.33.0
 	go.mongodb.org/mongo-driver v1.17.1
 )

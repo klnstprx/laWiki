@@ -3,6 +3,7 @@ PORT = 8000
 WIKI_SERVICE_URL = "http://localhost:8001"
 ENTRY_SERVICE_URL = "http://localhost:8002"
 AUTH_SERVICE_URL = "http://localhost:8003"
+VERSION_SERVICE_URL = "http://localhost:8005"
 PRETTY_LOGS = true
 DEBUG = true
 
@@ -10,6 +11,22 @@ DEBUG = true
 PORT = 8001
 MONGODB_URI = ""
 DB_COLLECTION_NAME = "wikis"
+DB_NAME = "laWiki"
+PRETTY_LOGS = true
+DEBUG = true
+
+[entry]
+PORT = 8002
+MONGODB_URI = ""
+DB_COLLECTION_NAME = "entradas"
+DB_NAME = "laWiki"
+PRETTY_LOGS = true
+DEBUG = true
+
+[version]
+PORT = 8005
+MONGODB_URI = ""
+DB_COLLECTION_NAME = "versiones"
 DB_NAME = "laWiki"
 PRETTY_LOGS = true
 DEBUG = true

@@ -2,10 +2,6 @@ package router
 
 import (
 	"net/http"
-<<<<<<< HEAD
-=======
-	"os"
->>>>>>> dev
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -35,10 +31,11 @@ func NewRouter() http.Handler {
 		// Entry Service Routes
 		r.Mount("/entries", proxyHandler(config.App.EntryServiceURL, "/api/entries"))
 
-    // Auth Service Routes
+		// Auth Service Routes
 		r.Mount("/auth", proxyHandler(config.App.AuthServiceURL, "/api/auth"))
 
-		// Other service routes...
+		// Version Service Routes
+		r.Mount("/versions", proxyHandler(config.App.VersionServiceURL, "/api/versions"))
 	})
 
 	return r

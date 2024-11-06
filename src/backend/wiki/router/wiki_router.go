@@ -11,6 +11,7 @@ func NewRouter() http.Handler {
 	r := chi.NewRouter()
 
 	r.Route("/", func(r chi.Router) {
+		r.Get("/health", handler.HealthCheck)
 		r.Get("/", handler.GetWikis)
 		r.Post("/", handler.PostWiki)
 

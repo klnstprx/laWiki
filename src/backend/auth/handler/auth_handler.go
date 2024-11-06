@@ -18,11 +18,12 @@ import (
 )
 
 /*
-* GET /
-*
-*
+* GET /health
+* checks if the service is up
  */
-func AuthenticateUser(w http.ResponseWriter, r *http.Request) {
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
 }
 
 // generateStateOauthCookie generates a random state string and sets it as a cookie

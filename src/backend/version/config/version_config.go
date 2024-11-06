@@ -1,20 +1,39 @@
 package config
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
+	"github.com/BurntSushi/toml"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
+// VersionConfig holds the configuration specific to the version service
+type VersionConfig struct {
+	Port             int    `toml:"PORT"`
+	MongoDBURI       string `toml:"MONGODB_URI"`
+	DBCollectionName string `toml:"DB_COLLECTION_NAME"`
+	DBName           string `toml:"DB_NAME"`
+	PrettyLogs       *bool  `toml:"PRETTY_LOGS"`
+	Debug            *bool  `toml:"DEBUG"`
+}
+
+// Config represents the structure of the config.toml file
+type Config struct {
+	Version VersionConfig `toml:"version"`
+}
+
 type AppConfig struct {
-	Logger     *zerolog.Logger
-	Port       string
-	PrettyLogs bool
-	Debug      bool
+	Logger           *zerolog.Logger
+	Port             string
+	PrettyLogs       bool
+	Debug            bool
+	MongoDBURI       string
+	DBCollectionName string
+	DBName           string
 }
 
 // App holds app configuration
@@ -25,22 +44,78 @@ func New() {
 	App = AppConfig{}
 }
 
-func (cfg *AppConfig) LoadEnv() {
-	_, err := os.Stat(".env")
+// LoadConfig reads the configuration from config.toml and populates AppConfig
+func (cfg *AppConfig) LoadConfig(configPath string) {
+	var config Config
+	// Check if the config.toml file exists
+	_, err := os.Stat(configPath)
 	if err != nil {
-		log.Logger.Warn().Msg("No .env file found, setting defaults.")
-		godotenv.Load(".env.default")
-	} else {
-		godotenv.Load()
-	}
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8005"
+		log.Error().Msgf("Config file '%s' not found.", configPath)
+		os.Exit(1)
 	}
 
-	cfg.Port = ":" + port
-	cfg.PrettyLogs = os.Getenv("PRETTY_LOGS") == "true"
-	cfg.Debug = os.Getenv("DEBUG") == "true"
+	// Decode the TOML file into the Config struct
+	if _, err := toml.DecodeFile(configPath, &config); err != nil {
+		log.Error().Err(err).Msg("Error decoding config file.")
+		os.Exit(1)
+	}
+
+	missingVars := []string{}
+
+	// PORT with default value
+	if config.Version.Port == 0 {
+		cfg.Port = ":8005" // Default port
+		log.Warn().Msg("PORT not set in config file. Using default ':8005'.")
+	} else {
+		cfg.Port = fmt.Sprintf(":%d", config.Version.Port)
+	}
+
+	// PRETTY_LOGS with default value
+	if config.Version.PrettyLogs != nil {
+		cfg.PrettyLogs = *config.Version.PrettyLogs
+	} else {
+		cfg.PrettyLogs = true // Default to true
+		log.Warn().Msg("PRETTY_LOGS not set in config file. Using default 'true'.")
+	}
+
+	// DEBUG with default value
+	if config.Version.Debug != nil {
+		cfg.Debug = *config.Version.Debug
+	} else {
+		cfg.Debug = true // Default to true
+		log.Warn().Msg("DEBUG not set in config file. Using default 'true'.")
+	}
+
+	// DBNAME with default value
+	if config.Version.DBName != "" {
+		cfg.DBName = config.Version.DBName
+	} else {
+		cfg.DBName = "laWiki" // Default to "laWiki"
+		log.Warn().Msg("DBNAME not set in config file. Using default 'laWiki'.")
+	}
+	// DBCOLLECTIONNAME with default value
+	if config.Version.DBCollectionName != "" {
+		cfg.DBCollectionName = config.Version.DBCollectionName
+	} else {
+		cfg.DBCollectionName = "versiones" // Default to "wikis"
+		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'wiki'.")
+	}
+
+	// MONGODB_URI is required
+	if config.Version.MongoDBURI != "" {
+		cfg.MongoDBURI = config.Version.MongoDBURI
+	} else {
+		cfg.MongoDBURI = "mongodb://localhost:27017" // Default to locally hosted DB
+		log.Warn().Msg("DMONGODB_URI not set in config file. Using default 'mongodb://localhost:27017'.")
+	}
+
+	// If there are missing required variables, log them and exit
+	if len(missingVars) > 0 {
+		for _, v := range missingVars {
+			log.Error().Msgf("Missing required configuration variable: %s", v)
+		}
+		os.Exit(1)
+	}
 }
 
 // Setups pretty logs and debug level

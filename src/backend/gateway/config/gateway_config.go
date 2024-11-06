@@ -13,12 +13,13 @@ import (
 
 // GatewayConfig holds the configuration specific to the gateway service
 type GatewayConfig struct {
-	Port            int    `toml:"PORT"`
-	WikiServiceURL  string `toml:"WIKI_SERVICE_URL"`
-	EntryServiceURL string `toml:"ENTRY_SERVICE_URL"`
-	AuthServiceURL  string `toml:"AUTH_SERVICE_URL"`
-	PrettyLogs      *bool  `toml:"PRETTY_LOGS"`
-	Debug           *bool  `toml:"DEBUG"`
+	Port              int    `toml:"PORT"`
+	WikiServiceURL    string `toml:"WIKI_SERVICE_URL"`
+	EntryServiceURL   string `toml:"ENTRY_SERVICE_URL"`
+	AuthServiceURL    string `toml:"AUTH_SERVICE_URL"`
+	VersionServiceURL string `toml:"VERSION_SERVICE_URL"`
+	PrettyLogs        *bool  `toml:"PRETTY_LOGS"`
+	Debug             *bool  `toml:"DEBUG"`
 }
 
 // Config represents the structure of the config.toml file
@@ -27,13 +28,14 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Logger          *zerolog.Logger
-	Port            string
-	PrettyLogs      bool
-	Debug           bool
-	WikiServiceURL  string
-	EntryServiceURL string
-	AuthServiceURL  string
+	Logger            *zerolog.Logger
+	Port              string
+	PrettyLogs        bool
+	Debug             bool
+	WikiServiceURL    string
+	EntryServiceURL   string
+	AuthServiceURL    string
+	VersionServiceURL string
 }
 
 // App holds app configuration
@@ -105,6 +107,13 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		missingVars = append(missingVars, "AUTH_SERVICE_URL")
 	} else {
 		cfg.AuthServiceURL = config.Gateway.AuthServiceURL
+	}
+
+	// VERSION_SERVICE_URL is required
+	if config.Gateway.VersionServiceURL == "" {
+		missingVars = append(missingVars, "ENTRY_SERVICE_URL")
+	} else {
+		cfg.VersionServiceURL = config.Gateway.VersionServiceURL
 	}
 
 	// If there are missing required variables, log them and exit

@@ -17,8 +17,15 @@ import (
 
 // main is the entrypoint for the entry service
 func main() {
+	// is the service run in docker?
+	var configPath string
+	if os.Getenv("DOCKER") == "true" {
+		configPath = "./config.toml"
+	} else {
+		configPath = "../config.toml"
+	}
 	config.New()
-	config.App.LoadEnv()
+	config.App.LoadConfig(configPath)
 	config.SetupLogger(config.App.PrettyLogs, config.App.Debug)
 	config.App.Logger = &log.Logger
 	xlog := config.App.Logger.With().Str("service", "entry").Logger()

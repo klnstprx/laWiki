@@ -10,6 +10,8 @@ import (
 func NewRouter() http.Handler {
 	r := chi.NewRouter()
 
+	r.Get("/health", handler.HealthCheck)
+
 	r.Get("/login", handler.Login)
 
 	// Handle callback from Google

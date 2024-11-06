@@ -10,8 +10,8 @@ RUN go mod tidy
 
 COPY . .
 
-RUN go build -o wiki-service . && chmod +x wiki-service
+RUN go build -o version-service . && chmod +x version-service
 
-EXPOSE 8001
+EXPOSE 8005
 
-CMD ["./wiki-service"]
+CMD ["./version-service"]

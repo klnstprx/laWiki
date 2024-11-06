@@ -14,6 +14,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+/*
+* GET /health
+* checks if the service is up
+ */
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
+}
+
 func PostEntry(w http.ResponseWriter, r *http.Request) {
 	var entry model.Entry
 	decoder := json.NewDecoder(r.Body)
