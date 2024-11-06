@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/laWiki/entry/config"
 	"github.com/laWiki/entry/database"
+	"github.com/laWiki/entry/router"
 	"github.com/rs/zerolog/log"
 )
 
@@ -26,8 +26,8 @@ func main() {
 	xlog.Info().Msg("Connecting to the database...")
 	database.Connect()
 
-	//router setup, no need to mount cause only 1 router
-	r := chi.NewRouter()
+	// router setup, no need to mount cause only 1 router
+	r := router.NewRouter()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -47,7 +47,7 @@ func main() {
 		cancel()
 	}()
 
-	//server starup
+	// server starup
 	httpServer := http.Server{
 		Addr:    config.App.Port,
 		Handler: r,
@@ -61,10 +61,10 @@ func main() {
 	}()
 	xlog.Info().Str("port", config.App.Port).Msg("HTTP Server started")
 
-	//wait for shutdown signal
+	// wait for shutdown signal
 	<-ctx.Done()
 
-	//shutdown logic
+	// shutdown logic
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer shutdownCancel()
 	if err := httpServer.Shutdown(shutdownCtx); err != nil {
