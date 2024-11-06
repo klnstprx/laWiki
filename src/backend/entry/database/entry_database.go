@@ -38,6 +38,6 @@ func Connect() {
 	}
 
 	Client = client
-	EntryCollection = client.Database("laWiki").Collection("entries")
+	EntryCollection = client.Database("laWiki").Collection("entradas")
 	config.App.Logger.Info().Msg("Connected to mongoDB")
 }

@@ -111,8 +111,8 @@ func GetEntryByID(w http.ResponseWriter, r *http.Request) {
 
 	err = database.EntryCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&entry)
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Wiki not found")
-		http.Error(w, "Wiki not found", http.StatusNotFound)
+		config.App.Logger.Error().Err(err).Msg("Entry not found")
+		http.Error(w, "Entry not found", http.StatusNotFound)
 		return
 	}
 
@@ -199,7 +199,7 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 	// Retrieve the updated document (optional)
 	err = database.EntryCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&entry)
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to retrieve updated wiki")
+		config.App.Logger.Error().Err(err).Msg("Failed to retrieve updated entry")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
