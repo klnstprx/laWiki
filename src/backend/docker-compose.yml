@@ -25,7 +25,9 @@ services:
       - app-network
     expose:
       - "8002"
-
+    env_file:
+      - ./.env.docker
+      
 networks:
   app-network:
     driver: bridge
