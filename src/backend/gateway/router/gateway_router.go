@@ -32,6 +32,9 @@ func NewRouter() http.Handler {
 		// Entry Service Routes
 		r.Mount("/entries", proxyHandler("ENTRY_SERVICE_URL", "/api/entries"))
 
+		//Version Service Routes
+		r.Mount("/entries", proxyHandler("VERSION_SERVICE_URL", "/api/versions"))
+
 		// Other service routes...
 	})
 
