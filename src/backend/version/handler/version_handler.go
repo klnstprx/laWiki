@@ -82,7 +82,7 @@ func GetVersions(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		version = append(versions, version)
+		versions = append(versions, version)
 	}
 
 	if err := cursor.Err(); err != nil {
