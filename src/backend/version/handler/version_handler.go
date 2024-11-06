@@ -229,3 +229,46 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent) // 204 No Content
 }
+
+/*
+* GET /
+* gets the list of all Version json objects that correspond to an Entry from db
+ */
+func GetVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
+	var versions []model.Version
+	entryID := chi.URLParam(r, "id")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := database.VersionCollection.Find(ctx, bson.M{"entry_id": entryID})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var version model.Version
+		if err := cursor.Decode(&version); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode version")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		versions = append(versions, version)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(versions); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
