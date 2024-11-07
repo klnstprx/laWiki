@@ -10,8 +10,8 @@ RUN go mod tidy
 
 COPY . .
 
-RUN go build -o auth-service . && chmod +x auth-service
+RUN go build -o media-service . && chmod +x media-service
 
-EXPOSE 8080
+EXPOSE 8081
 
-CMD ["./auth-service"]
+CMD ["./media-service"]

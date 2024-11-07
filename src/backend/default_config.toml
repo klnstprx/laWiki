@@ -3,8 +3,9 @@ PORT = 8000
 WIKI_SERVICE_URL = "http://localhost:8001"
 ENTRY_SERVICE_URL = "http://localhost:8002"
 COMMENT_SERVICE_URL = "http://localhost:8003"
-AUTH_SERVICE_URL = "http://localhost:8004"
 VERSION_SERVICE_URL = "http://localhost:8005"
+AUTH_SERVICE_URL = "http://localhost:8080"
+MEDIA_SERVICE_URL = "http://localhost:8081"
 PRETTY_LOGS = true
 DEBUG = true
 
@@ -32,8 +33,16 @@ DB_NAME = "laWiki"
 PRETTY_LOGS = true
 DEBUG = true
 
+[version]
+PORT = 8005
+MONGODB_URI = ""
+DB_COLLECTION_NAME = "versiones"
+DB_NAME = "laWiki"
+PRETTY_LOGS = true
+DEBUG = true
+
 [auth]
-PORT = 8004
+PORT = 8080
 GOOGLE_OAUTH_CLIENT_ID = ""
 GOOGLE_OAUTH_CLIENT_SECRET = ""
 GOOGLE_OAUTH_REDIRECT_URL = ""
@@ -41,10 +50,13 @@ JWT_SECRET = ""
 PRETTY_LOGS = true
 DEBUG = true
 
-[version]
-PORT = 8005
+[media]
+PORT = 8081
+CLOUDIFY_CLOUD_NAME = ""
+CLOUDIFY_API_KEY = ""
+CLOUDIFY_API_SECRET = ""
 MONGODB_URI = ""
-DB_COLLECTION_NAME = "versiones"
+DB_COLLECTION_NAME = "media"
 DB_NAME = "laWiki"
 PRETTY_LOGS = true
 DEBUG = true
