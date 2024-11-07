@@ -17,8 +17,15 @@ import (
 
 // main is the entry point for the comment service
 func main() {
+	// is the service run in docker?
+	var configPath string
+	if os.Getenv("DOCKER") == "true" {
+		configPath = "./config.toml"
+	} else {
+		configPath = "../config.toml"
+	}
 	config.New()
-	config.App.LoadEnv()
+	config.App.LoadConfig(configPath)
 	config.SetupLogger(config.App.PrettyLogs, config.App.Debug)
 	config.App.Logger = &log.Logger
 	xlog := config.App.Logger.With().Str("service", "comment").Logger()
@@ -26,7 +33,7 @@ func main() {
 	xlog.Info().Msg("Connecting to the database...")
 	database.Connect()
 
-	//router setup, no need to mount cause only 1 router
+	// router setup, no need to mount cause only 1 router
 	r := router.NewRouter()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -47,7 +54,7 @@ func main() {
 		cancel()
 	}()
 
-	//server starup
+	// server starup
 	httpServer := http.Server{
 		Addr:    config.App.Port,
 		Handler: r,
@@ -61,10 +68,10 @@ func main() {
 	}()
 	xlog.Info().Str("port", config.App.Port).Msg("HTTP Server started")
 
-	//wait for shutdown signal
+	// wait for shutdown signal
 	<-ctx.Done()
 
-	//shutdown logic
+	// shutdown logic
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer shutdownCancel()
 	if err := httpServer.Shutdown(shutdownCtx); err != nil {

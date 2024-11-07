@@ -14,6 +14,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+/*
+* GET /health
+* checks if the service is up
+ */
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
+}
+
 func PostComment(w http.ResponseWriter, r *http.Request) {
 	var comment model.Comment
 	decoder := json.NewDecoder(r.Body)
@@ -122,7 +131,6 @@ func GetCommentByID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func DeleteComment(w http.ResponseWriter, r *http.Request) {
