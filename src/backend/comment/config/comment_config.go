@@ -61,47 +61,47 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	missingVars := []string{}
 
 	// PORT with default value
-	if config.Entry.Port == 0 {
+	if config.Comment.Port == 0 {
 		cfg.Port = ":8002" // Default port
 		log.Warn().Msg("PORT not set in config file. Using default ':8002'.")
 	} else {
-		cfg.Port = fmt.Sprintf(":%d", config.Entry.Port)
+		cfg.Port = fmt.Sprintf(":%d", config.Comment.Port)
 	}
 
 	// PRETTY_LOGS with default value
-	if config.Entry.PrettyLogs != nil {
-		cfg.PrettyLogs = *config.Entry.PrettyLogs
+	if config.Comment.PrettyLogs != nil {
+		cfg.PrettyLogs = *config.Comment.PrettyLogs
 	} else {
 		cfg.PrettyLogs = true // Default to true
 		log.Warn().Msg("PRETTY_LOGS not set in config file. Using default 'true'.")
 	}
 
 	// DEBUG with default value
-	if config.Entry.Debug != nil {
-		cfg.Debug = *config.Entry.Debug
+	if config.Comment.Debug != nil {
+		cfg.Debug = *config.Comment.Debug
 	} else {
 		cfg.Debug = true // Default to true
 		log.Warn().Msg("DEBUG not set in config file. Using default 'true'.")
 	}
 
 	// DBNAME with default value
-	if config.Entry.DBName != "" {
-		cfg.DBName = config.Entry.DBName
+	if config.Comment.DBName != "" {
+		cfg.DBName = config.Comment.DBName
 	} else {
 		cfg.DBName = "laWiki" // Default to "laWiki"
 		log.Warn().Msg("DBNAME not set in config file. Using default 'laWiki'.")
 	}
 	// DBCOLLECTIONNAME with default value
-	if config.Entry.DBCollectionName != "" {
-		cfg.DBCollectionName = config.Entry.DBCollectionName
+	if config.Comment.DBCollectionName != "" {
+		cfg.DBCollectionName = config.Comment.DBCollectionName
 	} else {
 		cfg.DBCollectionName = "comentarios" // Default to "comentarios"
 		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'comentarios'.")
 	}
 
 	// MONGODB_URI is required
-	if config.Entry.MongoDBURI != "" {
-		cfg.MongoDBURI = config.Entry.MongoDBURI
+	if config.Comment.MongoDBURI != "" {
+		cfg.MongoDBURI = config.Comment.MongoDBURI
 	} else {
 		cfg.MongoDBURI = "mongodb://localhost:27017" // Default to locally hosted DB
 		log.Warn().Msg("DMONGODB_URI not set in config file. Using default 'mongodb://localhost:27017'.")

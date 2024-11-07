@@ -18,7 +18,7 @@ type GatewayConfig struct {
 	EntryServiceURL   string `toml:"ENTRY_SERVICE_URL"`
 	AuthServiceURL    string `toml:"AUTH_SERVICE_URL"`
 	VersionServiceURL string `toml:"VERSION_SERVICE_URL"`
-	CommentServiceURL string `toml:COMMENT_SERVICE_URL`
+	CommentServiceURL string `toml:"COMMENT_SERVICE_URL"`
 	PrettyLogs        *bool  `toml:"PRETTY_LOGS"`
 	Debug             *bool  `toml:"DEBUG"`
 }
