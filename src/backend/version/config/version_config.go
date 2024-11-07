@@ -11,8 +11,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// EntryConfig holds the configuration specific to the entry service
-type EntryConfig struct {
+// VersionConfig holds the configuration specific to the version service
+type VersionConfig struct {
 	Port             int    `toml:"PORT"`
 	MongoDBURI       string `toml:"MONGODB_URI"`
 	DBCollectionName string `toml:"DB_COLLECTION_NAME"`
@@ -23,8 +23,9 @@ type EntryConfig struct {
 
 // Config represents the structure of the config.toml file
 type Config struct {
-	Entry EntryConfig `toml:"entry"`
+	Version VersionConfig `toml:"version"`
 }
+
 type AppConfig struct {
 	Logger           *zerolog.Logger
 	Port             string
@@ -43,6 +44,7 @@ func New() {
 	App = AppConfig{}
 }
 
+// LoadConfig reads the configuration from config.toml and populates AppConfig
 func (cfg *AppConfig) LoadConfig(configPath string) {
 	var config Config
 	// Check if the config.toml file exists
@@ -61,47 +63,47 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	missingVars := []string{}
 
 	// PORT with default value
-	if config.Entry.Port == 0 {
-		cfg.Port = ":8002" // Default port
-		log.Warn().Msg("PORT not set in config file. Using default ':8002'.")
+	if config.Version.Port == 0 {
+		cfg.Port = ":8005" // Default port
+		log.Warn().Msg("PORT not set in config file. Using default ':8005'.")
 	} else {
-		cfg.Port = fmt.Sprintf(":%d", config.Entry.Port)
+		cfg.Port = fmt.Sprintf(":%d", config.Version.Port)
 	}
 
 	// PRETTY_LOGS with default value
-	if config.Entry.PrettyLogs != nil {
-		cfg.PrettyLogs = *config.Entry.PrettyLogs
+	if config.Version.PrettyLogs != nil {
+		cfg.PrettyLogs = *config.Version.PrettyLogs
 	} else {
 		cfg.PrettyLogs = true // Default to true
 		log.Warn().Msg("PRETTY_LOGS not set in config file. Using default 'true'.")
 	}
 
 	// DEBUG with default value
-	if config.Entry.Debug != nil {
-		cfg.Debug = *config.Entry.Debug
+	if config.Version.Debug != nil {
+		cfg.Debug = *config.Version.Debug
 	} else {
 		cfg.Debug = true // Default to true
 		log.Warn().Msg("DEBUG not set in config file. Using default 'true'.")
 	}
 
 	// DBNAME with default value
-	if config.Entry.DBName != "" {
-		cfg.DBName = config.Entry.DBName
+	if config.Version.DBName != "" {
+		cfg.DBName = config.Version.DBName
 	} else {
 		cfg.DBName = "laWiki" // Default to "laWiki"
 		log.Warn().Msg("DBNAME not set in config file. Using default 'laWiki'.")
 	}
 	// DBCOLLECTIONNAME with default value
-	if config.Entry.DBCollectionName != "" {
-		cfg.DBCollectionName = config.Entry.DBCollectionName
+	if config.Version.DBCollectionName != "" {
+		cfg.DBCollectionName = config.Version.DBCollectionName
 	} else {
 		cfg.DBCollectionName = "versiones" // Default to "wikis"
 		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'wiki'.")
 	}
 
 	// MONGODB_URI is required
-	if config.Entry.MongoDBURI != "" {
-		cfg.MongoDBURI = config.Entry.MongoDBURI
+	if config.Version.MongoDBURI != "" {
+		cfg.MongoDBURI = config.Version.MongoDBURI
 	} else {
 		cfg.MongoDBURI = "mongodb://localhost:27017" // Default to locally hosted DB
 		log.Warn().Msg("DMONGODB_URI not set in config file. Using default 'mongodb://localhost:27017'.")

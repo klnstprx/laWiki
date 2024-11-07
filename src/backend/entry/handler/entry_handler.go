@@ -14,6 +14,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+/*
+* GET /health
+* checks if the service is up
+ */
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
+}
+
 func PostEntry(w http.ResponseWriter, r *http.Request) {
 	var entry model.Entry
 	decoder := json.NewDecoder(r.Body)
@@ -92,8 +101,6 @@ func GetEntries(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Implement other CRUD operations (GetEntryByID, PutEntry, DeleteEntry) similarly
-
 func GetEntryByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
@@ -111,8 +118,8 @@ func GetEntryByID(w http.ResponseWriter, r *http.Request) {
 
 	err = database.EntryCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&entry)
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Wiki not found")
-		http.Error(w, "Wiki not found", http.StatusNotFound)
+		config.App.Logger.Error().Err(err).Msg("Entry not found")
+		http.Error(w, "Entry not found", http.StatusNotFound)
 		return
 	}
 
@@ -122,7 +129,6 @@ func GetEntryByID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func DeleteEntry(w http.ResponseWriter, r *http.Request) {
@@ -177,10 +183,10 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 
 	update := bson.M{
 		"$set": bson.M{
-			"title":     entry.Title,
-			"content":   entry.Content,
-			"authors":   entry.Authors,
-			"createdAt": entry.CreatedAt,
+			"title":       entry.Title,
+			"version_ids": entry.VersionIDs,
+			"authors":     entry.Authors,
+			"createdAt":   entry.CreatedAt,
 		},
 	}
 
@@ -199,7 +205,7 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 	// Retrieve the updated document (optional)
 	err = database.EntryCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&entry)
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to retrieve updated wiki")
+		config.App.Logger.Error().Err(err).Msg("Failed to retrieve updated entry")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}

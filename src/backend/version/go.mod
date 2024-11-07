@@ -1,6 +1,6 @@
-module github.com/laWiki/entry
+module github.com/laWiki/version
 
-go 1.23.2
+go 1.21.4
 
 require (
 	github.com/BurntSushi/toml v1.4.0
@@ -24,5 +24,3 @@ require (
 	golang.org/x/sys v0.23.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
 )
-
-replace github.com/jinzhu/gorm => gorm.io/gorm v1.21.12

@@ -4,14 +4,14 @@ import (
 	"context"
 	"time"
 
-	"github.com/laWiki/wiki/config"
+	"github.com/laWiki/version/config"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var (
-	Client         *mongo.Client
-	WikiCollection *mongo.Collection
+	Client            *mongo.Client
+	VersionCollection *mongo.Collection
 )
 
 func Connect() {
@@ -31,6 +31,6 @@ func Connect() {
 	}
 
 	Client = client
-	WikiCollection = client.Database(config.App.DBName).Collection(config.App.DBCollectionName)
+	VersionCollection = client.Database(config.App.DBName).Collection(config.App.DBCollectionName)
 	config.App.Logger.Info().Msg("Connected to mongoDB")
 }

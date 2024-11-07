@@ -9,13 +9,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/laWiki/entry/config"
-	"github.com/laWiki/entry/database"
-	"github.com/laWiki/entry/router"
+	"github.com/laWiki/auth/config"
+	"github.com/laWiki/auth/router"
+
 	"github.com/rs/zerolog/log"
 )
 
-// main is the entrypoint for the entry service
 func main() {
 	// is the service run in docker?
 	var configPath string
@@ -24,22 +23,22 @@ func main() {
 	} else {
 		configPath = "../config.toml"
 	}
+	// config setup
 	config.New()
 	config.App.LoadConfig(configPath)
 	config.SetupLogger(config.App.PrettyLogs, config.App.Debug)
 	config.App.Logger = &log.Logger
-	xlog := config.App.Logger.With().Str("service", "entry").Logger()
+	xlog := config.App.Logger.With().Str("service", "auth").Logger()
 
-	xlog.Info().Msg("Connecting to the database...")
-	database.Connect()
-
-	// router setup, no need to mount cause only 1 router
+	// router setup
 	r := router.NewRouter()
 
+	// context for graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	// graceful shutdown logic
+	// esto no es muy importante, pero es bueno tenerlo
 	signalCaught := false
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
@@ -54,28 +53,28 @@ func main() {
 		cancel()
 	}()
 
-	// server starup
+	// server starts here
+	// starts in a go routine so it doesn't block the main thread
 	httpServer := http.Server{
 		Addr:    config.App.Port,
 		Handler: r,
 	}
 
+	// lo arrancamos en un go routine para que no bloquee el main thread
 	go func() {
 		err := httpServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			xlog.Fatal().Err(err).Msg("Failed to start HTTP server")
 		}
 	}()
-	xlog.Info().Str("port", config.App.Port).Msg("HTTP Server started")
-
-	// wait for shutdown signal
+	xlog.Info().Str("Port", config.App.Port).Msg("HTTP server started")
+	// Block until context is canceled (waiting for the shutdown signal).
 	<-ctx.Done()
-
-	// shutdown logic
+	// Shutdown logic
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer shutdownCancel()
 	if err := httpServer.Shutdown(shutdownCtx); err != nil {
-		xlog.Fatal().Err(err).Msg("Failed to gracefully shutdown HTTP server")
+		xlog.Error().Err(err).Msg("HTTP server failed to shutdown")
 	}
-	xlog.Info().Msg("HTTP server shut down successfully")
+	xlog.Info().Msg("Server shut down successfully")
 }

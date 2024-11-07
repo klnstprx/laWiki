@@ -9,30 +9,34 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
 
-// EntryConfig holds the configuration specific to the entry service
-type EntryConfig struct {
-	Port             int    `toml:"PORT"`
-	MongoDBURI       string `toml:"MONGODB_URI"`
-	DBCollectionName string `toml:"DB_COLLECTION_NAME"`
-	DBName           string `toml:"DB_NAME"`
-	PrettyLogs       *bool  `toml:"PRETTY_LOGS"`
-	Debug            *bool  `toml:"DEBUG"`
+// AuthConfig holds the configuration specific to the auth service
+type AuthConfig struct {
+	Port                    int    `toml:"PORT"`
+	GoogleOAuthClientID     string `toml:"GOOGLE_OAUTH_CLIENT_ID"`
+	GoogleOAuthClientSecret string `toml:"GOOGLE_OAUTH_CLIENT_SECRET"`
+	GoogleOAuthRedirectURL  string `toml:"GOOGLE_OAUTH_REDIRECT_URL"`
+	JWTSecret               string `toml:"JWT_SECRET"`
+	PrettyLogs              *bool  `toml:"PRETTY_LOGS"`
+	Debug                   *bool  `toml:"DEBUG"`
 }
 
 // Config represents the structure of the config.toml file
 type Config struct {
-	Entry EntryConfig `toml:"entry"`
+	Auth AuthConfig `toml:"auth"`
 }
+
 type AppConfig struct {
-	Logger           *zerolog.Logger
-	Port             string
-	PrettyLogs       bool
-	Debug            bool
-	MongoDBURI       string
-	DBCollectionName string
-	DBName           string
+	Logger     *zerolog.Logger
+	Port       string
+	PrettyLogs bool
+	Debug      bool
+
+	GoogleOAuthConfig *oauth2.Config
+	JWTSecret         string
 }
 
 // App holds app configuration
@@ -43,8 +47,10 @@ func New() {
 	App = AppConfig{}
 }
 
+// LoadConfig reads the configuration from config.toml and populates AppConfig
 func (cfg *AppConfig) LoadConfig(configPath string) {
 	var config Config
+
 	// Check if the config.toml file exists
 	_, err := os.Stat(configPath)
 	if err != nil {
@@ -61,50 +67,41 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	missingVars := []string{}
 
 	// PORT with default value
-	if config.Entry.Port == 0 {
+	if config.Auth.Port == 0 {
 		cfg.Port = ":8002" // Default port
 		log.Warn().Msg("PORT not set in config file. Using default ':8002'.")
 	} else {
-		cfg.Port = fmt.Sprintf(":%d", config.Entry.Port)
+		cfg.Port = fmt.Sprintf(":%d", config.Auth.Port)
 	}
 
 	// PRETTY_LOGS with default value
-	if config.Entry.PrettyLogs != nil {
-		cfg.PrettyLogs = *config.Entry.PrettyLogs
+	if config.Auth.PrettyLogs != nil {
+		cfg.PrettyLogs = *config.Auth.PrettyLogs
 	} else {
 		cfg.PrettyLogs = true // Default to true
 		log.Warn().Msg("PRETTY_LOGS not set in config file. Using default 'true'.")
 	}
 
 	// DEBUG with default value
-	if config.Entry.Debug != nil {
-		cfg.Debug = *config.Entry.Debug
+	if config.Auth.Debug != nil {
+		cfg.Debug = *config.Auth.Debug
 	} else {
 		cfg.Debug = true // Default to true
 		log.Warn().Msg("DEBUG not set in config file. Using default 'true'.")
 	}
 
-	// DBNAME with default value
-	if config.Entry.DBName != "" {
-		cfg.DBName = config.Entry.DBName
-	} else {
-		cfg.DBName = "laWiki" // Default to "laWiki"
-		log.Warn().Msg("DBNAME not set in config file. Using default 'laWiki'.")
+	// Required variables
+	if config.Auth.GoogleOAuthClientID == "" {
+		missingVars = append(missingVars, "GOOGLE_OAUTH_CLIENT_ID")
 	}
-	// DBCOLLECTIONNAME with default value
-	if config.Entry.DBCollectionName != "" {
-		cfg.DBCollectionName = config.Entry.DBCollectionName
-	} else {
-		cfg.DBCollectionName = "versiones" // Default to "wikis"
-		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'wiki'.")
+	if config.Auth.GoogleOAuthClientSecret == "" {
+		missingVars = append(missingVars, "GOOGLE_OAUTH_CLIENT_SECRET")
 	}
-
-	// MONGODB_URI is required
-	if config.Entry.MongoDBURI != "" {
-		cfg.MongoDBURI = config.Entry.MongoDBURI
-	} else {
-		cfg.MongoDBURI = "mongodb://localhost:27017" // Default to locally hosted DB
-		log.Warn().Msg("DMONGODB_URI not set in config file. Using default 'mongodb://localhost:27017'.")
+	if config.Auth.GoogleOAuthRedirectURL == "" {
+		missingVars = append(missingVars, "GOOGLE_OAUTH_REDIRECT_URL")
+	}
+	if config.Auth.JWTSecret == "" {
+		missingVars = append(missingVars, "JWT_SECRET")
 	}
 
 	// If there are missing required variables, log them and exit
@@ -114,6 +111,18 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		}
 		os.Exit(1)
 	}
+
+	// OAuth2 Configuration
+	cfg.GoogleOAuthConfig = &oauth2.Config{
+		ClientID:     config.Auth.GoogleOAuthClientID,
+		ClientSecret: config.Auth.GoogleOAuthClientSecret,
+		RedirectURL:  config.Auth.GoogleOAuthRedirectURL,
+		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "openid", "profile"},
+		Endpoint:     google.Endpoint,
+	}
+
+	// JWT Secret
+	cfg.JWTSecret = config.Auth.JWTSecret
 }
 
 // Setups pretty logs and debug level

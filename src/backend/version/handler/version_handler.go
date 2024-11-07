@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/laWiki/wiki/config"
-	"github.com/laWiki/wiki/database"
-	"github.com/laWiki/wiki/model"
+	"github.com/laWiki/version/config"
+	"github.com/laWiki/version/database"
+	"github.com/laWiki/version/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -25,13 +25,13 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 
 /*
 * POST /
-* creates a new wiki
+* creates a new version
 * expects a json object in the request body
  */
-func PostWiki(w http.ResponseWriter, r *http.Request) {
-	var wiki model.Wiki
+func PostVersion(w http.ResponseWriter, r *http.Request) {
+	var version model.Version
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&wiki); err != nil {
+	if err := decoder.Decode(&version); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -40,7 +40,7 @@ func PostWiki(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	result, err := database.WikiCollection.InsertOne(ctx, wiki)
+	result, err := database.VersionCollection.InsertOne(ctx, version)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -54,30 +54,30 @@ func PostWiki(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-	wiki.ID = objID.Hex()
+	version.ID = objID.Hex()
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated) // Return 201 Created
-	if err := json.NewEncoder(w).Encode(wiki); err != nil {
+	if err := json.NewEncoder(w).Encode(version); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	config.App.Logger.Info().Interface("wiki", wiki).Msg("Added new wiki")
+	config.App.Logger.Info().Interface("version", version).Msg("Added new version")
 }
 
 /*
 * GET /
-* gets the list of all wiki json objects from db
+* gets the list of all Version json objects from db
  */
-func GetWikis(w http.ResponseWriter, r *http.Request) {
-	var wikis []model.Wiki
+func GetVersions(w http.ResponseWriter, r *http.Request) {
+	var versions []model.Version
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cursor, err := database.WikiCollection.Find(ctx, bson.M{})
+	cursor, err := database.VersionCollection.Find(ctx, bson.M{})
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -86,13 +86,13 @@ func GetWikis(w http.ResponseWriter, r *http.Request) {
 	defer cursor.Close(ctx)
 
 	for cursor.Next(ctx) {
-		var wiki model.Wiki
-		if err := cursor.Decode(&wiki); err != nil {
-			config.App.Logger.Error().Err(err).Msg("Failed to decode wiki")
+		var version model.Version
+		if err := cursor.Decode(&version); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode version")
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		wikis = append(wikis, wiki)
+		versions = append(versions, version)
 	}
 
 	if err := cursor.Err(); err != nil {
@@ -102,7 +102,7 @@ func GetWikis(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(wikis); err != nil {
+	if err := json.NewEncoder(w).Encode(versions); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
@@ -111,9 +111,10 @@ func GetWikis(w http.ResponseWriter, r *http.Request) {
 
 /*
 * GET /{id}
-* gets a wiki by id from db
+* gets a version by id from db
  */
-func GetWikiByID(w http.ResponseWriter, r *http.Request) {
+
+func GetVersionByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
@@ -123,20 +124,20 @@ func GetWikiByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var wiki model.Wiki
+	var version model.Version
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err = database.WikiCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&wiki)
+	err = database.VersionCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&version)
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Wiki not found")
-		http.Error(w, "Wiki not found", http.StatusNotFound)
+		config.App.Logger.Error().Err(err).Msg("Version not found")
+		http.Error(w, "Version not found", http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(wiki); err != nil {
+	if err := json.NewEncoder(w).Encode(version); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
@@ -145,10 +146,11 @@ func GetWikiByID(w http.ResponseWriter, r *http.Request) {
 
 /*
 * PUT /{id}
-* updates a wiki by id
+* updates a version by id
 * expects a json object in the request
  */
-func PutWiki(w http.ResponseWriter, r *http.Request) {
+
+func PutVersion(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
@@ -158,9 +160,9 @@ func PutWiki(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var wiki model.Wiki
+	var version model.Version
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&wiki); err != nil {
+	if err := decoder.Decode(&version); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -171,35 +173,34 @@ func PutWiki(w http.ResponseWriter, r *http.Request) {
 
 	update := bson.M{
 		"$set": bson.M{
-			"title":       wiki.Title,
-			"description": wiki.Description,
-			"category":    wiki.Category,
-			"url":         wiki.URL,
+			"content":  version.Content,
+			"author":   version.Author,
+			"nVersion": version.NVersion,
 		},
 	}
 
-	result, err := database.WikiCollection.UpdateOne(ctx, bson.M{"_id": objID}, update)
+	result, err := database.VersionCollection.UpdateOne(ctx, bson.M{"_id": objID}, update)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 	if result.MatchedCount == 0 {
-		config.App.Logger.Warn().Str("id", id).Msg("Wiki not found for update")
-		http.Error(w, "Wiki not found", http.StatusNotFound)
+		config.App.Logger.Warn().Str("id", id).Msg("Version not found for update")
+		http.Error(w, "Version not found", http.StatusNotFound)
 		return
 	}
 
 	// Retrieve the updated document (optional)
-	err = database.WikiCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&wiki)
+	err = database.VersionCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&version)
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to retrieve updated wiki")
+		config.App.Logger.Error().Err(err).Msg("Failed to retrieve updated version")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(wiki); err != nil {
+	if err := json.NewEncoder(w).Encode(version); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
@@ -208,9 +209,9 @@ func PutWiki(w http.ResponseWriter, r *http.Request) {
 
 /*
 * DELETE /{id}
-* deletes a wiki
+* deletes a Version
  */
-func DeleteWiki(w http.ResponseWriter, r *http.Request) {
+func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
@@ -223,17 +224,60 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	result, err := database.WikiCollection.DeleteOne(ctx, bson.M{"_id": objID})
+	result, err := database.VersionCollection.DeleteOne(ctx, bson.M{"_id": objID})
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 	if result.DeletedCount == 0 {
-		config.App.Logger.Warn().Str("id", id).Msg("Wiki not found for deletion")
-		http.Error(w, "Wiki not found", http.StatusNotFound)
+		config.App.Logger.Warn().Str("id", id).Msg("Version not found for deletion")
+		http.Error(w, "Version not found", http.StatusNotFound)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent) // 204 No Content
+}
+
+/*
+* GET /
+* gets the list of all Version json objects that correspond to an Entry from db
+ */
+func GetVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
+	var versions []model.Version
+	entryID := chi.URLParam(r, "id")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := database.VersionCollection.Find(ctx, bson.M{"entry_id": entryID})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var version model.Version
+		if err := cursor.Decode(&version); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode version")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		versions = append(versions, version)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(versions); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 }

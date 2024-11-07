@@ -4,8 +4,8 @@
 
 1. Tener docker instalado.
 2. Abrir docker (para ejecutar la mv de docker).
-3. Crear un archivo llamado ".env.docker".
-4. Rellenar variables de entorno necesarias (Mirar .env.docker.default).
+3. Copiar el contenido `default_config.docker.toml` y pegarlo en un archivo llamado `config.docker.toml`.
+4. Rellenar `config.docker.toml` con los datos necesarios. Por ejemplo: MONGODB_URI="mongodb+srv://username:password@cluster0.rfz8f.mongodb.net/".
 5. `docker-compose build`
 6. `docker-compose up`
 
@@ -15,5 +15,8 @@
 
 1. Tener go instalado.
 2. Abrir el directorio de microservicio (Por ejemplo: `cd ./gateway`).
-3. Crear ".env" y rellenar (Mirar .env.default).
-4. `go run main.go`
+3. Copiar el contenido `default_config.toml` y pegarlo en un archivo llamado `config.toml`.
+4. Rellenar `config.toml` con los datos necesarios. Por ejemplo: MONGODB_URI="mongodb+srv://username:password@cluster0.rfz8f.mongodb.net/".
+5. `go run main.go`
+
+**La diferencia entre config.toml y config.docker.toml es que en uno llamamos el host de cada microservio por "localhost" y en el otro por el nombre del servicio en docker-compose.**
