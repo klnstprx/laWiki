@@ -188,6 +188,7 @@ func PutComment(w http.ResponseWriter, r *http.Request) {
 			"content":   comment.Content,
 			"rating":    comment.Rating,
 			"createdAt": comment.CreatedAt,
+			"author":    comment.Author,
 		},
 	}
 
