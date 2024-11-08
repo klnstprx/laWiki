@@ -236,3 +236,123 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent) // 204 No Content
 }
+
+func GetWikisByTitle(w http.ResponseWriter, r *http.Request) {
+	title := chi.URLParam(r, "title")
+
+	var wikis []model.Wiki
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := database.WikiCollection.Find(ctx, bson.M{"title": title})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var wiki model.Wiki
+		if err := cursor.Decode(&wiki); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode wiki")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		wikis = append(wikis, wiki)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(wikis); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetWikisByDescription(w http.ResponseWriter, r *http.Request) {
+	description := chi.URLParam(r, "description")
+
+	var wikis []model.Wiki
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := database.WikiCollection.Find(ctx, bson.M{"description": description})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var wiki model.Wiki
+		if err := cursor.Decode(&wiki); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode wiki")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		wikis = append(wikis, wiki)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(wikis); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetWikisByCategory(w http.ResponseWriter, r *http.Request) {
+	category := chi.URLParam(r, "category")
+
+	var wikis []model.Wiki
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := database.WikiCollection.Find(ctx, bson.M{"category": category})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var wiki model.Wiki
+		if err := cursor.Decode(&wiki); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode wiki")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		wikis = append(wikis, wiki)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(wikis); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}

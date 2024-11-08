@@ -219,3 +219,106 @@ func PutComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func GetCommentByContent(w http.ResponseWriter, r *http.Request) {
+	content := chi.URLParam(r, "content")
+
+	var comment model.Comment
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := database.CommentCollection.FindOne(ctx, bson.M{"content": content}).Decode(&comment)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Comment not found")
+		http.Error(w, "Comment not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(comment); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
+	rating := chi.URLParam(r, "rating")
+
+	var comments []model.Comment
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := database.CommentCollection.Find(ctx, bson.M{"rating": rating})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var comment model.Comment
+		if err := cursor.Decode(&comment); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode comment")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		comments = append(comments, comment)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(comments); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetCommentByDate(w http.ResponseWriter, r *http.Request) {
+	createdAt := chi.URLParam(r, "createdAt")
+
+	var comments []model.Comment
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := database.CommentCollection.Find(ctx, bson.M{"createdAt": createdAt})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var comment model.Comment
+		if err := cursor.Decode(&comment); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode comment")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		comments = append(comments, comment)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(comments); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}

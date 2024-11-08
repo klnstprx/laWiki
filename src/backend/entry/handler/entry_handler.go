@@ -218,7 +218,7 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetEntryByTitle(w http.ResponseWriter, r *http.Request) {
+func GetEntriesByTitle(w http.ResponseWriter, r *http.Request) {
 	title := chi.URLParam(r, "title")
 
 	var entry model.Entry
@@ -235,6 +235,86 @@ func GetEntryByTitle(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(entry); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetEntriesByAuthors(w http.ResponseWriter, r *http.Request) {
+	authors := r.URL.Query()["authors"]
+
+	var entries []model.Entry
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := database.EntryCollection.Find(ctx, bson.M{"authors": authors})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var entry model.Entry
+		if err := cursor.Decode(&entry); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode entry")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		entries = append(entries, entry)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(entries); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetEntriesByDate(w http.ResponseWriter, r *http.Request) {
+	createdAt := r.URL.Query().Get("createdAt")
+
+	var entries []model.Entry
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := database.EntryCollection.Find(ctx, bson.M{"createdAt": createdAt})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var entry model.Entry
+		if err := cursor.Decode(&entry); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode entry")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		entries = append(entries, entry)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(entries); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
