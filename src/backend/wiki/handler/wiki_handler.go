@@ -174,7 +174,6 @@ func PutWiki(w http.ResponseWriter, r *http.Request) {
 			"title":       wiki.Title,
 			"description": wiki.Description,
 			"category":    wiki.Category,
-			"url":         wiki.URL,
 		},
 	}
 
