@@ -4,3 +4,6 @@
 .env.docker
 config.toml
 config.docker.toml
+*.log
+*-service
+api-gateway
