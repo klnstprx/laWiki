@@ -7,18 +7,22 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 // MediaConfig holds the configuration specific to the Media service
 type MediaConfig struct {
-	Port             int    `toml:"PORT"`
-	MongoDBURI       string `toml:"MONGODB_URI"`
-	DBCollectionName string `toml:"DB_COLLECTION_NAME"`
-	DBName           string `toml:"DB_NAME"`
-	PrettyLogs       *bool  `toml:"PRETTY_LOGS"`
-	Debug            *bool  `toml:"DEBUG"`
+	Port                int    `toml:"PORT"`
+	CLOUDIFY_CLOUD_NAME string `toml:"CLOUDIFY_CLOUD_NAME"`
+	CLOUDIFY_API_KEY    string `toml:"CLOUDIFY_API_KEY"`
+	CLOUDIFY_API_SECRET string `toml:"CLOUDIFY_API_SECRET"`
+	MongoDBURI          string `toml:"MONGODB_URI"`
+	DBCollectionName    string `toml:"DB_COLLECTION_NAME"`
+	DBName              string `toml:"DB_NAME"`
+	PrettyLogs          *bool  `toml:"PRETTY_LOGS"`
+	Debug               *bool  `toml:"DEBUG"`
 }
 
 // Config represents the structure of the config.toml file
@@ -27,6 +31,7 @@ type Config struct {
 }
 type AppConfig struct {
 	Logger           *zerolog.Logger
+	Cld              *cloudinary.Cloudinary
 	Port             string
 	PrettyLogs       bool
 	Debug            bool
@@ -105,6 +110,32 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	} else {
 		cfg.MongoDBURI = "mongodb://localhost:27017" // Default to locally hosted DB
 		log.Warn().Msg("DMONGODB_URI not set in config file. Using default 'mongodb://localhost:27017'.")
+	}
+
+	// Initialize Cloudinary
+	if config.Media.CLOUDIFY_CLOUD_NAME != "" && config.Media.CLOUDIFY_API_KEY != "" && config.Media.CLOUDIFY_API_SECRET != "" {
+		var err error
+		cfg.Cld, err = cloudinary.NewFromParams(config.Media.CLOUDIFY_CLOUD_NAME, config.Media.CLOUDIFY_API_KEY, config.Media.CLOUDIFY_API_SECRET)
+		if err != nil {
+			log.Error().Msgf("Failed to initialize Cloudinary: %v", err)
+		}
+	} else {
+
+		// CLOUDIFY_CLOUD_NAME is required
+		if config.Media.CLOUDIFY_CLOUD_NAME == "" {
+			missingVars = append(missingVars, "CLOUDIFY_CLOUD_NAME")
+			log.Warn().Msg("CLOUDIFY_CLOUD_NAME not set in config file.")
+		}
+		// CLOUDIFY_API_KEY is required
+		if config.Media.CLOUDIFY_API_KEY == "" {
+			missingVars = append(missingVars, "CLOUDIFY_API_KEY")
+			log.Warn().Msg("CLOUDIFY_API_KEY not set in config file.")
+		}
+		// CLOUDIFY_API_SECRET is required
+		if config.Media.CLOUDIFY_API_SECRET == "" {
+			missingVars = append(missingVars, "CLOUDIFY_API_SECRET")
+			log.Warn().Msg("CLOUDIFY_API_SECRET not set in config file.")
+		}
 	}
 
 	// If there are missing required variables, log them and exit

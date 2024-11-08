@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/admin"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/go-chi/chi"
@@ -28,17 +27,9 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }
 
-var cld *cloudinary.Cloudinary
+var cld = config.App.Cld
 
 //IMPORTANTE, HAY QUE CAMBIAR EL NOMBRE DE LA NUBE, LA CLAVE DE LA API Y EL SECRETO DE API.
-
-func init() {
-	var err error
-	cld, err = cloudinary.NewFromParams("<your-cloud-name>", "<your-api-key>", "<your-api-secret>")
-	if err != nil {
-		log.Fatalf("Failed to initialize Cloudinary: %v", err)
-	}
-}
 
 //IMPORTANTE, HAY QUE CAMBIAR EL NOMBRE DE LA IMAGEN QUE SE SUBE A CLOUDINARY.
 
