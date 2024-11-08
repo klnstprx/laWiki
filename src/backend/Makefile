@@ -60,10 +60,11 @@ run-all: run-wiki-service run-entry-service run-comment-service run-version-serv
 
 clean:
 	@echo "Stopping services..."
-	-@cd wiki && kill `cat wiki-service.pid` && rm wiki-service.pid || true
-	-@cd entry && kill `cat entry-service.pid` && rm entry-service.pid || true
-	-@cd comment && kill `cat comment-service.pid` && rm comment-service.pid || true
-	-@cd version && kill `cat version-service.pid` && rm version-service.pid || true
-	-@cd media && kill `cat media-service.pid` && rm media-service.pid || true
-	-@cd auth && kill `cat auth-service.pid` && rm auth-service.pid || true
-	-@cd gateway && kill `cat api-gateway.pid` && rm api-gateway.pid || true
+	-@cd wiki && test -e wiki-service.pid && kill `cat wiki-service.pid` 2>/dev/null && rm wiki-service.pid || true
+	-@cd entry && test -e entry-service.pid && kill `cat entry-service.pid` 2>/dev/null && rm entry-service.pid || true
+	-@cd comment && test -e comment-service.pid && kill `cat comment-service.pid` 2>/dev/null && rm comment-service.pid || true
+	-@cd version && test -e version-service.pid && kill `cat version-service.pid` 2>/dev/null && rm version-service.pid || true
+	-@cd media && test -e media-service.pid && kill `cat media-service.pid` 2>/dev/null && rm media-service.pid || true
+	-@cd auth && test -e auth-service.pid && kill `cat auth-service.pid` 2>/dev/null && rm auth-service.pid || true
+	-@cd gateway && test -e api-gateway.pid && kill `cat api-gateway.pid` 2>/dev/null && rm api-gateway.pid || true
+
