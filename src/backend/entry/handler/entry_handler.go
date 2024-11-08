@@ -215,4 +215,28 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+
+}
+
+func GetEntryByTitle(w http.ResponseWriter, r *http.Request) {
+	title := chi.URLParam(r, "title")
+
+	var entry model.Entry
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := database.EntryCollection.FindOne(ctx, bson.M{"title": title}).Decode(&entry)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Entry not found")
+		http.Error(w, "Entry not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(entry); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 }
