@@ -19,6 +19,7 @@ type GatewayConfig struct {
 	AuthServiceURL    string `toml:"AUTH_SERVICE_URL"`
 	VersionServiceURL string `toml:"VERSION_SERVICE_URL"`
 	CommentServiceURL string `toml:"COMMENT_SERVICE_URL"`
+	MediaServiceURL   string `toml:"MEDIA_SERVICE_URL"`
 	PrettyLogs        *bool  `toml:"PRETTY_LOGS"`
 	Debug             *bool  `toml:"DEBUG"`
 }
@@ -38,6 +39,7 @@ type AppConfig struct {
 	AuthServiceURL    string
 	VersionServiceURL string
 	CommentServiceURL string
+	MediaServiceURL   string
 }
 
 // App holds app configuration
@@ -123,6 +125,13 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		missingVars = append(missingVars, "COMMENT_SERVICE_URL")
 	} else {
 		cfg.CommentServiceURL = config.Gateway.CommentServiceURL
+	}
+
+	// MEDIA_SERVICE_URL is required
+	if config.Gateway.MediaServiceURL == "" {
+		missingVars = append(missingVars, "MEDIA_SERVICE_URL")
+	} else {
+		cfg.MediaServiceURL = config.Gateway.MediaServiceURL
 	}
 
 	// If there are missing required variables, log them and exit

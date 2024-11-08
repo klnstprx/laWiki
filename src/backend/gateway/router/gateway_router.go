@@ -39,6 +39,9 @@ func NewRouter() http.Handler {
 
 		// Version Service Routes
 		r.Mount("/versions", proxyHandler(config.App.VersionServiceURL, "/api/versions"))
+
+		// Media Service Routes
+		r.Mount("/media", proxyHandler(config.App.MediaServiceURL, "/api/media"))
 	})
 
 	return r
