@@ -183,10 +183,9 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 
 	update := bson.M{
 		"$set": bson.M{
-			"title":       entry.Title,
-			"version_ids": entry.VersionIDs,
-			"authors":     entry.Authors,
-			"createdAt":   entry.CreatedAt,
+			"title":     entry.Title,
+			"authors":   entry.Authors,
+			"createdAt": entry.CreatedAt,
 		},
 	}
 

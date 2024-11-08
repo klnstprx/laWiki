@@ -173,9 +173,9 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 
 	update := bson.M{
 		"$set": bson.M{
-			"content":  version.Content,
-			"editor":   version.Editor,
-			"nVersion": version.NVersion,
+			"content":   version.Content,
+			"editor":    version.Editor,
+			"createdAt": version.CreatedAt,
 		},
 	}
 
