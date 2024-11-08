@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"time"
 
@@ -29,23 +30,40 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 
 var cld = config.App.Cld
 
+func getImageFile(r *http.Request) (multipart.File, error) {
+	err := r.ParseMultipartForm(config.App.MB_LIMIT << 20) // 5 MB
+	if err != nil {
+		log.Println("Error parsing form data:", err)
+		return nil, err
+	}
+
+	file, _, err := r.FormFile("image")
+	if err != nil {
+		log.Println("Error retrieving image from form data:", err)
+		return nil, err
+	}
+	return file, nil
+}
+
 func PostMedia(w http.ResponseWriter, r *http.Request) {
 	var media model.Media
 
-	// Decode the request body into the media object
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&media); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+	// Get the image from the form data
+	//
+	file, err := getImageFile(r)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to get image file")
+		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
+	defer file.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// Upload the image and set the PublicID to "my_image"
 	//
-	uploadResp, err := cld.Upload.Upload(ctx, "my_picture.jpg", uploader.UploadParams{PublicID: "my_image"})
+	uploadResp, err := cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: "my_image"})
 	if err != nil {
 		log.Println("Error uploading image:", err)
 		return
@@ -214,13 +232,15 @@ func PutMedia(w http.ResponseWriter, r *http.Request) {
 
 	var media model.Media
 
-	// Decode the request body into the media object
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&media); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+	// Get the image from the form data
+	//
+	file, err := getImageFile(r)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to get image file")
+		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
+	defer file.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

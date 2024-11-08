@@ -23,6 +23,7 @@ type MediaConfig struct {
 	DBName              string `toml:"DB_NAME"`
 	PrettyLogs          *bool  `toml:"PRETTY_LOGS"`
 	Debug               *bool  `toml:"DEBUG"`
+	MB_LIMIT            int64  `toml:"MB_LIMIT"`
 }
 
 // Config represents the structure of the config.toml file
@@ -38,6 +39,7 @@ type AppConfig struct {
 	MongoDBURI       string
 	DBCollectionName string
 	DBName           string
+	MB_LIMIT         int64
 }
 
 // App holds app configuration
@@ -136,6 +138,13 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 			missingVars = append(missingVars, "CLOUDIFY_API_SECRET")
 			log.Warn().Msg("CLOUDIFY_API_SECRET not set in config file.")
 		}
+	}
+
+	if config.Media.MB_LIMIT == 0 {
+		cfg.MB_LIMIT = 5 // Default to 5 MB
+		log.Warn().Msg("MB_LIMIT not set in config file. Using default '5'.")
+	} else {
+		cfg.MB_LIMIT = config.Media.MB_LIMIT
 	}
 
 	// If there are missing required variables, log them and exit
