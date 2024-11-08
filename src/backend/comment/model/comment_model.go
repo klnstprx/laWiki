@@ -7,4 +7,5 @@ type Comment struct {
 	Content   string    `json:"content" bson:"content"`
 	Rating    int       `json:"rating" bson:"rating"`
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
+	Author    string    `json:"author" bson:"author"`
 }
