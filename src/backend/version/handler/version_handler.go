@@ -281,3 +281,120 @@ func GetVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func GetVersionsByContent(w http.ResponseWriter, r *http.Request) {
+	var versions []model.Version
+	content := chi.URLParam(r, "content")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := database.VersionCollection.Find(ctx, bson.M{"content": content})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var version model.Version
+		if err := cursor.Decode(&version); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode version")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		versions = append(versions, version)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(versions); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetVersionsByEditor(w http.ResponseWriter, r *http.Request) {
+	var versions []model.Version
+	editor := chi.URLParam(r, "editor")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := database.VersionCollection.Find(ctx, bson.M{"editor": editor})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var version model.Version
+		if err := cursor.Decode(&version); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode version")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		versions = append(versions, version)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(versions); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetVersionsByDate(w http.ResponseWriter, r *http.Request) {
+	var versions []model.Version
+	createdAt := chi.URLParam(r, "createdAt")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := database.VersionCollection.Find(ctx, bson.M{"createdAt": createdAt})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var version model.Version
+		if err := cursor.Decode(&version); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode version")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		versions = append(versions, version)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(versions); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
