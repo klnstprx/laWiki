@@ -29,10 +29,6 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 
 var cld = config.App.Cld
 
-//IMPORTANTE, HAY QUE CAMBIAR EL NOMBRE DE LA NUBE, LA CLAVE DE LA API Y EL SECRETO DE API.
-
-//IMPORTANTE, HAY QUE CAMBIAR EL NOMBRE DE LA IMAGEN QUE SE SUBE A CLOUDINARY.
-
 func PostMedia(w http.ResponseWriter, r *http.Request) {
 	var media model.Media
 
@@ -48,6 +44,7 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	// Upload the image and set the PublicID to "my_image"
+	//
 	uploadResp, err := cld.Upload.Upload(ctx, "my_picture.jpg", uploader.UploadParams{PublicID: "my_image"})
 	if err != nil {
 		log.Println("Error uploading image:", err)
@@ -63,7 +60,7 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 	}
 	media.AssetUrl = assetResp.SecureURL
 
-	//Update the media object in the database
+	// Update the media object in the database
 
 	result, err := database.MediaCollection.InsertOne(ctx, media)
 	if err != nil {
@@ -195,14 +192,14 @@ func DeleteMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
-
 	// Delete the image from Cloudinary
 	_, err = cld.Upload.Destroy(ctx, uploader.DestroyParams{PublicID: id})
 	if err != nil {
-		log.Println("Error deleting image:", err)
+		config.App.Logger.Error().Err(err).Msg("Error deleting image:")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func PutMedia(w http.ResponseWriter, r *http.Request) {
@@ -240,7 +237,8 @@ func PutMedia(w http.ResponseWriter, r *http.Request) {
 	// Update the image in Cloudinary
 	_, err = cld.Upload.Upload(ctx, "my_picture.jpg", uploader.UploadParams{PublicID: id})
 	if err != nil {
-		log.Println("Error updating image:", err)
+		config.App.Logger.Error().Err(err).Msg("Cloudinary error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 }
