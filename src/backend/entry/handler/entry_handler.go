@@ -280,7 +280,15 @@ func GetEntriesByAuthors(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetEntriesByDate(w http.ResponseWriter, r *http.Request) {
-	createdAt := r.URL.Query().Get("createdAt")
+	createdAtString := r.URL.Query().Get("createdAt")
+
+	//cast createdAt to time
+	createdAt, err := time.Parse(time.RFC3339, createdAtString)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Invalid date format")
+		http.Error(w, "Invalid date format", http.StatusBadRequest)
+		return
+	}
 
 	var entries []model.Entry
 

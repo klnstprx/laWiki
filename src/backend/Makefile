@@ -56,7 +56,7 @@ run-auth-service:
 		echo $$! > auth-service.pid \
 	)
 
-run-all: run-wiki-service run-entry-service run-comment-service run-version-service run-media-service run-api-gateway
+run-all: clean run-wiki-service run-entry-service run-comment-service run-version-service run-media-service run-api-gateway
 
 clean:
 	@echo "Stopping services..."
