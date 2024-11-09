@@ -15,6 +15,9 @@ func NewRouter() http.Handler {
 		r.Get("/", handler.GetVersions)
 		r.Post("/", handler.PostVersion)
 		r.Get("/entry/", handler.GetVersionsByEntryID)
+		r.Get("/content/", handler.GetVersionsByContent)
+		r.Get("/editor/", handler.GetVersionsByEditor)
+		r.Get("/date/", handler.GetVersionsByDate)
 
 		r.Route("/id", func(r chi.Router) {
 			r.Get("/", handler.GetVersionByID)

@@ -14,6 +14,9 @@ func NewRouter() http.Handler {
 		r.Get("/health", handler.HealthCheck)
 		r.Get("/", handler.GetWikis)
 		r.Post("/", handler.PostWiki)
+		r.Get("/title", handler.GetWikisByTitle)
+		r.Get("/description", handler.GetWikisByDescription)
+		r.Get("/category", handler.GetWikisByCategory)
 
 		r.Route("/id", func(r chi.Router) {
 			r.Get("/", handler.GetWikiByID)

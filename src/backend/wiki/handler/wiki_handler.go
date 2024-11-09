@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/laWiki/wiki/config"
 	"github.com/laWiki/wiki/database"
 	"github.com/laWiki/wiki/model"
@@ -238,7 +237,7 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetWikisByTitle(w http.ResponseWriter, r *http.Request) {
-	title := chi.URLParam(r, "title")
+	title := r.URL.Query().Get("title")
 
 	var wikis []model.Wiki
 
@@ -278,7 +277,7 @@ func GetWikisByTitle(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetWikisByDescription(w http.ResponseWriter, r *http.Request) {
-	description := chi.URLParam(r, "description")
+	description := r.URL.Query().Get("description")
 
 	var wikis []model.Wiki
 
@@ -318,7 +317,7 @@ func GetWikisByDescription(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetWikisByCategory(w http.ResponseWriter, r *http.Request) {
-	category := chi.URLParam(r, "category")
+	category := r.URL.Query().Get("category")
 
 	var wikis []model.Wiki
 
