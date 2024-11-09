@@ -240,7 +240,7 @@ func GetEntriesByTitle(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetEntriesByAuthors(w http.ResponseWriter, r *http.Request) {
-	authors := r.URL.Query()["authors"]
+	authors := r.URL.Query()["author"]
 
 	var entries []model.Entry
 
