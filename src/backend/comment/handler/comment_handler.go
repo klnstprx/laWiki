@@ -295,20 +295,32 @@ func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
 func GetCommentByDate(w http.ResponseWriter, r *http.Request) {
 	createdAtString := r.URL.Query().Get("createdAt")
 
-	//cast createdAt to time
-	createdAt, err := time.Parse(time.RFC3339, createdAtString)
+	// Parse the date (expected format: YYYY-MM-DD)
+	createdAt, err := time.Parse("2006-01-02", createdAtString)
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid date format")
-		http.Error(w, "Invalid date format", http.StatusBadRequest)
+		config.App.Logger.Error().Err(err).Msg("Invalid date format. Expected YYYY-MM-DD")
+		http.Error(w, "Invalid date format. Expected YYYY-MM-DD", http.StatusBadRequest)
 		return
 	}
+
+	// Define the start and end of the day
+	startOfDay := createdAt
+	endOfDay := createdAt.AddDate(0, 0, 1)
 
 	var comments []model.Comment
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cursor, err := database.CommentCollection.Find(ctx, bson.M{"createdAt": createdAt})
+	// Build the query to find comments within the date range
+	filter := bson.M{
+		"created_at": bson.M{
+			"$gte": startOfDay,
+			"$lt":  endOfDay,
+		},
+	}
+
+	cursor, err := database.CommentCollection.Find(ctx, filter)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
