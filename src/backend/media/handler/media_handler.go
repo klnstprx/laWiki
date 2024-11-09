@@ -6,6 +6,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/cloudinary/cloudinary-go/v2/api"
@@ -25,24 +26,24 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }
 
-func getImageFile(r *http.Request) (multipart.File, error) {
+func getImageFile(r *http.Request) (multipart.File, *multipart.FileHeader, error) {
 	err := r.ParseMultipartForm(config.App.MB_LIMIT << 20) // 5 MB
 	if err != nil {
 		log.Println("Error parsing form data:", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	file, _, err := r.FormFile("image")
+	file, header, err := r.FormFile("image")
 	if err != nil {
 		log.Println("Error retrieving image from form data:", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	if file == nil {
 		log.Println("No image found in form data")
-		return nil, err
+		return nil, nil, err
 	}
-	return file, nil
+	return file, header, nil
 }
 
 func PostMedia(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +57,7 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 
 	// Get the image from the form data
 	//
-	file, err := getImageFile(r)
+	file, header, err := getImageFile(r)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to get image file")
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -64,12 +65,16 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
+	//get the file name
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Upload the image and set the PublicID to "my_image"
+	media.PublicID = strings.Split(header.Filename, ".")[0]
+
+	// Upload the image and set the PublicID to header.Filename
 	//
-	uploadResp, err := config.App.Cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: "my_image"})
+	uploadResp, err := config.App.Cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: media.PublicID})
 	if err != nil {
 		log.Println("Error uploading image:", err)
 		return
@@ -104,7 +109,7 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 	config.App.Logger.Info().Interface("media", media).Msg("Added new media")
 
 	// // Create a transformation for the image
-	// myImage, err := config.App.Cld.Image("my_image")
+	// myImage, err := config.App.Cld.Image(header.Filename)
 	// if err != nil {
 	// 	log.Println("Error creating image object:", err)
 	// 	return
@@ -209,8 +214,17 @@ func DeleteMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//get the file name
+	var media model.Media
+	err = database.MediaCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&media)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to find media")
+		http.Error(w, "Media not found", http.StatusNotFound)
+		return
+	}
+
 	// Delete the image from Cloudinary
-	_, err = config.App.Cld.Upload.Destroy(ctx, uploader.DestroyParams{PublicID: id})
+	_, err = config.App.Cld.Upload.Destroy(ctx, uploader.DestroyParams{PublicID: media.PublicID})
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Error deleting image:")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -233,7 +247,7 @@ func PutMedia(w http.ResponseWriter, r *http.Request) {
 
 	// Get the image from the form data
 	//
-	file, err := getImageFile(r)
+	file, header, err := getImageFile(r)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to get image file")
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -244,8 +258,10 @@ func PutMedia(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	media.PublicID = strings.Split(header.Filename, ".")[0]
+
 	// Update the image in Cloudinary
-	uploadResp, err := config.App.Cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: id, Overwrite: api.Bool(true)})
+	uploadResp, err := config.App.Cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: media.PublicID, Overwrite: api.Bool(true)})
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Cloudinary error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)

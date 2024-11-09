@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/laWiki/comment/config"
@@ -243,7 +244,16 @@ func GetCommentByContent(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
-	rating := r.URL.Query().Get("rating")
+	ratingString := r.URL.Query().Get("rating")
+
+	//cast rating to int
+	rating, err := strconv.Atoi(ratingString)
+
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Invalid rating format")
+		http.Error(w, "Invalid rating format", http.StatusBadRequest)
+		return
+	}
 
 	var comments []model.Comment
 
@@ -283,7 +293,15 @@ func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetCommentByDate(w http.ResponseWriter, r *http.Request) {
-	createdAt := r.URL.Query().Get("createdAt")
+	createdAtString := r.URL.Query().Get("createdAt")
+
+	//cast createdAt to time
+	createdAt, err := time.Parse(time.RFC3339, createdAtString)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Invalid date format")
+		http.Error(w, "Invalid date format", http.StatusBadRequest)
+		return
+	}
 
 	var comments []model.Comment
 
