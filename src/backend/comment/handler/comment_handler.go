@@ -185,10 +185,10 @@ func PutComment(w http.ResponseWriter, r *http.Request) {
 
 	update := bson.M{
 		"$set": bson.M{
-			"content":   comment.Content,
-			"rating":    comment.Rating,
-			"createdAt": comment.CreatedAt,
-			"author":    comment.Author,
+			"content":    comment.Content,
+			"rating":     comment.Rating,
+			"created_at": comment.CreatedAt,
+			"author":     comment.Author,
 		},
 	}
 
@@ -246,9 +246,8 @@ func GetCommentByContent(w http.ResponseWriter, r *http.Request) {
 func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
 	ratingString := r.URL.Query().Get("rating")
 
-	//cast rating to int
+	// cast rating to int
 	rating, err := strconv.Atoi(ratingString)
-
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Invalid rating format")
 		http.Error(w, "Invalid rating format", http.StatusBadRequest)

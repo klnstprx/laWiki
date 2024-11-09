@@ -172,9 +172,9 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 
 	update := bson.M{
 		"$set": bson.M{
-			"content":   version.Content,
-			"editor":    version.Editor,
-			"createdAt": version.CreatedAt,
+			"content":    version.Content,
+			"editor":     version.Editor,
+			"created_at": version.CreatedAt,
 		},
 	}
 
@@ -366,7 +366,7 @@ func GetVersionsByDate(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cursor, err := database.VersionCollection.Find(ctx, bson.M{"createdAt": createdAt})
+	cursor, err := database.VersionCollection.Find(ctx, bson.M{"created_at": createdAt})
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
