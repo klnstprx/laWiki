@@ -1,7 +1,5 @@
 package handler
 
-// Import the required packages for upload and admin.
-
 import (
 	"context"
 	"encoding/json"
