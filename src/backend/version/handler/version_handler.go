@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/laWiki/version/config"
 	"github.com/laWiki/version/database"
 	"github.com/laWiki/version/model"
@@ -245,7 +244,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
  */
 func GetVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 	var versions []model.Version
-	entryID := chi.URLParam(r, "id")
+	entryID := r.URL.Query().Get("entryId")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -284,7 +283,7 @@ func GetVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 
 func GetVersionsByContent(w http.ResponseWriter, r *http.Request) {
 	var versions []model.Version
-	content := chi.URLParam(r, "content")
+	content := r.URL.Query().Get("content")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -323,7 +322,7 @@ func GetVersionsByContent(w http.ResponseWriter, r *http.Request) {
 
 func GetVersionsByEditor(w http.ResponseWriter, r *http.Request) {
 	var versions []model.Version
-	editor := chi.URLParam(r, "editor")
+	editor := r.URL.Query().Get("editor")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -362,7 +361,7 @@ func GetVersionsByEditor(w http.ResponseWriter, r *http.Request) {
 
 func GetVersionsByDate(w http.ResponseWriter, r *http.Request) {
 	var versions []model.Version
-	createdAt := chi.URLParam(r, "createdAt")
+	createdAt := r.URL.Query().Get("createdAt")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
