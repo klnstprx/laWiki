@@ -1,7 +1,5 @@
 package handler
 
-// Import the required packages for upload and admin.
-
 import (
 	"context"
 	"encoding/json"
@@ -28,9 +26,8 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }
 
-var cld = config.App.Cld
-
 func getImageFile(r *http.Request) (multipart.File, error) {
+
 	err := r.ParseMultipartForm(config.App.MB_LIMIT << 20) // 5 MB
 	if err != nil {
 		log.Println("Error parsing form data:", err)
@@ -42,11 +39,22 @@ func getImageFile(r *http.Request) (multipart.File, error) {
 		log.Println("Error retrieving image from form data:", err)
 		return nil, err
 	}
+
+	if file == nil {
+		log.Println("No image found in form data")
+		return nil, err
+	}
 	return file, nil
 }
 
 func PostMedia(w http.ResponseWriter, r *http.Request) {
 	var media model.Media
+
+	if config.App.Cld == nil {
+		config.App.Logger.Error().Msg("Cloudinary not initialized")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 
 	// Get the image from the form data
 	//
@@ -63,7 +71,7 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 
 	// Upload the image and set the PublicID to "my_image"
 	//
-	uploadResp, err := cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: "my_image"})
+	uploadResp, err := config.App.Cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: "my_image"})
 	if err != nil {
 		log.Println("Error uploading image:", err)
 		return
@@ -71,7 +79,7 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 	media.UploadUrl = uploadResp.SecureURL
 
 	// Get details about the image
-	assetResp, err := cld.Admin.Asset(ctx, admin.AssetParams{PublicID: "my_image"})
+	assetResp, err := config.App.Cld.Admin.Asset(ctx, admin.AssetParams{PublicID: "my_image"})
 	if err != nil {
 		log.Println("Error fetching asset details:", err)
 		return
@@ -106,7 +114,7 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 	config.App.Logger.Info().Interface("media", media).Msg("Added new media")
 
 	// // Create a transformation for the image
-	// myImage, err := cld.Image("my_image")
+	// myImage, err := config.App.Cld.Image("my_image")
 	// if err != nil {
 	// 	log.Println("Error creating image object:", err)
 	// 	return
@@ -128,7 +136,7 @@ func GetMedia(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cursor, err := database.MediaCollection.Find(ctx, nil)
+	cursor, err := database.MediaCollection.Find(ctx, bson.M{})
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -165,6 +173,7 @@ func GetMediaByID(w http.ResponseWriter, r *http.Request) {
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
+		config.App.Logger.Info().Msgf("Retrieved ID: %s", id)
 		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
@@ -211,7 +220,7 @@ func DeleteMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Delete the image from Cloudinary
-	_, err = cld.Upload.Destroy(ctx, uploader.DestroyParams{PublicID: id})
+	_, err = config.App.Cld.Upload.Destroy(ctx, uploader.DestroyParams{PublicID: id})
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Error deleting image:")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -255,7 +264,7 @@ func PutMedia(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 
 	// Update the image in Cloudinary
-	_, err = cld.Upload.Upload(ctx, "my_picture.jpg", uploader.UploadParams{PublicID: id})
+	_, err = config.App.Cld.Upload.Upload(ctx, "my_picture.jpg", uploader.UploadParams{PublicID: id})
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Cloudinary error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
