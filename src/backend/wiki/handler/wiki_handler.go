@@ -114,7 +114,7 @@ func GetWikis(w http.ResponseWriter, r *http.Request) {
 * gets a wiki by id from db
  */
 func GetWikiByID(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -149,7 +149,7 @@ func GetWikiByID(w http.ResponseWriter, r *http.Request) {
 * expects a json object in the request
  */
 func PutWiki(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -210,7 +210,7 @@ func PutWiki(w http.ResponseWriter, r *http.Request) {
 * deletes a wiki
  */
 func DeleteWiki(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {

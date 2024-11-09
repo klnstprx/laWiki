@@ -115,7 +115,7 @@ func GetVersions(w http.ResponseWriter, r *http.Request) {
  */
 
 func GetVersionByID(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -151,7 +151,7 @@ func GetVersionByID(w http.ResponseWriter, r *http.Request) {
  */
 
 func PutVersion(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -212,7 +212,7 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 * deletes a Version
  */
 func DeleteVersion(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {

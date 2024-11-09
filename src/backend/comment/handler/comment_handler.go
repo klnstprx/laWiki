@@ -104,7 +104,7 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 // Implement other CRUD operations (GetCommentByID, PutComment, DeleteComment) similarly
 
 func GetCommentByID(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -134,7 +134,7 @@ func GetCommentByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteComment(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -163,7 +163,7 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 }
 
 func PutComment(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {

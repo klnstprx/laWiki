@@ -102,7 +102,7 @@ func GetEntries(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetEntryByID(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -132,7 +132,7 @@ func GetEntryByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteEntry(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -161,7 +161,7 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 }
 
 func PutEntry(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -215,7 +215,6 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func GetEntriesByTitle(w http.ResponseWriter, r *http.Request) {

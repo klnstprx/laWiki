@@ -15,7 +15,7 @@ func NewRouter() http.Handler {
 		r.Get("/", handler.GetMedia)
 		r.Post("/", handler.PostMedia)
 
-		r.Route("/{id}", func(r chi.Router) {
+		r.Route("/id/", func(r chi.Router) {
 			r.Get("/", handler.GetMediaByID)
 			r.Put("/", handler.PutMedia)
 			r.Delete("/", handler.DeleteMedia)

@@ -10,7 +10,6 @@ import (
 
 	"github.com/cloudinary/cloudinary-go/v2/api/admin"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
-	"github.com/go-chi/chi"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -27,7 +26,6 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 }
 
 func getImageFile(r *http.Request) (multipart.File, error) {
-
 	err := r.ParseMultipartForm(config.App.MB_LIMIT << 20) // 5 MB
 	if err != nil {
 		log.Println("Error parsing form data:", err)
@@ -169,7 +167,7 @@ func GetMedia(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetMediaByID(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -200,7 +198,7 @@ func GetMediaByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteMedia(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -230,7 +228,7 @@ func DeleteMedia(w http.ResponseWriter, r *http.Request) {
 }
 
 func PutMedia(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
