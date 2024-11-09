@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cloudinary/cloudinary-go/v2/api/admin"
+	"github.com/cloudinary/cloudinary-go/v2/api"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -75,14 +75,6 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	media.UploadUrl = uploadResp.SecureURL
-
-	// Get details about the image
-	assetResp, err := config.App.Cld.Admin.Asset(ctx, admin.AssetParams{PublicID: "my_image"})
-	if err != nil {
-		log.Println("Error fetching asset details:", err)
-		return
-	}
-	media.AssetUrl = assetResp.SecureURL
 
 	// Update the media object in the database
 
@@ -252,6 +244,15 @@ func PutMedia(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	// Update the image in Cloudinary
+	uploadResp, err := config.App.Cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: id, Overwrite: api.Bool(true)})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cloudinary error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	media.UploadUrl = uploadResp.SecureURL
+
 	_, err = database.MediaCollection.ReplaceOne(ctx, bson.M{"_id": objID}, media)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to update media")
@@ -260,12 +261,4 @@ func PutMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-
-	// Update the image in Cloudinary
-	_, err = config.App.Cld.Upload.Upload(ctx, "my_picture.jpg", uploader.UploadParams{PublicID: id})
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Cloudinary error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
 }
