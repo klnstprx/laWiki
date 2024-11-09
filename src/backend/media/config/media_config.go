@@ -102,8 +102,8 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	if config.Media.DBCollectionName != "" {
 		cfg.DBCollectionName = config.Media.DBCollectionName
 	} else {
-		cfg.DBCollectionName = "versiones" // Default to "wikis"
-		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'wiki'.")
+		cfg.DBCollectionName = "media" // Default to "wikis"
+		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'media'.")
 	}
 
 	// MONGODB_URI is required
