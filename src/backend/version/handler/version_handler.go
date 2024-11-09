@@ -360,13 +360,34 @@ func GetVersionsByEditor(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetVersionsByDate(w http.ResponseWriter, r *http.Request) {
+	createdAtString := r.URL.Query().Get("createdAt")
+
+	// Parse the date (expected format: YYYY-MM-DD)
+	createdAt, err := time.Parse("2006-01-02", createdAtString)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Invalid date format. Expected YYYY-MM-DD")
+		http.Error(w, "Invalid date format. Expected YYYY-MM-DD", http.StatusBadRequest)
+		return
+	}
+
+	// Define the start and end of the day
+	startOfDay := createdAt
+	endOfDay := createdAt.AddDate(0, 0, 1)
+
 	var versions []model.Version
-	createdAt := r.URL.Query().Get("createdAt")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cursor, err := database.VersionCollection.Find(ctx, bson.M{"created_at": createdAt})
+	// Build the query to find versions within the date range
+	filter := bson.M{
+		"created_at": bson.M{
+			"$gte": startOfDay,
+			"$lt":  endOfDay,
+		},
+	}
+
+	cursor, err := database.VersionCollection.Find(ctx, filter)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
