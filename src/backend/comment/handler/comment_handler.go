@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/laWiki/comment/config"
 	"github.com/laWiki/comment/database"
 	"github.com/laWiki/comment/model"
@@ -221,7 +220,7 @@ func PutComment(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetCommentByContent(w http.ResponseWriter, r *http.Request) {
-	content := chi.URLParam(r, "content")
+	content := r.URL.Query().Get("content")
 
 	var comment model.Comment
 
@@ -244,7 +243,7 @@ func GetCommentByContent(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
-	rating := chi.URLParam(r, "rating")
+	rating := r.URL.Query().Get("rating")
 
 	var comments []model.Comment
 
@@ -284,7 +283,7 @@ func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetCommentByDate(w http.ResponseWriter, r *http.Request) {
-	createdAt := chi.URLParam(r, "createdAt")
+	createdAt := r.URL.Query().Get("createdAt")
 
 	var comments []model.Comment
 

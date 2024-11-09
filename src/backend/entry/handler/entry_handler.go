@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/laWiki/entry/config"
 	"github.com/laWiki/entry/database"
 	"github.com/laWiki/entry/model"
@@ -218,7 +217,7 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetEntriesByTitle(w http.ResponseWriter, r *http.Request) {
-	title := chi.URLParam(r, "title")
+	title := r.URL.Query().Get("title")
 
 	var entry model.Entry
 
