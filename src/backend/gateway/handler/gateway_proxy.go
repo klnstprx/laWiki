@@ -48,9 +48,7 @@ func ReverseProxy(target string, prefixToStrip string) func(http.ResponseWriter,
 			Msg("Modified request details")
 	}
 
-	// Optional: Modify the response from the backend
 	proxy.ModifyResponse = func(resp *http.Response) error {
-		// You can modify the response here if needed
 		return nil
 	}
 

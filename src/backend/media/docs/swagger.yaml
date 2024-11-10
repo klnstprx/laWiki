@@ -1,0 +1,177 @@
+basePath: /api/media
+definitions:
+  model.Media:
+    properties:
+      id:
+        type: string
+      publicId:
+        type: string
+      uploadUrl:
+        type: string
+    type: object
+host: localhost:8081
+info:
+  contact: {}
+  description: API documentation for the Media Service.
+  title: Media Service API
+  version: "1.0"
+paths:
+  /api/media/:
+    get:
+      description: Retrieves a list of all media files from the database.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Media'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get all media files
+      tags:
+      - Media
+    post:
+      consumes:
+      - multipart/form-data
+      description: Uploads a new media file to Cloudinary and stores media info in
+        the database.
+      parameters:
+      - description: Image file to upload
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Media'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Upload a new media file
+      tags:
+      - Media
+  /api/media/health:
+    get:
+      description: Checks if the service is up
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health Check
+      tags:
+      - Health
+  /api/media/id/:
+    delete:
+      description: Deletes a media file by its ID from both Cloudinary and the database.
+      parameters:
+      - description: Media ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Media not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete media by ID
+      tags:
+      - Media
+    get:
+      description: Retrieves a media file by its ID.
+      parameters:
+      - description: Media ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Media'
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Media not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get media by ID
+      tags:
+      - Media
+    put:
+      consumes:
+      - multipart/form-data
+      description: Updates a media file by its ID in Cloudinary and updates media
+        info in the database.
+      parameters:
+      - description: Media ID
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Updated image file to upload
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Invalid ID or bad request
+          schema:
+            type: string
+        "404":
+          description: Media not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update media by ID
+      tags:
+      - Media
+swagger: "2.0"

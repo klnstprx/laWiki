@@ -15,6 +15,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// @title           Version Service API
+// @version         1.0
+// @description     API documentation for the Version Service.
+
+// @host            localhost:8004
+// @BasePath        /api/versions
 func main() {
 	// is the service run in docker?
 	var configPath string

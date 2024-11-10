@@ -19,8 +19,13 @@ import (
 	"github.com/laWiki/media/model"
 )
 
-// Initialize Cloudinary in the init function
-
+// HealthCheck godoc
+// @Summary      Health Check
+// @Description  Checks if the service is up
+// @Tags         Health
+// @Produce      plain
+// @Success      200  {string}  string  "OK"
+// @Router       /api/media/health [get]
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
@@ -46,6 +51,17 @@ func getImageFile(r *http.Request) (multipart.File, *multipart.FileHeader, error
 	return file, header, nil
 }
 
+// PostMedia godoc
+// @Summary      Upload a new media file
+// @Description  Uploads a new media file to Cloudinary and stores media info in the database.
+// @Tags         Media
+// @Accept       multipart/form-data
+// @Produce      application/json
+// @Param        image  formData  file     true  "Image file to upload"
+// @Success      201    {object}  model.Media
+// @Failure      400    {string}  string  "Bad request"
+// @Failure      500    {string}  string  "Internal server error"
+// @Router       /api/media/ [post]
 func PostMedia(w http.ResponseWriter, r *http.Request) {
 	var media model.Media
 
@@ -126,6 +142,14 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 	// log.Println("Transformed image URL:", url)
 }
 
+// GetMedia godoc
+// @Summary      Get all media files
+// @Description  Retrieves a list of all media files from the database.
+// @Tags         Media
+// @Produce      application/json
+// @Success      200  {array}   model.Media
+// @Failure      500  {string}  string  "Internal server error"
+// @Router       /api/media/ [get]
 func GetMedia(w http.ResponseWriter, r *http.Request) {
 	var media []model.Media
 
@@ -164,6 +188,17 @@ func GetMedia(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetMediaByID godoc
+// @Summary      Get media by ID
+// @Description  Retrieves a media file by its ID.
+// @Tags         Media
+// @Produce      application/json
+// @Param        id   query     string  true  "Media ID"
+// @Success      200  {object}  model.Media
+// @Failure      400  {string}  string  "Invalid ID"
+// @Failure      404  {string}  string  "Media not found"
+// @Failure      500  {string}  string  "Internal server error"
+// @Router       /api/media/id/ [get]
 func GetMediaByID(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -195,6 +230,16 @@ func GetMediaByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// DeleteMedia godoc
+// @Summary      Delete media by ID
+// @Description  Deletes a media file by its ID from both Cloudinary and the database.
+// @Tags         Media
+// @Param        id  query     string  true  "Media ID"
+// @Success      204 {string}  string  "No Content"
+// @Failure      400 {string}  string  "Invalid ID"
+// @Failure      404 {string}  string  "Media not found"
+// @Failure      500 {string}  string  "Internal server error"
+// @Router       /api/media/id/ [delete]
 func DeleteMedia(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -234,6 +279,19 @@ func DeleteMedia(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// PutMedia godoc
+// @Summary      Update media by ID
+// @Description  Updates a media file by its ID in Cloudinary and updates media info in the database.
+// @Tags         Media
+// @Accept       multipart/form-data
+// @Produce      application/json
+// @Param        id     query     string  true  "Media ID"
+// @Param        image  formData  file    true  "Updated image file to upload"
+// @Success      204    {string}  string  "No Content"
+// @Failure      400    {string}  string  "Invalid ID or bad request"
+// @Failure      404    {string}  string  "Media not found"
+// @Failure      500    {string}  string  "Internal server error"
+// @Router       /api/media/id/ [put]
 func PutMedia(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 

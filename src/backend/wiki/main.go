@@ -15,6 +15,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// @title           Wiki Service API
+// @version         1.0
+// @description     API documentation for the Wiki Service.
+
+// @host            localhost:8001
+// @BasePath        /api/wikis
 func main() {
 	// is the service run in docker?
 	var configPath string

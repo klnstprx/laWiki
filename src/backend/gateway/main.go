@@ -15,6 +15,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// @title           API Gateway
+// @version         1.0
+// @description     Combined API documentation for all services.
+
+// @host            localhost:8000
+// @BasePath        /api
 func main() {
 	// is the service run in docker?
 	var configPath string

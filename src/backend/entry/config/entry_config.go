@@ -11,6 +11,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type GlobalConfig struct {
+	ApiGatewayURL string `toml:"API_GATEWAY_URL"`
+}
+
 // EntryConfig holds the configuration specific to the entry service
 type EntryConfig struct {
 	Port             int    `toml:"PORT"`
@@ -23,7 +27,8 @@ type EntryConfig struct {
 
 // Config represents the structure of the config.toml file
 type Config struct {
-	Entry EntryConfig `toml:"entry"`
+	Entry  EntryConfig  `toml:"entry"`
+	Global GlobalConfig `toml:"global"`
 }
 type AppConfig struct {
 	Logger           *zerolog.Logger
@@ -33,6 +38,7 @@ type AppConfig struct {
 	MongoDBURI       string
 	DBCollectionName string
 	DBName           string
+	ApiGatewayURL    string
 }
 
 // App holds app configuration
@@ -59,6 +65,12 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	}
 
 	missingVars := []string{}
+
+	if config.Global.ApiGatewayURL == "" {
+		missingVars = append(missingVars, "API_GATEWAY_URL")
+	} else {
+		cfg.ApiGatewayURL = config.Global.ApiGatewayURL
+	}
 
 	// PORT with default value
 	if config.Entry.Port == 0 {

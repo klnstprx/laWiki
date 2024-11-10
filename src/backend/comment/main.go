@@ -15,7 +15,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// main is the entry point for the comment service
+// @title           Comment Service API
+// @version         1.0
+// @description     API documentation for the Comment Service.
+
+// @host            localhost:8003
+// @BasePath        /api/comments
 func main() {
 	// is the service run in docker?
 	var configPath string

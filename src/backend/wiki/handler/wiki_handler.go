@@ -13,20 +13,29 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-/*
-* GET /health
-* checks if the service is up
- */
+// HealthCheck godoc
+// @Summary      Health Check
+// @Description  Checks if the service is up
+// @Tags         Health
+// @Produce      plain
+// @Success      200  {string}  string  "OK"
+// @Router       /api/wikis/health [get]
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
 }
 
-/*
-* POST /
-* creates a new wiki
-* expects a json object in the request body
- */
+// PostWiki godoc
+// @Summary      Create a new wiki
+// @Description  Creates a new wiki. Expects a JSON object in the request body.
+// @Tags         Wikis
+// @Accept       application/json
+// @Produce      application/json
+// @Param        wiki  body      model.Wiki  true  "Wiki information"
+// @Success      201   {object}  model.Wiki
+// @Failure      400   {string}  string  "Invalid request body"
+// @Failure      500   {string}  string  "Internal server error"
+// @Router       /api/wikis/ [post]
 func PostWiki(w http.ResponseWriter, r *http.Request) {
 	var wiki model.Wiki
 	decoder := json.NewDecoder(r.Body)
@@ -66,10 +75,14 @@ func PostWiki(w http.ResponseWriter, r *http.Request) {
 	config.App.Logger.Info().Interface("wiki", wiki).Msg("Added new wiki")
 }
 
-/*
-* GET /
-* gets the list of all wiki json objects from db
- */
+// GetWikis godoc
+// @Summary      Get all wikis
+// @Description  Retrieves the list of all wiki JSON objects from the database.
+// @Tags         Wikis
+// @Produce      application/json
+// @Success      200  {array}   model.Wiki
+// @Failure      500  {string}  string  "Internal server error"
+// @Router       /api/wikis/ [get]
 func GetWikis(w http.ResponseWriter, r *http.Request) {
 	var wikis []model.Wiki
 
@@ -108,10 +121,17 @@ func GetWikis(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
-* GET /{id}
-* gets a wiki by id from db
- */
+// GetWikiByID godoc
+// @Summary      Get a wiki by ID
+// @Description  Retrieves a wiki by its ID.
+// @Tags         Wikis
+// @Produce      application/json
+// @Param        id    query     string  true  "Wiki ID"
+// @Success      200   {object}  model.Wiki
+// @Failure      400   {string}  string  "Invalid ID"
+// @Failure      404   {string}  string  "Wiki not found"
+// @Failure      500   {string}  string  "Internal server error"
+// @Router       /api/wikis/id/ [get]
 func GetWikiByID(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -142,11 +162,19 @@ func GetWikiByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
-* PUT /{id}
-* updates a wiki by id
-* expects a json object in the request
- */
+// PutWiki godoc
+// @Summary      Update a wiki by ID
+// @Description  Updates a wiki by its ID. Expects a JSON object in the request.
+// @Tags         Wikis
+// @Accept       application/json
+// @Produce      application/json
+// @Param        id    query     string  true  "Wiki ID"
+// @Param        wiki  body      model.Wiki  true  "Updated wiki information"
+// @Success      200   {object}  model.Wiki
+// @Failure      400   {string}  string  "Invalid ID or request body"
+// @Failure      404   {string}  string  "Wiki not found"
+// @Failure      500   {string}  string  "Internal server error"
+// @Router       /api/wikis/id/ [put]
 func PutWiki(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -204,10 +232,16 @@ func PutWiki(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
-* DELETE /{id}
-* deletes a wiki
- */
+// DeleteWiki godoc
+// @Summary      Delete a wiki by ID
+// @Description  Deletes a wiki by its ID.
+// @Tags         Wikis
+// @Param        id    query     string  true  "Wiki ID"
+// @Success      204   {string}  string  "No Content"
+// @Failure      400   {string}  string  "Invalid ID"
+// @Failure      404   {string}  string  "Wiki not found"
+// @Failure      500   {string}  string  "Internal server error"
+// @Router       /api/wikis/id/ [delete]
 func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -236,6 +270,15 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent) // 204 No Content
 }
 
+// GetWikisByTitle godoc
+// @Summary      Get wikis by title
+// @Description  Retrieves wikis that match the given title.
+// @Tags         Wikis
+// @Produce      application/json
+// @Param        title   query     string  true  "Title to search"
+// @Success      200     {array}   model.Wiki
+// @Failure      500     {string}  string  "Internal server error"
+// @Router       /api/wikis/title [get]
 func GetWikisByTitle(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Query().Get("title")
 
@@ -276,6 +319,15 @@ func GetWikisByTitle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetWikisByDescription godoc
+// @Summary      Get wikis by description
+// @Description  Retrieves wikis that match the given description.
+// @Tags         Wikis
+// @Produce      application/json
+// @Param        description  query     string  true  "Description to search"
+// @Success      200          {array}   model.Wiki
+// @Failure      500          {string}  string  "Internal server error"
+// @Router       /api/wikis/description [get]
 func GetWikisByDescription(w http.ResponseWriter, r *http.Request) {
 	description := r.URL.Query().Get("description")
 
@@ -316,6 +368,15 @@ func GetWikisByDescription(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetWikisByCategory godoc
+// @Summary      Get wikis by category
+// @Description  Retrieves wikis under the given category.
+// @Tags         Wikis
+// @Produce      application/json
+// @Param        category  query     string  true  "Category to search"
+// @Success      200       {array}   model.Wiki
+// @Failure      500       {string}  string  "Internal server error"
+// @Router       /api/wikis/category [get]
 func GetWikisByCategory(w http.ResponseWriter, r *http.Request) {
 	category := r.URL.Query().Get("category")
 

@@ -1,0 +1,292 @@
+basePath: /api/entries
+definitions:
+  model.Entry:
+    properties:
+      author:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      wiki_id:
+        type: string
+    type: object
+host: localhost:8002
+info:
+  contact: {}
+  description: API documentation for the Entry Service.
+  title: Entry Service API
+  version: "1.0"
+paths:
+  /api/entries/:
+    get:
+      description: Retrieves the list of all entries from the database.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Entry'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get all entries
+      tags:
+      - Entries
+    post:
+      consumes:
+      - application/json
+      description: Creates a new entry. Expects a JSON object in the request body.
+      parameters:
+      - description: Entry information
+        in: body
+        name: entry
+        required: true
+        schema:
+          $ref: '#/definitions/model.Entry'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Entry'
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Create a new entry
+      tags:
+      - Entries
+  /api/entries/author:
+    get:
+      description: Retrieves entries authored by the given author(s).
+      parameters:
+      - description: Author to search
+        in: query
+        name: author
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Entry'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get entries by author
+      tags:
+      - Entries
+  /api/entries/date:
+    get:
+      description: Retrieves entries created on the given date.
+      parameters:
+      - description: Creation date (YYYY-MM-DD)
+        in: query
+        name: createdAt
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Entry'
+            type: array
+        "400":
+          description: Invalid date format. Expected YYYY-MM-DD
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get entries by date
+      tags:
+      - Entries
+  /api/entries/health:
+    get:
+      description: Checks if the service is up
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health Check
+      tags:
+      - Health
+  /api/entries/id/:
+    delete:
+      description: Deletes an entry by its ID.
+      parameters:
+      - description: Entry ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Entry not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete an entry by ID
+      tags:
+      - Entries
+    get:
+      description: Retrieves an entry by its ID.
+      parameters:
+      - description: Entry ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Entry'
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Entry not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get an entry by ID
+      tags:
+      - Entries
+    put:
+      consumes:
+      - application/json
+      description: Updates an entry by its ID. Expects a JSON object in the request
+        body.
+      parameters:
+      - description: Entry ID
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Updated entry information
+        in: body
+        name: entry
+        required: true
+        schema:
+          $ref: '#/definitions/model.Entry'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Entry'
+        "400":
+          description: Invalid ID or request body
+          schema:
+            type: string
+        "404":
+          description: Entry not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update an entry by ID
+      tags:
+      - Entries
+  /api/entries/title:
+    get:
+      description: Retrieves entries that match the given title.
+      parameters:
+      - description: Title to search
+        in: query
+        name: title
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Entry'
+        "404":
+          description: Entry not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get entries by title
+      tags:
+      - Entries
+  /api/entries/wiki:
+    get:
+      description: Retrieves entries associated with a specific Wiki ID.
+      parameters:
+      - description: Wiki ID
+        in: query
+        name: wikiID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Entry'
+            type: array
+        "400":
+          description: WikiID is required
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get entries by Wiki ID
+      tags:
+      - Entries
+swagger: "2.0"

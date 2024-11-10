@@ -15,6 +15,22 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+/* THIS SERVICE IS WIP - its not included in the gateway router*/
+
+// @title           Auth Service API
+// @version         1.0
+// @description     API documentation for the Auth Service. !!THIS SERVICE IS WIP!!
+
+// @host            localhost:8080
+// @BasePath        /api/auth
+
+// @securityDefinitions.oauth2.accessCode OAuth2
+// @tokenUrl         https://oauth2.googleapis.com/token
+// @authorizationUrl https://accounts.google.com/o/oauth2/auth
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	// is the service run in docker?
 	var configPath string

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/laWiki/auth/config"
@@ -17,10 +16,13 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-/*
-* GET /health
-* checks if the service is up
- */
+// HealthCheck godoc
+// @Summary      Health Check
+// @Description  Checks if the service is up
+// @Tags         Health
+// @Produce      plain
+// @Success      200  {string}  string  "OK"
+// @Router       /api/auth/health [get]
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
@@ -38,7 +40,12 @@ func generateStateOauthCookie(w http.ResponseWriter) string {
 	return state
 }
 
-// Login handler initiates the OAuth flow by redirecting the user to Google's consent page
+// Login godoc
+// @Summary      Initiate OAuth2 Login
+// @Description  Initiates the OAuth2 flow with Google
+// @Tags         Authentication
+// @Success      302  {string}  string  "Redirect to Google OAuth2 login"
+// @Router       /api/auth/login [get]
 func Login(w http.ResponseWriter, r *http.Request) {
 	// Generate a random state parameter to prevent CSRF attacks.
 	state := generateStateOauthCookie(w)
@@ -51,7 +58,16 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
-// Callback handler processes the OAuth callback from Google
+// Callback godoc
+// @Summary      OAuth2 Callback
+// @Description  Handles the OAuth2 callback from Google
+// @Tags         Authentication
+// @Param        state  query     string  true  "OAuth state"
+// @Param        code   query     string  true  "Authorization code"
+// @Success      302    {string}  string  "Redirect after login"
+// @Failure      401    {string}  string  "Invalid OAuth state"
+// @Failure      500    {string}  string  "Could not create JWT"
+// @Router       /api/auth/callback [get]
 func Callback(w http.ResponseWriter, r *http.Request) {
 	// Get state from the cookie
 	oauthState, _ := r.Cookie("oauthstate")
@@ -140,42 +156,4 @@ func createJWTToken(data []byte) (string, error) {
 	}
 
 	return tokenString, nil
-}
-
-// ProtectedEndpoint is an example of a protected route that requires valid authentication
-func ProtectedEndpoint(w http.ResponseWriter, r *http.Request) {
-	// Get JWT token from cookie or header
-	tokenString := ""
-	cookie, err := r.Cookie("jwt_token")
-	if err == nil {
-		tokenString = cookie.Value
-	} else {
-		// Try to get token from Authorization header
-		authHeader := r.Header.Get("Authorization")
-		if strings.HasPrefix(authHeader, "Bearer ") {
-			tokenString = strings.TrimPrefix(authHeader, "Bearer ")
-		}
-	}
-
-	if tokenString == "" {
-		http.Error(w, "Not Authorized", http.StatusUnauthorized)
-		return
-	}
-
-	// Verify token
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Validate the signing algorithm
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(config.App.JWTSecret), nil
-	})
-
-	if err != nil || !token.Valid {
-		http.Error(w, "Not Authorized", http.StatusUnauthorized)
-		return
-	}
-
-	// Token is valid, proceed with protected resource
-	w.Write([]byte("You are authorized!"))
 }

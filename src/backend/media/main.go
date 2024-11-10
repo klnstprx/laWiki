@@ -15,6 +15,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// @title           Media Service API
+// @version         1.0
+// @description     API documentation for the Media Service.
+
+// @host            localhost:8081
+// @BasePath        /api/media
 func main() {
 	// is the service run in docker?
 	var configPath string

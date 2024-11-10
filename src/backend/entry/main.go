@@ -15,7 +15,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// main is the entrypoint for the entry service
+// @title           Entry Service API
+// @version         1.0
+// @description     API documentation for the Entry Service.
+
+// @host            localhost:8002
+// @BasePath        /api/entries
 func main() {
 	// is the service run in docker?
 	var configPath string

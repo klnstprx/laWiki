@@ -1,4 +1,4 @@
-.PHONY: run-all run-api-gateway run-wiki-service run-entry-service run-comment-service run-version-service run-media-service clean
+.PHONY: run-all run-api-gateway run-wiki-service run-entry-service run-comment-service run-version-service run-media-service clean combine-swagger
 
 run-wiki-service:
 	@echo "Running wiki-service..."
@@ -68,3 +68,17 @@ clean:
 	-@cd auth && test -e auth-service.pid && kill `cat auth-service.pid` 2>/dev/null && rm auth-service.pid || true
 	-@cd gateway && test -e api-gateway.pid && kill `cat api-gateway.pid` 2>/dev/null && rm api-gateway.pid || true
 
+combine-swagger:
+	@echo "Generating Swagger documentation for all services..."
+	cd wiki && swag init
+	cd entry && swag init
+	cd comment && swag init
+	cd version && swag init
+	cd media && swag init
+	cd auth && swag init
+	cd gateway && swag init
+
+	@echo "Combining Swagger documentation..."
+	npx swagger-combine swagger-config.json -o gateway/docs/swagger.json
+
+	@echo "Swagger documentation combined successfully."

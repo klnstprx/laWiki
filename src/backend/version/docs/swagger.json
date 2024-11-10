@@ -1,0 +1,432 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API documentation for the Version Service.",
+        "title": "Version Service API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8004",
+    "basePath": "/api/versions",
+    "paths": {
+        "/api/versions/": {
+            "get": {
+                "description": "Retrieves the list of all version JSON objects from the database.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Get all versions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Version"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new version. Expects a JSON object in the request body.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Create a new version",
+                "parameters": [
+                    {
+                        "description": "Version information",
+                        "name": "version",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Version"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Version"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/versions/content": {
+            "get": {
+                "description": "Retrieves versions that match the given content.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Get versions by content",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Content to search",
+                        "name": "content",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Version"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/versions/date": {
+            "get": {
+                "description": "Retrieves versions created on the given date.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Get versions by date",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Creation date (YYYY-MM-DD)",
+                        "name": "createdAt",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Version"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid date format. Expected YYYY-MM-DD",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/versions/editor": {
+            "get": {
+                "description": "Retrieves versions edited by the given editor.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Get versions by editor",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Editor to search",
+                        "name": "editor",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Version"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/versions/entry": {
+            "get": {
+                "description": "Retrieves versions that correspond to a specific Entry ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Get versions by Entry ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Entry ID",
+                        "name": "entryId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Version"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/versions/health": {
+            "get": {
+                "description": "Checks if the service is up",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Health Check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/versions/id/": {
+            "get": {
+                "description": "Retrieves a version by its ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Get a version by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Version"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Version not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates a version by its ID. Expects a JSON object in the request body.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Update a version by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated version information",
+                        "name": "version",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Version"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Version"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID or request body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Version not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a version by its ID.",
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Delete a version by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Version not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "model.Version": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "editor": {
+                    "type": "string"
+                },
+                "entry_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

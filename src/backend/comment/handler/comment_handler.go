@@ -14,15 +14,29 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-/*
-* GET /health
-* checks if the service is up
- */
+// HealthCheck godoc
+// @Summary      Health Check
+// @Description  Checks if the service is up
+// @Tags         Health
+// @Produce      plain
+// @Success      200  {string}  string  "OK"
+// @Router       /api/comments/health [get]
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
 }
 
+// PostComment godoc
+// @Summary      Create a new comment
+// @Description  Creates a new comment. Expects a JSON object in the request body.
+// @Tags         Comments
+// @Accept       application/json
+// @Produce      application/json
+// @Param        comment  body      model.Comment  true  "Comment to create"
+// @Success      201      {object}  model.Comment
+// @Failure      400      {string}  string  "Invalid request body"
+// @Failure      500      {string}  string  "Internal server error"
+// @Router       /api/comments/ [post]
 func PostComment(w http.ResponseWriter, r *http.Request) {
 	var comment model.Comment
 	decoder := json.NewDecoder(r.Body)
@@ -63,6 +77,14 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 	config.App.Logger.Info().Interface("comment", comment).Msg("Added new comment")
 }
 
+// GetComments godoc
+// @Summary      Get all comments
+// @Description  Retrieves a list of all comments.
+// @Tags         Comments
+// @Produce      application/json
+// @Success      200  {array}   model.Comment
+// @Failure      500  {string}  string  "Internal server error"
+// @Router       /api/comments/ [get]
 func GetComments(w http.ResponseWriter, r *http.Request) {
 	var comments []model.Comment
 
@@ -101,8 +123,17 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Implement other CRUD operations (GetCommentByID, PutComment, DeleteComment) similarly
-
+// GetCommentByID godoc
+// @Summary      Get comment by ID
+// @Description  Retrieves a comment by its ID.
+// @Tags         Comments
+// @Produce      application/json
+// @Param        id      query     string  true  "Comment ID"
+// @Success      200     {object}  model.Comment
+// @Failure      400     {string}  string  "Invalid ID"
+// @Failure      404     {string}  string  "Comment not found"
+// @Failure      500     {string}  string  "Internal server error"
+// @Router       /api/comments/id/ [get]
 func GetCommentByID(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -133,6 +164,16 @@ func GetCommentByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// DeleteComment godoc
+// @Summary      Delete comment by ID
+// @Description  Deletes a comment by its ID.
+// @Tags         Comments
+// @Param        id      query     string  true  "Comment ID"
+// @Success      204     {string}  string  "No Content"
+// @Failure      400     {string}  string  "Invalid ID"
+// @Failure      404     {string}  string  "Comment not found"
+// @Failure      500     {string}  string  "Internal server error"
+// @Router       /api/comments/id/ [delete]
 func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -162,6 +203,19 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// PutComment godoc
+// @Summary      Update comment by ID
+// @Description  Updates a comment by its ID. Expects a JSON object in the request body.
+// @Tags         Comments
+// @Accept       application/json
+// @Produce      application/json
+// @Param        id       query     string         true  "Comment ID"
+// @Param        comment  body      model.Comment  true  "Updated comment"
+// @Success      200      {object}  model.Comment
+// @Failure      400      {string}  string  "Invalid ID or request body"
+// @Failure      404      {string}  string  "Comment not found"
+// @Failure      500      {string}  string  "Internal server error"
+// @Router       /id/ [put]
 func PutComment(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -220,6 +274,16 @@ func PutComment(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetCommentByContent godoc
+// @Summary      Get comment by content
+// @Description  Retrieves a comment by its content.
+// @Tags         Comments
+// @Produce      application/json
+// @Param        content  query     string  true  "Content to search"
+// @Success      200      {object}  model.Comment
+// @Failure      404      {string}  string  "Comment not found"
+// @Failure      500      {string}  string  "Internal server error"
+// @Router       /api/comments/content [get]
 func GetCommentByContent(w http.ResponseWriter, r *http.Request) {
 	content := r.URL.Query().Get("content")
 
@@ -243,6 +307,16 @@ func GetCommentByContent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetCommentByRating godoc
+// @Summary      Get comments by rating
+// @Description  Retrieves comments with a specific rating.
+// @Tags         Comments
+// @Produce      application/json
+// @Param        rating  query     int     true  "Rating to filter"
+// @Success      200     {array}   model.Comment
+// @Failure      400     {string}  string  "Invalid rating format"
+// @Failure      500     {string}  string  "Internal server error"
+// @Router       /api/comments/rating [get]
 func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
 	ratingString := r.URL.Query().Get("rating")
 
@@ -291,6 +365,16 @@ func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetCommentByDate godoc
+// @Summary      Get comments by date
+// @Description  Retrieves comments created on a specific date.
+// @Tags         Comments
+// @Produce      application/json
+// @Param        createdAt  query     string  true  "Creation date (YYYY-MM-DD)"
+// @Success      200        {array}   model.Comment
+// @Failure      400        {string}  string  "Invalid date format. Expected YYYY-MM-DD"
+// @Failure      500        {string}  string  "Internal server error"
+// @Router       /api/comments/date [get]
 func GetCommentByDate(w http.ResponseWriter, r *http.Request) {
 	createdAtString := r.URL.Query().Get("createdAt")
 

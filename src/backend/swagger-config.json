@@ -1,0 +1,33 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Combined API Documentation",
+    "version": "1.0.0"
+  },
+  "apis": [
+    {
+      "url": "./auth/docs/swagger.json",
+      "pathPrepend": "/api/auth"
+    },
+    {
+      "url": "./wiki/docs/swagger.json",
+      "pathPrepend": "/api/wiki"
+    },
+    {
+      "url": "./entry/docs/swagger.json",
+      "pathPrepend": "/api/entry"
+    },
+    {
+      "url": "./comment/docs/swagger.json",
+      "pathPrepend": "/api/comment"
+    },
+    {
+      "url": "./version/docs/swagger.json",
+      "pathPrepend": "/api/version"
+    },
+    {
+      "url": "./media/docs/swagger.json",
+      "pathPrepend": "/api/media"
+    }
+  ]
+}

@@ -13,15 +13,29 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-/*
-* GET /health
-* checks if the service is up
- */
+// HealthCheck godoc
+// @Summary      Health Check
+// @Description  Checks if the service is up
+// @Tags         Health
+// @Produce      plain
+// @Success      200  {string}  string  "OK"
+// @Router       /api/entries/health [get]
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
 }
 
+// PostEntry godoc
+// @Summary      Create a new entry
+// @Description  Creates a new entry. Expects a JSON object in the request body.
+// @Tags         Entries
+// @Accept       application/json
+// @Produce      application/json
+// @Param        entry  body      model.Entry  true  "Entry information"
+// @Success      201    {object}  model.Entry
+// @Failure      400    {string}  string  "Invalid request body"
+// @Failure      500    {string}  string  "Internal server error"
+// @Router       /api/entries/ [post]
 func PostEntry(w http.ResponseWriter, r *http.Request) {
 	var entry model.Entry
 	decoder := json.NewDecoder(r.Body)
@@ -62,6 +76,14 @@ func PostEntry(w http.ResponseWriter, r *http.Request) {
 	config.App.Logger.Info().Interface("entry", entry).Msg("Added new entry")
 }
 
+// GetEntries godoc
+// @Summary      Get all entries
+// @Description  Retrieves the list of all entries from the database.
+// @Tags         Entries
+// @Produce      application/json
+// @Success      200  {array}   model.Entry
+// @Failure      500  {string}  string  "Internal server error"
+// @Router       /api/entries/ [get]
 func GetEntries(w http.ResponseWriter, r *http.Request) {
 	var entries []model.Entry
 
@@ -100,6 +122,17 @@ func GetEntries(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetEntryByID godoc
+// @Summary      Get an entry by ID
+// @Description  Retrieves an entry by its ID.
+// @Tags         Entries
+// @Produce      application/json
+// @Param        id    query     string  true  "Entry ID"
+// @Success      200   {object}  model.Entry
+// @Failure      400   {string}  string  "Invalid ID"
+// @Failure      404   {string}  string  "Entry not found"
+// @Failure      500   {string}  string  "Internal server error"
+// @Router       /api/entries/id/ [get]
 func GetEntryByID(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -130,6 +163,16 @@ func GetEntryByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// DeleteEntry godoc
+// @Summary      Delete an entry by ID
+// @Description  Deletes an entry by its ID.
+// @Tags         Entries
+// @Param        id    query     string  true  "Entry ID"
+// @Success      204   {string}  string  "No Content"
+// @Failure      400   {string}  string  "Invalid ID"
+// @Failure      404   {string}  string  "Entry not found"
+// @Failure      500   {string}  string  "Internal server error"
+// @Router       /api/entries/id/ [delete]
 func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -159,6 +202,19 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// PutEntry godoc
+// @Summary      Update an entry by ID
+// @Description  Updates an entry by its ID. Expects a JSON object in the request body.
+// @Tags         Entries
+// @Accept       application/json
+// @Produce      application/json
+// @Param        id     query     string      true  "Entry ID"
+// @Param        entry  body      model.Entry true  "Updated entry information"
+// @Success      200    {object}  model.Entry
+// @Failure      400    {string}  string  "Invalid ID or request body"
+// @Failure      404    {string}  string  "Entry not found"
+// @Failure      500    {string}  string  "Internal server error"
+// @Router       /api/entries/id/ [put]
 func PutEntry(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -216,6 +272,16 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetEntriesByTitle godoc
+// @Summary      Get entries by title
+// @Description  Retrieves entries that match the given title.
+// @Tags         Entries
+// @Produce      application/json
+// @Param        title  query     string  true  "Title to search"
+// @Success      200    {object}  model.Entry
+// @Failure      404    {string}  string  "Entry not found"
+// @Failure      500    {string}  string  "Internal server error"
+// @Router       /api/entries/title [get]
 func GetEntriesByTitle(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Query().Get("title")
 
@@ -239,6 +305,15 @@ func GetEntriesByTitle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetEntriesByAuthor godoc
+// @Summary      Get entries by author
+// @Description  Retrieves entries authored by the given author(s).
+// @Tags         Entries
+// @Produce      application/json
+// @Param        author  query     string true  "Author to search"
+// @Success      200     {array}   model.Entry
+// @Failure      500     {string}  string  "Internal server error"
+// @Router       /api/entries/author [get]
 func GetEntriesByAuthor(w http.ResponseWriter, r *http.Request) {
 	author := r.URL.Query()["author"]
 
@@ -279,6 +354,16 @@ func GetEntriesByAuthor(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetEntriesByDate godoc
+// @Summary      Get entries by date
+// @Description  Retrieves entries created on the given date.
+// @Tags         Entries
+// @Produce      application/json
+// @Param        createdAt  query     string  true  "Creation date (YYYY-MM-DD)"
+// @Success      200        {array}   model.Entry
+// @Failure      400        {string}  string  "Invalid date format. Expected YYYY-MM-DD"
+// @Failure      500        {string}  string  "Internal server error"
+// @Router       /api/entries/date [get]
 func GetEntriesByDate(w http.ResponseWriter, r *http.Request) {
 	createdAtString := r.URL.Query().Get("createdAt")
 
@@ -339,6 +424,16 @@ func GetEntriesByDate(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetEntriesByWikiID godoc
+// @Summary      Get entries by Wiki ID
+// @Description  Retrieves entries associated with a specific Wiki ID.
+// @Tags         Entries
+// @Produce      application/json
+// @Param        wikiID  query     string  true  "Wiki ID"
+// @Success      200     {array}   model.Entry
+// @Failure      400     {string}  string  "WikiID is required"
+// @Failure      500     {string}  string  "Internal server error"
+// @Router       /api/entries/wiki [get]
 func GetEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 	wikiID := r.URL.Query().Get("wikiID")
 

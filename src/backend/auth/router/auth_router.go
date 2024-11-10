@@ -16,9 +16,5 @@ func NewRouter() http.Handler {
 
 	// Handle callback from Google
 	r.Get("/callback", handler.Callback)
-
-	// Protected endpoint example
-	r.Get("/protected", handler.ProtectedEndpoint)
-
 	return r
 }

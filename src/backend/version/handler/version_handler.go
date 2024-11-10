@@ -13,20 +13,29 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-/*
-* GET /health
-* checks if the service is up
- */
+// HealthCheck godoc
+// @Summary      Health Check
+// @Description  Checks if the service is up
+// @Tags         Health
+// @Produce      plain
+// @Success      200  {string}  string  "OK"
+// @Router       /api/versions/health [get]
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
 }
 
-/*
-* POST /
-* creates a new version
-* expects a json object in the request body
- */
+// PostVersion godoc
+// @Summary      Create a new version
+// @Description  Creates a new version. Expects a JSON object in the request body.
+// @Tags         Versions
+// @Accept       application/json
+// @Produce      application/json
+// @Param        version  body      model.Version  true  "Version information"
+// @Success      201      {object}  model.Version
+// @Failure      400      {string}  string  "Invalid request body"
+// @Failure      500      {string}  string  "Internal server error"
+// @Router       /api/versions/ [post]
 func PostVersion(w http.ResponseWriter, r *http.Request) {
 	var version model.Version
 	decoder := json.NewDecoder(r.Body)
@@ -66,10 +75,14 @@ func PostVersion(w http.ResponseWriter, r *http.Request) {
 	config.App.Logger.Info().Interface("version", version).Msg("Added new version")
 }
 
-/*
-* GET /
-* gets the list of all Version json objects from db
- */
+// GetVersions godoc
+// @Summary      Get all versions
+// @Description  Retrieves the list of all version JSON objects from the database.
+// @Tags         Versions
+// @Produce      application/json
+// @Success      200  {array}   model.Version
+// @Failure      500  {string}  string  "Internal server error"
+// @Router       /api/versions/ [get]
 func GetVersions(w http.ResponseWriter, r *http.Request) {
 	var versions []model.Version
 
@@ -108,11 +121,17 @@ func GetVersions(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
-* GET /{id}
-* gets a version by id from db
- */
-
+// GetVersionByID godoc
+// @Summary      Get a version by ID
+// @Description  Retrieves a version by its ID.
+// @Tags         Versions
+// @Produce      application/json
+// @Param        id    query     string  true  "Version ID"
+// @Success      200   {object}  model.Version
+// @Failure      400   {string}  string  "Invalid ID"
+// @Failure      404   {string}  string  "Version not found"
+// @Failure      500   {string}  string  "Internal server error"
+// @Router       /api/versions/id/ [get]
 func GetVersionByID(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -143,12 +162,19 @@ func GetVersionByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
-* PUT /{id}
-* updates a version by id
-* expects a json object in the request
- */
-
+// PutVersion godoc
+// @Summary      Update a version by ID
+// @Description  Updates a version by its ID. Expects a JSON object in the request body.
+// @Tags         Versions
+// @Accept       application/json
+// @Produce      application/json
+// @Param        id      query     string          true  "Version ID"
+// @Param        version body      model.Version   true  "Updated version information"
+// @Success      200     {object}  model.Version
+// @Failure      400     {string}  string  "Invalid ID or request body"
+// @Failure      404     {string}  string  "Version not found"
+// @Failure      500     {string}  string  "Internal server error"
+// @Router       /api/versions/id/ [put]
 func PutVersion(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -206,10 +232,16 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
-* DELETE /{id}
-* deletes a Version
- */
+// DeleteVersion godoc
+// @Summary      Delete a version by ID
+// @Description  Deletes a version by its ID.
+// @Tags         Versions
+// @Param        id query string true "Version ID"
+// @Success      204 {string} string "No Content"
+// @Failure      400 {string} string "Invalid ID"
+// @Failure      404 {string} string "Version not found"
+// @Failure      500 {string} string "Internal server error"
+// @Router       /api/versions/id/ [delete]
 func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
@@ -238,10 +270,15 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent) // 204 No Content
 }
 
-/*
-* GET /
-* gets the list of all Version json objects that correspond to an Entry from db
- */
+// GetVersionsByEntryID godoc
+// @Summary      Get versions by Entry ID
+// @Description  Retrieves versions that correspond to a specific Entry ID.
+// @Tags         Versions
+// @Produce      application/json
+// @Param        entryId query string true "Entry ID"
+// @Success      200  {array}   model.Version
+// @Failure      500  {string}  string  "Internal server error"
+// @Router       /api/versions/entry [get]
 func GetVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 	var versions []model.Version
 	entryID := r.URL.Query().Get("entryId")
@@ -281,6 +318,15 @@ func GetVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetVersionsByContent godoc
+// @Summary      Get versions by content
+// @Description  Retrieves versions that match the given content.
+// @Tags         Versions
+// @Produce      application/json
+// @Param        content query string true "Content to search"
+// @Success      200     {array}   model.Version
+// @Failure      500     {string}  string  "Internal server error"
+// @Router       /api/versions/content [get]
 func GetVersionsByContent(w http.ResponseWriter, r *http.Request) {
 	var versions []model.Version
 	content := r.URL.Query().Get("content")
@@ -320,6 +366,15 @@ func GetVersionsByContent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetVersionsByEditor godoc
+// @Summary      Get versions by editor
+// @Description  Retrieves versions edited by the given editor.
+// @Tags         Versions
+// @Produce      application/json
+// @Param        editor query string true "Editor to search"
+// @Success      200    {array}   model.Version
+// @Failure      500    {string}  string  "Internal server error"
+// @Router       /api/versions/editor [get]
 func GetVersionsByEditor(w http.ResponseWriter, r *http.Request) {
 	var versions []model.Version
 	editor := r.URL.Query().Get("editor")
@@ -359,6 +414,16 @@ func GetVersionsByEditor(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetVersionsByDate godoc
+// @Summary      Get versions by date
+// @Description  Retrieves versions created on the given date.
+// @Tags         Versions
+// @Produce      application/json
+// @Param        createdAt query string true "Creation date (YYYY-MM-DD)"
+// @Success      200       {array}   model.Version
+// @Failure      400       {string}  string  "Invalid date format. Expected YYYY-MM-DD"
+// @Failure      500       {string}  string  "Internal server error"
+// @Router       /api/versions/date [get]
 func GetVersionsByDate(w http.ResponseWriter, r *http.Request) {
 	createdAtString := r.URL.Query().Get("createdAt")
 
