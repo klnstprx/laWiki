@@ -100,6 +100,12 @@ func GetVersions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(versions) == 0 {
+		config.App.Logger.Info().Msg("No versions found")
+		http.Error(w, "No versions found", http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(versions); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
@@ -244,7 +250,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
  */
 func GetVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 	var versions []model.Version
-	entryID := r.URL.Query().Get("entryId")
+	entryID := r.URL.Query().Get("entryID")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -273,6 +279,12 @@ func GetVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(versions) == 0 {
+		config.App.Logger.Info().Msg("No versions found")
+		http.Error(w, "No versions found", http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(versions); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
@@ -288,7 +300,14 @@ func GetVersionsByContent(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cursor, err := database.VersionCollection.Find(ctx, bson.M{"content": content})
+	filter := bson.M{
+		"content": bson.M{
+			"$regex":   content,
+			"$options": "i",
+		},
+	}
+
+	cursor, err := database.VersionCollection.Find(ctx, filter)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -309,6 +328,12 @@ func GetVersionsByContent(w http.ResponseWriter, r *http.Request) {
 	if err := cursor.Err(); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Cursor error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(versions) == 0 {
+		config.App.Logger.Info().Msg("No versions found")
+		http.Error(w, "No versions found", http.StatusNotFound)
 		return
 	}
 
@@ -348,6 +373,12 @@ func GetVersionsByEditor(w http.ResponseWriter, r *http.Request) {
 	if err := cursor.Err(); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Cursor error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(versions) == 0 {
+		config.App.Logger.Info().Msg("No versions found")
+		http.Error(w, "No versions found", http.StatusNotFound)
 		return
 	}
 
@@ -408,6 +439,12 @@ func GetVersionsByDate(w http.ResponseWriter, r *http.Request) {
 	if err := cursor.Err(); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Cursor error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(versions) == 0 {
+		config.App.Logger.Info().Msg("No versions found")
+		http.Error(w, "No versions found", http.StatusNotFound)
 		return
 	}
 

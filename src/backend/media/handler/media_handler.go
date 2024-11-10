@@ -194,6 +194,29 @@ func GetMediaByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetMediaByPublicID(w http.ResponseWriter, r *http.Request) {
+	publicID := r.URL.Query().Get("publicId")
+
+	var media model.Media
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := database.MediaCollection.FindOne(ctx, bson.M{"publicId": publicID}).Decode(&media)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to find media")
+		http.Error(w, "Media not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(media); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
 func DeleteMedia(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 

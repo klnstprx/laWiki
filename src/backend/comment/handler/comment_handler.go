@@ -220,30 +220,60 @@ func PutComment(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetCommentByContent(w http.ResponseWriter, r *http.Request) {
+func GetCommentsByContent(w http.ResponseWriter, r *http.Request) {
 	content := r.URL.Query().Get("content")
 
-	var comment model.Comment
+	var comments []model.Comment
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := database.CommentCollection.FindOne(ctx, bson.M{"content": content}).Decode(&comment)
+	filter := bson.M{
+		"content": bson.M{
+			"$regex":   content,
+			"$options": "i",
+		},
+	}
+
+	cursor, err := database.CommentCollection.Find(ctx, filter)
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Comment not found")
-		http.Error(w, "Comment not found", http.StatusNotFound)
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var comment model.Comment
+		if err := cursor.Decode(&comment); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode comment")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		comments = append(comments, comment)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(comments) == 0 {
+		config.App.Logger.Warn().Str("content", content).Msg("No comments found")
+		http.Error(w, "No comments found", http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(comment); err != nil {
+	if err := json.NewEncoder(w).Encode(comments); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 }
 
-func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
+func GetCommentsByRating(w http.ResponseWriter, r *http.Request) {
 	ratingString := r.URL.Query().Get("rating")
 
 	// cast rating to int
@@ -283,6 +313,12 @@ func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(comments) == 0 {
+		config.App.Logger.Warn().Int("rating", rating).Msg("No comments found")
+		http.Error(w, "No comments found", http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(comments); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
@@ -291,7 +327,7 @@ func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetCommentByDate(w http.ResponseWriter, r *http.Request) {
+func GetCommentsByDate(w http.ResponseWriter, r *http.Request) {
 	createdAtString := r.URL.Query().Get("createdAt")
 
 	// Parse the date (expected format: YYYY-MM-DD)
@@ -340,6 +376,104 @@ func GetCommentByDate(w http.ResponseWriter, r *http.Request) {
 	if err := cursor.Err(); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Cursor error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(comments) == 0 {
+		config.App.Logger.Warn().Str("createdAt", createdAtString).Msg("No comments found")
+		http.Error(w, "No comments found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(comments); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetCommentsByAuthor(w http.ResponseWriter, r *http.Request) {
+	author := r.URL.Query().Get("author")
+
+	var comments []model.Comment
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := database.CommentCollection.Find(ctx, bson.M{"author": author})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var comment model.Comment
+		if err := cursor.Decode(&comment); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode comment")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		comments = append(comments, comment)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(comments) == 0 {
+		config.App.Logger.Warn().Str("author", author).Msg("No comments found")
+		http.Error(w, "No comments found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(comments); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetCommentsByVersionID(w http.ResponseWriter, r *http.Request) {
+	versionID := r.URL.Query().Get("versionID")
+
+	var comments []model.Comment
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := database.CommentCollection.Find(ctx, bson.M{"versionID": versionID})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var comment model.Comment
+		if err := cursor.Decode(&comment); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode comment")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		comments = append(comments, comment)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(comments) == 0 {
+		config.App.Logger.Warn().Str("versionID", versionID).Msg("No comments found")
+		http.Error(w, "No comments found", http.StatusNotFound)
 		return
 	}
 

@@ -216,7 +216,7 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetEntriesByTitle(w http.ResponseWriter, r *http.Request) {
+func GetEntryByExactTitle(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Query().Get("title")
 
 	var entry model.Entry
@@ -233,6 +233,59 @@ func GetEntriesByTitle(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(entry); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetEntriesByTitle(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Query().Get("title")
+
+	var entries []model.Entry
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	filter := bson.M{
+		"title": bson.M{
+			"$regex":   title,
+			"$options": "i",
+		},
+	}
+
+	cursor, err := database.EntryCollection.Find(ctx, filter)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var entry model.Entry
+		if err := cursor.Decode(&entry); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode entry")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		entries = append(entries, entry)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(entries) == 0 {
+		config.App.Logger.Info().Str("title", title).Msg("No entries found")
+		http.Error(w, "No entries found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(entries); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
@@ -268,6 +321,12 @@ func GetEntriesByAuthors(w http.ResponseWriter, r *http.Request) {
 	if err := cursor.Err(); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Cursor error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(entries) == 0 {
+		config.App.Logger.Warn().Strs("authors", authors).Msg("No entries found")
+		http.Error(w, "No entries found", http.StatusNotFound)
 		return
 	}
 
@@ -331,6 +390,12 @@ func GetEntriesByDate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(entries) == 0 {
+		config.App.Logger.Warn().Str("createdAt", createdAtString).Msg("No entries found")
+		http.Error(w, "No entries found", http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(entries); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
@@ -373,6 +438,12 @@ func GetEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 	if err := cursor.Err(); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Cursor error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(entries) == 0 {
+		config.App.Logger.Warn().Str("wikiID", wikiID).Msg("No entries found")
+		http.Error(w, "No entries found", http.StatusNotFound)
 		return
 	}
 
