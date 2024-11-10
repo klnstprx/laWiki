@@ -183,7 +183,7 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 	update := bson.M{
 		"$set": bson.M{
 			"title":      entry.Title,
-			"authors":    entry.Authors,
+			"author":     entry.Author,
 			"created_at": entry.CreatedAt,
 		},
 	}
@@ -239,15 +239,15 @@ func GetEntriesByTitle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetEntriesByAuthors(w http.ResponseWriter, r *http.Request) {
-	authors := r.URL.Query()["author"]
+func GetEntriesByAuthor(w http.ResponseWriter, r *http.Request) {
+	author := r.URL.Query()["author"]
 
 	var entries []model.Entry
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cursor, err := database.EntryCollection.Find(ctx, bson.M{"authors": authors})
+	cursor, err := database.EntryCollection.Find(ctx, bson.M{"author": author})
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)

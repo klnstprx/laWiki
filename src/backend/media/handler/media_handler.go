@@ -65,7 +65,7 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	//get the file name
+	// get the file name
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -76,7 +76,8 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 	//
 	uploadResp, err := config.App.Cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: media.PublicID})
 	if err != nil {
-		log.Println("Error uploading image:", err)
+		config.App.Logger.Error().Err(err).Msg("Cloudinary error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 	media.UploadUrl = uploadResp.SecureURL
@@ -207,14 +208,7 @@ func DeleteMedia(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err = database.MediaCollection.DeleteOne(ctx, bson.M{"_id": objID})
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to delete media")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	//get the file name
+	// get the file name
 	var media model.Media
 	err = database.MediaCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&media)
 	if err != nil {
@@ -230,6 +224,13 @@ func DeleteMedia(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+	_, err = database.MediaCollection.DeleteOne(ctx, bson.M{"_id": objID})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to delete media")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusNoContent)
 }
 

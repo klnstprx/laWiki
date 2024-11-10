@@ -15,7 +15,7 @@ func NewRouter() http.Handler {
 		r.Get("/", handler.GetEntries)
 		r.Post("/", handler.PostEntry)
 		r.Get("/title", handler.GetEntriesByTitle)
-		r.Get("/authors", handler.GetEntriesByAuthors)
+		r.Get("/author", handler.GetEntriesByAuthor)
 		r.Get("/date", handler.GetEntriesByDate)
 		r.Get("/wiki", handler.GetEntriesByWikiID)
 		r.Route("/id", func(r chi.Router) {

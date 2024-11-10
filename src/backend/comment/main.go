@@ -62,7 +62,7 @@ func main() {
 
 	go func() {
 		err := httpServer.ListenAndServe()
-		if err != nil && errors.Is(err, http.ErrServerClosed) {
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			xlog.Fatal().Err(err).Msg("Failed to start HTTP server")
 		}
 	}()

@@ -120,8 +120,8 @@ func GetCommentByID(w http.ResponseWriter, r *http.Request) {
 
 	err = database.CommentCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&comment)
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Wiki not found")
-		http.Error(w, "Wiki not found", http.StatusNotFound)
+		config.App.Logger.Error().Err(err).Msg("Comment not found")
+		http.Error(w, "Comment not found", http.StatusNotFound)
 		return
 	}
 
