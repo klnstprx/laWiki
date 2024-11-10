@@ -51,6 +51,128 @@ func getImageFile(r *http.Request) (multipart.File, *multipart.FileHeader, error
 	return file, header, nil
 }
 
+// GetMedia godoc
+// @Summary      Get all media files
+// @Description  Retrieves a list of all media files from the database.
+// @Tags         Media
+// @Produce      application/json
+// @Success      200  {array}   model.Media
+// @Failure      500  {string}  string  "Internal server error"
+// @Router       /api/media/ [get]
+func GetMedia(w http.ResponseWriter, r *http.Request) {
+	var media []model.Media
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := database.MediaCollection.Find(ctx, bson.M{})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var m model.Media
+		if err := cursor.Decode(&m); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode media")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		media = append(media, m)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(media); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+// GetMediaByID godoc
+// @Summary      Get media by ID
+// @Description  Retrieves a media file by its ID.
+// @Tags         Media
+// @Produce      application/json
+// @Param        id   query     string  true  "Media ID"
+// @Success      200  {object}  model.Media
+// @Failure      400  {string}  string  "Invalid ID"
+// @Failure      404  {string}  string  "Media not found"
+// @Failure      500  {string}  string  "Internal server error"
+// @Router       /api/media/id/ [get]
+func GetMediaByID(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		config.App.Logger.Info().Msgf("Retrieved ID: %s", id)
+		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	var media model.Media
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = database.MediaCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&media)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to find media")
+		http.Error(w, "Media not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(media); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+// GetMediaByPublicID godoc
+// @Summary      Get media by PublicID
+// @Description  Retrieves a media file by its PublicID (filename).
+// @Tags         Media
+// @Produce      application/json
+// @Param        id   query     string  true  "Media PublicID"
+// @Success      200  {object}  model.Media
+// @Failure      400  {string}  string  "Invalid ID"
+// @Failure      404  {string}  string  "Media not found"
+// @Failure      500  {string}  string  "Internal server error"
+// @Router       /api/media/pubid/ [get]
+func GetMediaByPublicID(w http.ResponseWriter, r *http.Request) {
+	publicID := r.URL.Query().Get("publicId")
+
+	var media model.Media
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := database.MediaCollection.FindOne(ctx, bson.M{"publicId": publicID}).Decode(&media)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to find media")
+		http.Error(w, "Media not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(media); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
 // PostMedia godoc
 // @Summary      Upload a new media file
 // @Description  Uploads a new media file to Cloudinary and stores media info in the database.
@@ -142,177 +264,6 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 	// log.Println("Transformed image URL:", url)
 }
 
-// GetMedia godoc
-// @Summary      Get all media files
-// @Description  Retrieves a list of all media files from the database.
-// @Tags         Media
-// @Produce      application/json
-// @Success      200  {array}   model.Media
-// @Failure      500  {string}  string  "Internal server error"
-// @Router       /api/media/ [get]
-func GetMedia(w http.ResponseWriter, r *http.Request) {
-	var media []model.Media
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cursor, err := database.MediaCollection.Find(ctx, bson.M{})
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var m model.Media
-		if err := cursor.Decode(&m); err != nil {
-			config.App.Logger.Error().Err(err).Msg("Failed to decode media")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		media = append(media, m)
-	}
-
-	if err := cursor.Err(); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Cursor error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(media); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// GetMediaByID godoc
-// @Summary      Get media by ID
-// @Description  Retrieves a media file by its ID.
-// @Tags         Media
-// @Produce      application/json
-// @Param        id   query     string  true  "Media ID"
-// @Success      200  {object}  model.Media
-// @Failure      400  {string}  string  "Invalid ID"
-// @Failure      404  {string}  string  "Media not found"
-// @Failure      500  {string}  string  "Internal server error"
-// @Router       /api/media/id/ [get]
-func GetMediaByID(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		config.App.Logger.Info().Msgf("Retrieved ID: %s", id)
-		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
-		return
-	}
-
-	var media model.Media
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = database.MediaCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&media)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to find media")
-		http.Error(w, "Media not found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(media); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// GetMediaByID godoc
-// @Summary      Get media by PublicID
-// @Description  Retrieves a media file by its PublicID (filename).
-// @Tags         Media
-// @Produce      application/json
-// @Param        id   query     string  true  "Media PublicID"
-// @Success      200  {object}  model.Media
-// @Failure      400  {string}  string  "Invalid ID"
-// @Failure      404  {string}  string  "Media not found"
-// @Failure      500  {string}  string  "Internal server error"
-// @Router       /api/media/pubid/ [get]
-func GetMediaByPublicID(w http.ResponseWriter, r *http.Request) {
-	publicID := r.URL.Query().Get("publicId")
-
-	var media model.Media
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err := database.MediaCollection.FindOne(ctx, bson.M{"publicId": publicID}).Decode(&media)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to find media")
-		http.Error(w, "Media not found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(media); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// DeleteMedia godoc
-// @Summary      Delete media by ID
-// @Description  Deletes a media file by its ID from both Cloudinary and the database.
-// @Tags         Media
-// @Param        id  query     string  true  "Media ID"
-// @Success      204 {string}  string  "No Content"
-// @Failure      400 {string}  string  "Invalid ID"
-// @Failure      404 {string}  string  "Media not found"
-// @Failure      500 {string}  string  "Internal server error"
-// @Router       /api/media/id/ [delete]
-func DeleteMedia(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
-		return
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// get the file name
-	var media model.Media
-	err = database.MediaCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&media)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to find media")
-		http.Error(w, "Media not found", http.StatusNotFound)
-		return
-	}
-
-	// Delete the image from Cloudinary
-	_, err = config.App.Cld.Upload.Destroy(ctx, uploader.DestroyParams{PublicID: media.PublicID})
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Error deleting image:")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	_, err = database.MediaCollection.DeleteOne(ctx, bson.M{"_id": objID})
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to delete media")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
 // PutMedia godoc
 // @Summary      Update media by ID
 // @Description  Updates a media file by its ID in Cloudinary and updates media info in the database.
@@ -365,6 +316,55 @@ func PutMedia(w http.ResponseWriter, r *http.Request) {
 	_, err = database.MediaCollection.ReplaceOne(ctx, bson.M{"_id": objID}, media)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to update media")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// DeleteMedia godoc
+// @Summary      Delete media by ID
+// @Description  Deletes a media file by its ID from both Cloudinary and the database.
+// @Tags         Media
+// @Param        id  query     string  true  "Media ID"
+// @Success      204 {string}  string  "No Content"
+// @Failure      400 {string}  string  "Invalid ID"
+// @Failure      404 {string}  string  "Media not found"
+// @Failure      500 {string}  string  "Internal server error"
+// @Router       /api/media/id/ [delete]
+func DeleteMedia(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// get the file name
+	var media model.Media
+	err = database.MediaCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&media)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to find media")
+		http.Error(w, "Media not found", http.StatusNotFound)
+		return
+	}
+
+	// Delete the image from Cloudinary
+	_, err = config.App.Cld.Upload.Destroy(ctx, uploader.DestroyParams{PublicID: media.PublicID})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Error deleting image:")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	_, err = database.MediaCollection.DeleteOne(ctx, bson.M{"_id": objID})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to delete media")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}

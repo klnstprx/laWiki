@@ -240,6 +240,50 @@
                 }
             }
         },
+        "/api/versions/entry/": {
+            "delete": {
+                "description": "Deletes all versions associated with a specific Entry ID.",
+                "tags": [
+                    "Entries"
+                ],
+                "summary": "Deletes all versions by the Entry ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Entry ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "EntryID is required",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "No versions found for the given entry ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete associated comments",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/versions/health": {
             "get": {
                 "description": "Checks if the service is up",

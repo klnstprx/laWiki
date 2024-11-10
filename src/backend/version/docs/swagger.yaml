@@ -172,6 +172,35 @@ paths:
       summary: Get versions by Entry ID
       tags:
       - Versions
+  /api/versions/entry/:
+    delete:
+      description: Deletes all versions associated with a specific Entry ID.
+      parameters:
+      - description: Entry ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: EntryID is required
+          schema:
+            type: string
+        "404":
+          description: No versions found for the given entry ID
+          schema:
+            type: string
+        "500":
+          description: Failed to delete associated comments
+          schema:
+            type: string
+      summary: Deletes all versions by the Entry ID
+      tags:
+      - Entries
   /api/versions/health:
     get:
       description: Checks if the service is up

@@ -27,57 +27,6 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }
 
-// PostEntry godoc
-// @Summary      Create a new entry
-// @Description  Creates a new entry. Expects a JSON object in the request body.
-// @Tags         Entries
-// @Accept       application/json
-// @Produce      application/json
-// @Param        entry  body      model.Entry  true  "Entry information"
-// @Success      201    {object}  model.Entry
-// @Failure      400    {string}  string  "Invalid request body"
-// @Failure      500    {string}  string  "Internal server error"
-// @Router       /api/entries/ [post]
-func PostEntry(w http.ResponseWriter, r *http.Request) {
-	var entry model.Entry
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&entry); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	entry.CreatedAt = time.Now()
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	result, err := database.EntryCollection.InsertOne(ctx, entry)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	objID, ok := result.InsertedID.(primitive.ObjectID)
-	if !ok {
-		config.App.Logger.Error().Msg("Failed to convert InsertedID to ObjectID")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	entry.ID = objID.Hex()
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(entry); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	config.App.Logger.Info().Interface("entry", entry).Msg("Added new entry")
-}
-
 // GetEntries godoc
 // @Summary      Get all entries
 // @Description  Retrieves the list of all entries from the database.
@@ -154,151 +103,6 @@ func GetEntryByID(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Entry not found")
 		http.Error(w, "Entry not found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(entry); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// DeleteEntry godoc
-// @Summary      Delete an entry by ID
-// @Description  Deletes an entry by its ID.
-// @Tags         Entries
-// @Param        id    query     string  true  "Entry ID"
-// @Success      204   {string}  string  "No Content"
-// @Failure      400   {string}  string  "Invalid ID"
-// @Failure      404   {string}  string  "Entry not found"
-// @Failure      500   {string}  string  "Internal server error"
-// @Router       /api/entries/id/ [delete]
-func DeleteEntry(w http.ResponseWriter, r *http.Request) {
-	entryID := r.URL.Query().Get("id")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	// Delete associated versions first
-	versionServiceURL := fmt.Sprintf("%s/api/versions/entry?entryID=%s", config.App.API_GATEWAY_URL, entryID)
-	config.App.Logger.Info().Str("url", versionServiceURL).Msg("Preparing to delete associated versions")
-
-	req, err := http.NewRequest("DELETE", versionServiceURL, nil)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to create request to version service")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	config.App.Logger.Info().Str("url", versionServiceURL).Msg("Sending request to delete associated versions")
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to send request to version service")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		bodyString := string(bodyBytes)
-		config.App.Logger.Error().
-			Int("status", resp.StatusCode).
-			Str("body", bodyString).
-			Msg("version service returned error")
-		http.Error(w, "Failed to delete associated versions", http.StatusInternalServerError)
-		return
-	}
-
-	// Now proceed to delete the entry document
-	objID, err := primitive.ObjectIDFromHex(entryID)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid entry ID")
-		http.Error(w, "Invalid entry ID", http.StatusBadRequest)
-		return
-	}
-
-	result, err := database.EntryCollection.DeleteOne(ctx, bson.M{"_id": objID})
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to delete entry")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	if result.DeletedCount == 0 {
-		config.App.Logger.Info().Msg("Version not found")
-		http.Error(w, "Entry not found", http.StatusNotFound)
-		return
-	}
-
-	config.App.Logger.Info().Str("entryID", entryID).Msg("Version and associated versions deleted successfully")
-	w.WriteHeader(http.StatusNoContent)
-}
-
-// PutEntry godoc
-// @Summary      Update an entry by ID
-// @Description  Updates an entry by its ID. Expects a JSON object in the request body.
-// @Tags         Entries
-// @Accept       application/json
-// @Produce      application/json
-// @Param        id     query     string      true  "Entry ID"
-// @Param        entry  body      model.Entry true  "Updated entry information"
-// @Success      200    {object}  model.Entry
-// @Failure      400    {string}  string  "Invalid ID or request body"
-// @Failure      404    {string}  string  "Entry not found"
-// @Failure      500    {string}  string  "Internal server error"
-// @Router       /api/entries/id/ [put]
-func PutEntry(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
-		return
-	}
-
-	var entry model.Entry
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&entry); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	update := bson.M{
-		"$set": bson.M{
-			"title":      entry.Title,
-			"author":     entry.Author,
-			"created_at": entry.CreatedAt,
-		},
-	}
-
-	result, err := database.EntryCollection.UpdateOne(ctx, bson.M{"_id": objID}, update)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	if result.MatchedCount == 0 {
-		config.App.Logger.Warn().Str("id", id).Msg("Entry not found for update")
-		http.Error(w, "Entry not found", http.StatusNotFound)
-		return
-	}
-
-	// Retrieve the updated document (optional)
-	err = database.EntryCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&entry)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to retrieve updated entry")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
@@ -612,6 +416,212 @@ func GetEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// PostEntry godoc
+// @Summary      Create a new entry
+// @Description  Creates a new entry. Expects a JSON object in the request body.
+// @Tags         Entries
+// @Accept       application/json
+// @Produce      application/json
+// @Param        entry  body      model.Entry  true  "Entry information"
+// @Success      201    {object}  model.Entry
+// @Failure      400    {string}  string  "Invalid request body"
+// @Failure      500    {string}  string  "Internal server error"
+// @Router       /api/entries/ [post]
+func PostEntry(w http.ResponseWriter, r *http.Request) {
+	var entry model.Entry
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&entry); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	entry.CreatedAt = time.Now()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := database.EntryCollection.InsertOne(ctx, entry)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	objID, ok := result.InsertedID.(primitive.ObjectID)
+	if !ok {
+		config.App.Logger.Error().Msg("Failed to convert InsertedID to ObjectID")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	entry.ID = objID.Hex()
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(entry); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	config.App.Logger.Info().Interface("entry", entry).Msg("Added new entry")
+}
+
+// PutEntry godoc
+// @Summary      Update an entry by ID
+// @Description  Updates an entry by its ID. Expects a JSON object in the request body.
+// @Tags         Entries
+// @Accept       application/json
+// @Produce      application/json
+// @Param        id     query     string      true  "Entry ID"
+// @Param        entry  body      model.Entry true  "Updated entry information"
+// @Success      200    {object}  model.Entry
+// @Failure      400    {string}  string  "Invalid ID or request body"
+// @Failure      404    {string}  string  "Entry not found"
+// @Failure      500    {string}  string  "Internal server error"
+// @Router       /api/entries/id/ [put]
+func PutEntry(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	var entry model.Entry
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&entry); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	update := bson.M{
+		"$set": bson.M{
+			"title":      entry.Title,
+			"author":     entry.Author,
+			"created_at": entry.CreatedAt,
+		},
+	}
+
+	result, err := database.EntryCollection.UpdateOne(ctx, bson.M{"_id": objID}, update)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if result.MatchedCount == 0 {
+		config.App.Logger.Warn().Str("id", id).Msg("Entry not found for update")
+		http.Error(w, "Entry not found", http.StatusNotFound)
+		return
+	}
+
+	// Retrieve the updated document (optional)
+	err = database.EntryCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&entry)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to retrieve updated entry")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(entry); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+// DeleteEntry godoc
+// @Summary      Delete an entry by ID
+// @Description  Deletes an entry by its ID.
+// @Tags         Entries
+// @Param        id    query     string  true  "Entry ID"
+// @Success      204   {string}  string  "No Content"
+// @Failure      400   {string}  string  "Invalid ID"
+// @Failure      404   {string}  string  "Entry not found"
+// @Failure      500   {string}  string  "Internal server error"
+// @Router       /api/entries/id/ [delete]
+func DeleteEntry(w http.ResponseWriter, r *http.Request) {
+	entryID := r.URL.Query().Get("id")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Delete associated versions first
+	versionServiceURL := fmt.Sprintf("%s/api/versions/entry?entryID=%s", config.App.API_GATEWAY_URL, entryID)
+	config.App.Logger.Info().Str("url", versionServiceURL).Msg("Preparing to delete associated versions")
+
+	req, err := http.NewRequest("DELETE", versionServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to version service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	config.App.Logger.Info().Str("url", versionServiceURL).Msg("Sending request to delete associated versions")
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to version service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", bodyString).
+			Msg("version service returned error")
+		http.Error(w, "Failed to delete associated versions", http.StatusInternalServerError)
+		return
+	}
+
+	// Now proceed to delete the entry document
+	objID, err := primitive.ObjectIDFromHex(entryID)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Invalid entry ID")
+		http.Error(w, "Invalid entry ID", http.StatusBadRequest)
+		return
+	}
+
+	result, err := database.EntryCollection.DeleteOne(ctx, bson.M{"_id": objID})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to delete entry")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if result.DeletedCount == 0 {
+		config.App.Logger.Info().Msg("Version not found")
+		http.Error(w, "Entry not found", http.StatusNotFound)
+		return
+	}
+
+	config.App.Logger.Info().Str("entryID", entryID).Msg("Version and associated versions deleted successfully")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// DeleteEntriesByWikiID godoc
+// @Summary      Deletes all entries by the Wiki ID
+// @Description  Deletes all entries associated with a specific Wiki ID.
+// @Tags         Entries
+// @Param        id    query     string  true  "Wiki ID"
+// @Success      204   {string}  string  "No Content"
+// @Failure      400   {string}  string  "WikiID is required"
+// @Failure      404   {string}  string  "No entries found"
+// @Failure      500   {string}  string  "Internal server error"
+// @Router       /api/entries/wiki/ [delete]
 func DeleteEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 	wikiID := r.URL.Query().Get("wikiID")
 

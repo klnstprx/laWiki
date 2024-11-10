@@ -458,6 +458,50 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/entries/wiki/": {
+            "delete": {
+                "description": "Deletes all entries associated with a specific Wiki ID.",
+                "tags": [
+                    "Entries"
+                ],
+                "summary": "Deletes all entries by the Wiki ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Wiki ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "WikiID is required",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "No entries found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

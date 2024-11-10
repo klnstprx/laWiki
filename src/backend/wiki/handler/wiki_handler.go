@@ -27,56 +27,6 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }
 
-// PostWiki godoc
-// @Summary      Create a new wiki
-// @Description  Creates a new wiki. Expects a JSON object in the request body.
-// @Tags         Wikis
-// @Accept       application/json
-// @Produce      application/json
-// @Param        wiki  body      model.Wiki  true  "Wiki information"
-// @Success      201   {object}  model.Wiki
-// @Failure      400   {string}  string  "Invalid request body"
-// @Failure      500   {string}  string  "Internal server error"
-// @Router       /api/wikis/ [post]
-func PostWiki(w http.ResponseWriter, r *http.Request) {
-	var wiki model.Wiki
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&wiki); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	result, err := database.WikiCollection.InsertOne(ctx, wiki)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	// Ensure InsertedID is of type primitive.ObjectID
-	objID, ok := result.InsertedID.(primitive.ObjectID)
-	if !ok {
-		config.App.Logger.Error().Msg("Failed to convert InsertedID to ObjectID")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	wiki.ID = objID.Hex()
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated) // Return 201 Created
-	if err := json.NewEncoder(w).Encode(wiki); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	config.App.Logger.Info().Interface("wiki", wiki).Msg("Added new wiki")
-}
-
 // GetWikis godoc
 // @Summary      Get all wikis
 // @Description  Retrieves the list of all wiki JSON objects from the database.
@@ -162,151 +112,6 @@ func GetWikiByID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-}
-
-// PutWiki godoc
-// @Summary      Update a wiki by ID
-// @Description  Updates a wiki by its ID. Expects a JSON object in the request.
-// @Tags         Wikis
-// @Accept       application/json
-// @Produce      application/json
-// @Param        id    query     string  true  "Wiki ID"
-// @Param        wiki  body      model.Wiki  true  "Updated wiki information"
-// @Success      200   {object}  model.Wiki
-// @Failure      400   {string}  string  "Invalid ID or request body"
-// @Failure      404   {string}  string  "Wiki not found"
-// @Failure      500   {string}  string  "Internal server error"
-// @Router       /api/wikis/id/ [put]
-func PutWiki(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
-		return
-	}
-
-	var wiki model.Wiki
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&wiki); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	update := bson.M{
-		"$set": bson.M{
-			"title":       wiki.Title,
-			"description": wiki.Description,
-			"category":    wiki.Category,
-		},
-	}
-
-	result, err := database.WikiCollection.UpdateOne(ctx, bson.M{"_id": objID}, update)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	if result.MatchedCount == 0 {
-		config.App.Logger.Warn().Str("id", id).Msg("Wiki not found for update")
-		http.Error(w, "Wiki not found", http.StatusNotFound)
-		return
-	}
-
-	// Retrieve the updated document (optional)
-	err = database.WikiCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&wiki)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to retrieve updated wiki")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(wiki); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// DeleteWiki godoc
-// @Summary      Delete a wiki by ID
-// @Description  Deletes a wiki by its ID.
-// @Tags         Wikis
-// @Param        id    query     string  true  "Wiki ID"
-// @Success      204   {string}  string  "No Content"
-// @Failure      400   {string}  string  "Invalid ID"
-// @Failure      404   {string}  string  "Wiki not found"
-// @Failure      500   {string}  string  "Internal server error"
-// @Router       /api/wikis/id/ [delete]
-func DeleteWiki(w http.ResponseWriter, r *http.Request) {
-	wikiID := r.URL.Query().Get("id")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	// Delete associated entries first
-	entryServiceURL := fmt.Sprintf("%s/api/entries/wiki?wikiID=%s", config.App.API_GATEWAY_URL, wikiID)
-	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Preparing to delete associated entries")
-
-	req, err := http.NewRequest("DELETE", entryServiceURL, nil)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to create request to entry service")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Sending request to delete associated entries")
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to send request to entry service")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		bodyString := string(bodyBytes)
-		config.App.Logger.Error().
-			Int("status", resp.StatusCode).
-			Str("body", bodyString).
-			Msg("Entry service returned error")
-		http.Error(w, "Failed to delete associated entries", http.StatusInternalServerError)
-		return
-	}
-
-	// Now proceed to delete the wiki document
-	objID, err := primitive.ObjectIDFromHex(wikiID)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid wiki ID")
-		http.Error(w, "Invalid wiki ID", http.StatusBadRequest)
-		return
-	}
-
-	result, err := database.WikiCollection.DeleteOne(ctx, bson.M{"_id": objID})
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to delete wiki")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	if result.DeletedCount == 0 {
-		config.App.Logger.Info().Msg("Wiki not found")
-		http.Error(w, "Wiki not found", http.StatusNotFound)
-		return
-	}
-
-	config.App.Logger.Info().Str("wikiID", wikiID).Msg("Wiki and associated entries deleted successfully")
-	w.WriteHeader(http.StatusNoContent)
 }
 
 // GetWikisByTitle godoc
@@ -508,4 +313,199 @@ func GetWikisByCategory(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+}
+
+// PostWiki godoc
+// @Summary      Create a new wiki
+// @Description  Creates a new wiki. Expects a JSON object in the request body.
+// @Tags         Wikis
+// @Accept       application/json
+// @Produce      application/json
+// @Param        wiki  body      model.Wiki  true  "Wiki information"
+// @Success      201   {object}  model.Wiki
+// @Failure      400   {string}  string  "Invalid request body"
+// @Failure      500   {string}  string  "Internal server error"
+// @Router       /api/wikis/ [post]
+func PostWiki(w http.ResponseWriter, r *http.Request) {
+	var wiki model.Wiki
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&wiki); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := database.WikiCollection.InsertOne(ctx, wiki)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Ensure InsertedID is of type primitive.ObjectID
+	objID, ok := result.InsertedID.(primitive.ObjectID)
+	if !ok {
+		config.App.Logger.Error().Msg("Failed to convert InsertedID to ObjectID")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	wiki.ID = objID.Hex()
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated) // Return 201 Created
+	if err := json.NewEncoder(w).Encode(wiki); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	config.App.Logger.Info().Interface("wiki", wiki).Msg("Added new wiki")
+}
+
+// PutWiki godoc
+// @Summary      Update a wiki by ID
+// @Description  Updates a wiki by its ID. Expects a JSON object in the request.
+// @Tags         Wikis
+// @Accept       application/json
+// @Produce      application/json
+// @Param        id    query     string  true  "Wiki ID"
+// @Param        wiki  body      model.Wiki  true  "Updated wiki information"
+// @Success      200   {object}  model.Wiki
+// @Failure      400   {string}  string  "Invalid ID or request body"
+// @Failure      404   {string}  string  "Wiki not found"
+// @Failure      500   {string}  string  "Internal server error"
+// @Router       /api/wikis/id/ [put]
+func PutWiki(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	var wiki model.Wiki
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&wiki); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	update := bson.M{
+		"$set": bson.M{
+			"title":       wiki.Title,
+			"description": wiki.Description,
+			"category":    wiki.Category,
+		},
+	}
+
+	result, err := database.WikiCollection.UpdateOne(ctx, bson.M{"_id": objID}, update)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if result.MatchedCount == 0 {
+		config.App.Logger.Warn().Str("id", id).Msg("Wiki not found for update")
+		http.Error(w, "Wiki not found", http.StatusNotFound)
+		return
+	}
+
+	// Retrieve the updated document (optional)
+	err = database.WikiCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&wiki)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to retrieve updated wiki")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(wiki); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+// DeleteWiki godoc
+// @Summary      Delete a wiki by ID
+// @Description  Deletes a wiki by its ID.
+// @Tags         Wikis
+// @Param        id    query     string  true  "Wiki ID"
+// @Success      204   {string}  string  "No Content"
+// @Failure      400   {string}  string  "Invalid ID"
+// @Failure      404   {string}  string  "Wiki not found"
+// @Failure      500   {string}  string  "Internal server error"
+// @Router       /api/wikis/id/ [delete]
+func DeleteWiki(w http.ResponseWriter, r *http.Request) {
+	wikiID := r.URL.Query().Get("id")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Delete associated entries first
+	entryServiceURL := fmt.Sprintf("%s/api/entries/wiki?wikiID=%s", config.App.API_GATEWAY_URL, wikiID)
+	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Preparing to delete associated entries")
+
+	req, err := http.NewRequest("DELETE", entryServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Sending request to delete associated entries")
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", bodyString).
+			Msg("Entry service returned error")
+		http.Error(w, "Failed to delete associated entries", http.StatusInternalServerError)
+		return
+	}
+
+	// Now proceed to delete the wiki document
+	objID, err := primitive.ObjectIDFromHex(wikiID)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Invalid wiki ID")
+		http.Error(w, "Invalid wiki ID", http.StatusBadRequest)
+		return
+	}
+
+	result, err := database.WikiCollection.DeleteOne(ctx, bson.M{"_id": objID})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to delete wiki")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if result.DeletedCount == 0 {
+		config.App.Logger.Info().Msg("Wiki not found")
+		http.Error(w, "Wiki not found", http.StatusNotFound)
+		return
+	}
+
+	config.App.Logger.Info().Str("wikiID", wikiID).Msg("Wiki and associated entries deleted successfully")
+	w.WriteHeader(http.StatusNoContent)
 }

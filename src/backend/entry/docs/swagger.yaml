@@ -314,4 +314,33 @@ paths:
       summary: Get entries by Wiki ID
       tags:
       - Entries
+  /api/entries/wiki/:
+    delete:
+      description: Deletes all entries associated with a specific Wiki ID.
+      parameters:
+      - description: Wiki ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: WikiID is required
+          schema:
+            type: string
+        "404":
+          description: No entries found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Deletes all entries by the Wiki ID
+      tags:
+      - Entries
 swagger: "2.0"
