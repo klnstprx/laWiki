@@ -223,6 +223,45 @@ paths:
       summary: Get comment by ID
       tags:
       - Comments
+    put:
+      consumes:
+      - application/json
+      description: Updates a comment by its ID. Expects a JSON object in the request
+        body.
+      parameters:
+      - description: Comment ID
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Updated comment
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/model.Comment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Comment'
+        "400":
+          description: Invalid ID or request body
+          schema:
+            type: string
+        "404":
+          description: Comment not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update comment by ID
+      tags:
+      - Comments
   /api/comments/rating:
     get:
       description: Retrieves comments with a specific rating.
@@ -295,46 +334,6 @@ paths:
           schema:
             type: string
       summary: Get comments by the id of a version its associated to
-      tags:
-      - Comments
-  /id/:
-    put:
-      consumes:
-      - application/json
-      description: Updates a comment by its ID. Expects a JSON object in the request
-        body.
-      parameters:
-      - description: Comment ID
-        in: query
-        name: id
-        required: true
-        type: string
-      - description: Updated comment
-        in: body
-        name: comment
-        required: true
-        schema:
-          $ref: '#/definitions/model.Comment'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Comment'
-        "400":
-          description: Invalid ID or request body
-          schema:
-            type: string
-        "404":
-          description: Comment not found
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Update comment by ID
       tags:
       - Comments
 swagger: "2.0"

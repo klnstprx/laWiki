@@ -1692,6 +1692,103 @@
           }
         }
       },
+      "put": {
+        "description": "Updates a comment by its ID. Expects a JSON object in the request body.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Comments"
+        ],
+        "summary": "Update comment by ID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Comment ID",
+            "name": "id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "description": "Updated comment",
+            "name": "comment",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "author": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "string"
+                },
+                "created_at": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "rating": {
+                  "type": "integer"
+                },
+                "version_id": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "author": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "string"
+                },
+                "created_at": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "rating": {
+                  "type": "integer"
+                },
+                "version_id": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID or request body",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "Comment not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "delete": {
         "description": "Deletes a comment by its ID.",
         "tags": [
@@ -1874,105 +1971,6 @@
         "responses": {
           "204": {
             "description": "No Content",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "/id/": {
-      "put": {
-        "description": "Updates a comment by its ID. Expects a JSON object in the request body.",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Comments"
-        ],
-        "summary": "Update comment by ID",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Comment ID",
-            "name": "id",
-            "in": "query",
-            "required": true
-          },
-          {
-            "description": "Updated comment",
-            "name": "comment",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "author": {
-                  "type": "string"
-                },
-                "content": {
-                  "type": "string"
-                },
-                "created_at": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                },
-                "rating": {
-                  "type": "integer"
-                },
-                "version_id": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "author": {
-                  "type": "string"
-                },
-                "content": {
-                  "type": "string"
-                },
-                "created_at": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                },
-                "rating": {
-                  "type": "integer"
-                },
-                "version_id": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid ID or request body",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "404": {
-            "description": "Comment not found",
             "schema": {
               "type": "string"
             }
@@ -2340,7 +2338,7 @@
       "delete": {
         "description": "Deletes all versions associated with a specific Entry ID.",
         "tags": [
-          "Entries"
+          "Versions"
         ],
         "summary": "Deletes all versions by the Entry ID",
         "parameters": [

@@ -200,7 +200,7 @@ paths:
             type: string
       summary: Deletes all versions by the Entry ID
       tags:
-      - Entries
+      - Versions
   /api/versions/health:
     get:
       description: Checks if the service is up

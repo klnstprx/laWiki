@@ -250,7 +250,7 @@ const docTemplate = `{
             "delete": {
                 "description": "Deletes all versions associated with a specific Entry ID.",
                 "tags": [
-                    "Entries"
+                    "Versions"
                 ],
                 "summary": "Deletes all versions by the Entry ID",
                 "parameters": [
