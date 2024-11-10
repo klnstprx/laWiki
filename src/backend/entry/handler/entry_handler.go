@@ -338,3 +338,48 @@ func GetEntriesByDate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func GetEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
+	wikiID := r.URL.Query().Get("wikiID")
+
+	if wikiID == "" {
+		config.App.Logger.Error().Msg("WikiID is required")
+		http.Error(w, "WikiID is required", http.StatusBadRequest)
+		return
+	}
+
+	var entries []model.Entry
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := database.EntryCollection.Find(ctx, bson.M{"wiki_id": wikiID})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var entry model.Entry
+		if err := cursor.Decode(&entry); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode entry")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		entries = append(entries, entry)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(entries); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
