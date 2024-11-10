@@ -1,0 +1,1581 @@
+{
+	"info": {
+		"_postman_id": "38d92926-c5d0-437e-8e98-755dc6715a42",
+		"name": "Gateway",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26205767",
+		"_collection_link": "https://teamingweb.postman.co/workspace/464752d8-6c8e-4600-824d-de914650efa8/collection/26205767-38d92926-c5d0-437e-8e98-755dc6715a42?action=share&source=collection_link&creator=26205767"
+	},
+	"item": [
+		{
+			"name": "wiki",
+			"item": [
+				{
+					"name": "health check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{wikis_route}}/health",
+							"host": [
+								"{{gateway}}{{wikis_route}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "postWiki",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Save the entity ID to an environment variable\r",
+									"let responseData = pm.response.json();\r",
+									"if (responseData && responseData.id){\r",
+									"    pm.collectionVariables.set(\"wiki_id\", responseData.id);\r",
+									"    console.log(\"wiki_id captured and stored:\", responseData.id)\r",
+									"}else{\r",
+									"    console.log(\"wiki_id not found in the response\")\r",
+									"}\r",
+									"if (responseData && responseData.title) {\r",
+									"    pm.collectionVariables.set(\"wiki_title\", responseData.title);\r",
+									"    console.log(\"wiki_title captured and stored:\", responseData.title);\r",
+									"} else {\r",
+									"    console.error(\"title not found in the response.\");\r",
+									"}\r",
+									"if (responseData && responseData.description) {\r",
+									"    pm.collectionVariables.set(\"wiki_description\", responseData.description);\r",
+									"    console.log(\"wiki_description captured and stored:\", responseData.description);\r",
+									"} else {\r",
+									"    console.error(\"description not found in the response.\");\r",
+									"}\r",
+									"if (responseData && responseData.category) {\r",
+									"    pm.collectionVariables.set(\"wiki_category\", responseData.category);\r",
+									"    console.log(\"wiki_category captured and stored:\", responseData.category);\r",
+									"} else {\r",
+									"    console.error(\"category not found in the response.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Ferraris y cosas\", \n    \"description\": \"Esto es una wiki de ferraris\",\n    \"category\": \"Coche\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{wikis_route}}",
+							"host": [
+								"{{gateway}}{{wikis_route}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getWikis",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{wikis_route}}",
+							"host": [
+								"{{gateway}}{{wikis_route}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getWikiById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{wikis_route}}/id?id={{wiki_id}}",
+							"host": [
+								"{{gateway}}{{wikis_route}}"
+							],
+							"path": [
+								"id"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{wiki_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getWikiByTitle",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{wikis_route}}/title?title={{wiki_title}}",
+							"host": [
+								"{{gateway}}{{wikis_route}}"
+							],
+							"path": [
+								"title"
+							],
+							"query": [
+								{
+									"key": "title",
+									"value": "{{wiki_title}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getWikiByExactTitle",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{wikis_route}}/title?title={{wiki_title}}",
+							"host": [
+								"{{gateway}}{{wikis_route}}"
+							],
+							"path": [
+								"title"
+							],
+							"query": [
+								{
+									"key": "title",
+									"value": "{{wiki_title}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getWikiByDescription",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{wikis_route}}/description?description={{wiki_description}}",
+							"host": [
+								"{{gateway}}{{wikis_route}}"
+							],
+							"path": [
+								"description"
+							],
+							"query": [
+								{
+									"key": "description",
+									"value": "{{wiki_description}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getWikiByCategory",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{wikis_route}}/category?category={{wiki_category}}",
+							"host": [
+								"{{gateway}}{{wikis_route}}"
+							],
+							"path": [
+								"category"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "{{wiki_category}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "putWiki",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"test_4\", \n    \"description\": \"desc1\",\n    \"category\": \"category1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{wikis_route}}/id/?id={{wiki_id}}",
+							"host": [
+								"{{gateway}}{{wikis_route}}"
+							],
+							"path": [
+								"id",
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{wiki_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteWiki",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{wikis_route}}/id/?id={{wiki_id}}",
+							"host": [
+								"{{gateway}}{{wikis_route}}"
+							],
+							"path": [
+								"id",
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{wiki_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "entradas",
+			"item": [
+				{
+					"name": "health check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{entradas_route}}/health",
+							"host": [
+								"{{gateway}}{{entradas_route}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "postEntry",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"let responseData = pm.response.json();",
+									"",
+									"if (responseData && responseData.wiki_id) {",
+									"    pm.collectionVariables.set(\"entry_wiki_id\", responseData.wiki_id);",
+									"    console.log(\"entry_wiki_id captured and stored:\", responseData.wiki_id);",
+									"} else {",
+									"    console.error(\"wiki_id not found in the response.\");",
+									"}",
+									"",
+									"if (responseData && responseData.title) {",
+									"    pm.collectionVariables.set(\"entry_title\", responseData.title);",
+									"    console.log(\"entry_title_id captured and stored:\", responseData.title);",
+									"} else {",
+									"    console.error(\"title not found in the response.\");",
+									"}",
+									"",
+									"if (responseData && responseData.author) {",
+									"    pm.collectionVariables.set(\"entry_author\", responseData.author);",
+									"    console.log(\"entry_author captured and stored:\", responseData.author);",
+									"} else {",
+									"    console.error(\"author not found in the response.\");",
+									"}",
+									"",
+									"if (responseData && responseData.id) {",
+									"    pm.collectionVariables.set(\"entry_id\", responseData.id);",
+									"",
+									"    console.log(\"entry_id captured and stored:\", responseData.id);",
+									"} else {",
+									"    console.error(\"id not found in the response.\");",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"title\": \"F40\",\n        \"author\": \"jose\",\n        \"wiki_id\": \"673119d95be3a36fdeaaca59\"\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{entradas_route}}",
+							"host": [
+								"{{gateway}}{{entradas_route}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getEntries",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{entradas_route}}",
+							"host": [
+								"{{gateway}}{{entradas_route}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getEntryById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{entradas_route}}/id?id={{entry_id}}",
+							"host": [
+								"{{gateway}}{{entradas_route}}"
+							],
+							"path": [
+								"id"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{entry_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getEntryByExactTitle",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{entradas_route}}/exactTitle?title={{entry_title}}",
+							"host": [
+								"{{gateway}}{{entradas_route}}"
+							],
+							"path": [
+								"exactTitle"
+							],
+							"query": [
+								{
+									"key": "title",
+									"value": "{{entry_title}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getEntriesByTitle",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{entradas_route}}/title?title={{entry_title}}",
+							"host": [
+								"{{gateway}}{{entradas_route}}"
+							],
+							"path": [
+								"title"
+							],
+							"query": [
+								{
+									"key": "title",
+									"value": "{{entry_title}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getEntriesByAuthor",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{entradas_route}}/author?author={{entry_author}}",
+							"host": [
+								"{{gateway}}{{entradas_route}}"
+							],
+							"path": [
+								"author"
+							],
+							"query": [
+								{
+									"key": "author",
+									"value": "{{entry_author}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getEntriesByDate",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{entradas_route}}/date?createdAt=2024-11-10",
+							"host": [
+								"{{gateway}}{{entradas_route}}"
+							],
+							"path": [
+								"date"
+							],
+							"query": [
+								{
+									"key": "createdAt",
+									"value": "2024-11-10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetEntriesByWikiID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{entradas_route}}/wiki?wikiID={{entry_wiki_id}}",
+							"host": [
+								"{{gateway}}{{entradas_route}}"
+							],
+							"path": [
+								"wiki"
+							],
+							"query": [
+								{
+									"key": "wikiID",
+									"value": "{{entry_wiki_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "putEntry",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Entrada 1\",\n    \"author\": \"Ignacy\",\n    \"created_at\": \"2024-11-10T18:19:26.625Z\",\n    \"wiki_id\": \"672e55c14c65666716706f8b\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{entradas_route}}/id/?id={{entry_id}}",
+							"host": [
+								"{{gateway}}{{entradas_route}}"
+							],
+							"path": [
+								"id",
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{entry_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteEntry",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{entradas_route}}/id/?id={{entry_id}}",
+							"host": [
+								"{{gateway}}{{entradas_route}}"
+							],
+							"path": [
+								"id",
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{entry_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "versiones",
+			"item": [
+				{
+					"name": "health check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{versions_route}}/health",
+							"host": [
+								"{{gateway}}{{versions_route}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "postVersion",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData = pm.response.json();",
+									"",
+									"if (responseData && responseData.entry_id) {",
+									"    pm.collectionVariables.set(\"version_entry_id\", responseData.entry_id);",
+									"    console.log(\"entry_id captured and stored:\", responseData.entry_id);",
+									"} else {",
+									"    console.error(\"entry_id not found in the response.\");",
+									"}",
+									"",
+									"if (responseData && responseData.content) {",
+									"    pm.collectionVariables.set(\"version_content\", responseData.content);",
+									"    console.log(\"version_content captured and stored:\", responseData.content);",
+									"} else {",
+									"    console.error(\"content not found in the response.\");",
+									"}",
+									"",
+									"if (responseData && responseData.editor) {",
+									"    pm.collectionVariables.set(\"version_editor\", responseData.editor);",
+									"    console.log(\"version_editor captured and stored:\", responseData.editor);",
+									"} else {",
+									"    console.error(\"editor not found in the response.\");",
+									"}",
+									"",
+									"if (responseData && responseData.id) {",
+									"    pm.collectionVariables.set(\"version_id\", responseData.id);",
+									"",
+									"    console.log(\"version_id captured and stored:\", responseData.id);",
+									"} else {",
+									"    console.error(\"id not found in the response.\");",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"content\": \"Este es el contenido actualizado en el PUT\",\n        \"editor\": \"pepe\",\n        \"created_at\": \"2024-11-10T00:00:00Z\",\n        \"entry_id\": \"67311bf03399f3b49ccb8072\"\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{versions_route}}/",
+							"host": [
+								"{{gateway}}{{versions_route}}"
+							],
+							"path": [
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getVersions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{versions_route}}/",
+							"host": [
+								"{{gateway}}{{versions_route}}"
+							],
+							"path": [
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getVersionById",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{versions_route}}/id/?id={{version_id}}",
+							"host": [
+								"{{gateway}}{{versions_route}}"
+							],
+							"path": [
+								"id",
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{version_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getVersionsByContent",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{versions_route}}/content?content={{version_content}}",
+							"host": [
+								"{{gateway}}{{versions_route}}"
+							],
+							"path": [
+								"content"
+							],
+							"query": [
+								{
+									"key": "content",
+									"value": "{{version_content}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getVersionsByEditor",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{versions_route}}/editor?editor={{version_editor}}",
+							"host": [
+								"{{gateway}}{{versions_route}}"
+							],
+							"path": [
+								"editor"
+							],
+							"query": [
+								{
+									"key": "editor",
+									"value": "{{version_editor}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getVersionsByDate",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{versions_route}}/date?createdAt=2024-11-10",
+							"host": [
+								"{{gateway}}{{versions_route}}"
+							],
+							"path": [
+								"date"
+							],
+							"query": [
+								{
+									"key": "createdAt",
+									"value": "2024-11-10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getVersionsByEntryID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{versions_route}}/entry?entryID={{version_entry_id}}",
+							"host": [
+								"{{gateway}}{{versions_route}}"
+							],
+							"path": [
+								"entry"
+							],
+							"query": [
+								{
+									"key": "entryID",
+									"value": "{{version_entry_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "putVersion",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"content\": \"Este es el contenido actualizado en el PUT\",\n        \"editor\": \"pepillo\",\n        \"created_at\": \"0001-01-01T00:00:00Z\",\n        \"entry_id\": \"672ba8e0aa63a3c47066a961\"\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{versions_route}}/id/?id={{version_id}}",
+							"host": [
+								"{{gateway}}{{versions_route}}"
+							],
+							"path": [
+								"id",
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{version_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteVersion",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{versions_route}}/id/?id={{version_id}}",
+							"host": [
+								"{{gateway}}{{versions_route}}"
+							],
+							"path": [
+								"id",
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{version_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "comentarios",
+			"item": [
+				{
+					"name": "health check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{comentarios_route}}/health",
+							"host": [
+								"{{gateway}}{{comentarios_route}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "postComment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"let responseData = pm.response.json();",
+									"",
+									"if (responseData && responseData.version_id) {",
+									"    pm.collectionVariables.set(\"comment_version_id\", responseData.version_id);",
+									"",
+									"    console.log(\"comment_version_id captured and stored:\", responseData.version_id);",
+									"} else {",
+									"    console.error(\"id not found in the response.\");",
+									"}",
+									"",
+									"if (responseData && responseData.content) {",
+									"    pm.collectionVariables.set(\"comment_content\", responseData.content);",
+									"",
+									"    console.log(\"comment_content captured and stored:\", responseData.content);",
+									"} else {",
+									"    console.error(\"content not found in the response.\");",
+									"}",
+									"",
+									"if (responseData && responseData.content) {",
+									"    pm.collectionVariables.set(\"comment_rating\", responseData.rating);",
+									"",
+									"    console.log(\"comment_rating captured and stored:\", responseData.rating);",
+									"} else {",
+									"    console.error(\"rating not found in the response.\");",
+									"}",
+									"",
+									"if (responseData && responseData.content) {",
+									"    pm.collectionVariables.set(\"comment_author\", responseData.author);",
+									"",
+									"    console.log(\"comment_author captured and stored:\", responseData.author);",
+									"} else {",
+									"    console.error(\"author not found in the response.\");",
+									"}",
+									"",
+									"if (responseData && responseData.id) {",
+									"    pm.collectionVariables.set(\"comment_id\", responseData.id);",
+									"",
+									"    console.log(\"comment_id captured and stored:\", responseData.id);",
+									"} else {",
+									"    console.error(\"id not found in the response.\");",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"adios\",\n    \"rating\": 5,\n    \"created_at\": \"2024-11-10T18:55:09.073Z\",\n    \"author\": \"ignacymalvado\",\n    \"version_id\": \"67311c0143d96ecd81728a94\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{comentarios_route}}/",
+							"host": [
+								"{{gateway}}{{comentarios_route}}"
+							],
+							"path": [
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getComments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{comentarios_route}}/",
+							"host": [
+								"{{gateway}}{{comentarios_route}}"
+							],
+							"path": [
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getCommentById",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{comentarios_route}}/id?id={{comment_id}}",
+							"host": [
+								"{{gateway}}{{comentarios_route}}"
+							],
+							"path": [
+								"id"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{comment_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getCommentByContent",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{comentarios_route}}/content?content={{comment_content}}",
+							"host": [
+								"{{gateway}}{{comentarios_route}}"
+							],
+							"path": [
+								"content"
+							],
+							"query": [
+								{
+									"key": "content",
+									"value": "{{comment_content}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getCommentByRating",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{comentarios_route}}/rating?rating={{comment_rating}}",
+							"host": [
+								"{{gateway}}{{comentarios_route}}"
+							],
+							"path": [
+								"rating"
+							],
+							"query": [
+								{
+									"key": "rating",
+									"value": "{{comment_rating}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getCommentByDate",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{comentarios_route}}/date?createdAt=2024-11-10",
+							"host": [
+								"{{gateway}}{{comentarios_route}}"
+							],
+							"path": [
+								"date"
+							],
+							"query": [
+								{
+									"key": "createdAt",
+									"value": "2024-11-10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getCommentByAuthor",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{comentarios_route}}/author?author={{comment_author}}",
+							"host": [
+								"{{gateway}}{{comentarios_route}}"
+							],
+							"path": [
+								"author"
+							],
+							"query": [
+								{
+									"key": "author",
+									"value": "{{comment_author}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getCommentByVersionID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{comentarios_route}}/version?versionID={{comment_version_id}}",
+							"host": [
+								"{{gateway}}{{comentarios_route}}"
+							],
+							"path": [
+								"version"
+							],
+							"query": [
+								{
+									"key": "versionID",
+									"value": "{{comment_version_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "putComment",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"holas hola\",\n    \"rating\": 4,\n    \"created_at\": \"2024-11-10T18:55:09.073Z\",\n    \"author\": \"ignacy\",\n    \"version_id\": \"6730fdb97bb1b578fe0e3424\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gateway}}{{comentarios_route}}/id?id={{comment_id}}",
+							"host": [
+								"{{gateway}}{{comentarios_route}}"
+							],
+							"path": [
+								"id"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{comment_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteComment",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{comentarios_route}}/id?id={{comment_id}}",
+							"host": [
+								"{{gateway}}{{comentarios_route}}"
+							],
+							"path": [
+								"id"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{comment_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "media",
+			"item": [
+				{
+					"name": "postMedia",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"let responseData = pm.response.json();",
+									"",
+									"if (responseData && responseData.id) {",
+									"    pm.collectionVariables.set(\"media_id\", responseData.id);",
+									"",
+									"    console.log(\"media_id captured and stored:\", responseData.id);",
+									"} else {",
+									"    console.error(\"id not found in the response.\");",
+									"}",
+									"",
+									"if (responseData && responseData.publicId) {",
+									"    pm.collectionVariables.set(\"media_public_id\", responseData.publicId);",
+									"",
+									"    console.log(\"media_public_id captured and stored:\", responseData.publicId);",
+									"} else {",
+									"    console.error(\"publicId not found in the response.\");",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "postman-cloud:///1ef9e986-1deb-4e60-91ae-7e28c60037d0"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{gateway}}{{media_route}}",
+							"host": [
+								"{{gateway}}{{media_route}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getMedia",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{media_route}}",
+							"host": [
+								"{{gateway}}{{media_route}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getMediaById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{media_route}}/id/?id={{media_id}}",
+							"host": [
+								"{{gateway}}{{media_route}}"
+							],
+							"path": [
+								"id",
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{media_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getMediaByPublicID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{media_route}}/pubid?publicId={{media_public_id}}",
+							"host": [
+								"{{gateway}}{{media_route}}"
+							],
+							"path": [
+								"pubid"
+							],
+							"query": [
+								{
+									"key": "publicId",
+									"value": "{{media_public_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "putMedia",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "postman-cloud:///1ef9e986-1deb-4e60-91ae-7e28c60037d0"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{gateway}}{{media_route}}/id/?id={{media_id}}",
+							"host": [
+								"{{gateway}}{{media_route}}"
+							],
+							"path": [
+								"id",
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{media_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteMedia",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{gateway}}{{media_route}}/id/?id={{media_id}}",
+							"host": [
+								"{{gateway}}{{media_route}}"
+							],
+							"path": [
+								"id",
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{media_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "entry_id",
+			"value": "0",
+			"type": "string"
+		},
+		{
+			"key": "entry_wiki_id",
+			"value": "0",
+			"type": "string"
+		},
+		{
+			"key": "entry_title",
+			"value": "\"\"",
+			"type": "string"
+		},
+		{
+			"key": "entry_author",
+			"value": "\"\"",
+			"type": "string"
+		},
+		{
+			"key": "version_id",
+			"value": "0",
+			"type": "string"
+		},
+		{
+			"key": "comment_id",
+			"value": "0",
+			"type": "string"
+		},
+		{
+			"key": "comment_version_id",
+			"value": "0",
+			"type": "string"
+		},
+		{
+			"key": "wiki_id",
+			"value": "0",
+			"type": "string"
+		},
+		{
+			"key": "wiki_title",
+			"value": "\"\"",
+			"type": "string"
+		},
+		{
+			"key": "wiki_description",
+			"value": "\"\"",
+			"type": "string"
+		},
+		{
+			"key": "wiki_category",
+			"value": "\"\"",
+			"type": "string"
+		},
+		{
+			"key": "media_id",
+			"value": "0",
+			"type": "string"
+		},
+		{
+			"key": "version_content",
+			"value": "\"\"",
+			"type": "default"
+		},
+		{
+			"key": "version_editor",
+			"value": "\"\"",
+			"type": "default"
+		},
+		{
+			"key": "version_entry_id",
+			"value": "0",
+			"type": "default"
+		},
+		{
+			"key": "comment_content",
+			"value": "\"\"",
+			"type": "default"
+		},
+		{
+			"key": "comment_rating",
+			"value": "\"\"",
+			"type": "default"
+		},
+		{
+			"key": "comment_author",
+			"value": "\"\"",
+			"type": "default"
+		},
+		{
+			"key": "media_public_id",
+			"value": "\"\"",
+			"type": "default"
+		}
+	]
+}
