@@ -320,7 +320,19 @@ func PutMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	err = database.MediaCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&media)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to retrieve updated media")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(media); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 }
 
 // DeleteMedia godoc

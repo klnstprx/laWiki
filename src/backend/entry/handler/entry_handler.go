@@ -234,7 +234,7 @@ func GetEntriesByTitle(w http.ResponseWriter, r *http.Request) {
 // @Failure      500     {string}  string  "Internal server error"
 // @Router       /api/entries/author [get]
 func GetEntriesByAuthor(w http.ResponseWriter, r *http.Request) {
-	author := r.URL.Query()["author"]
+	author := r.URL.Query().Get("author")
 
 	var entries []model.Entry
 
@@ -266,7 +266,7 @@ func GetEntriesByAuthor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(entries) == 0 {
-		config.App.Logger.Warn().Strs("author", author).Msg("No entries found")
+		config.App.Logger.Warn().Str("author", author).Msg("No entries found")
 		http.Error(w, "No entries found", http.StatusNotFound)
 		return
 	}

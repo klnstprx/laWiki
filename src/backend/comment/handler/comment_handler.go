@@ -489,7 +489,7 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 // @Failure      400      {string}  string  "Invalid ID or request body"
 // @Failure      404      {string}  string  "Comment not found"
 // @Failure      500      {string}  string  "Internal server error"
-// @Router       /id/ [put]
+// @Router       /api/comments/id/ [put]
 func PutComment(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
