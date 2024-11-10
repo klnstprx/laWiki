@@ -346,6 +346,12 @@ func GetEntriesByAuthor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(entries) == 0 {
+		config.App.Logger.Warn().Strs("authors", authors).Msg("No entries found")
+		http.Error(w, "No entries found", http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(entries); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
@@ -416,6 +422,12 @@ func GetEntriesByDate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(entries) == 0 {
+		config.App.Logger.Warn().Str("createdAt", createdAtString).Msg("No entries found")
+		http.Error(w, "No entries found", http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(entries); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
@@ -468,6 +480,12 @@ func GetEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 	if err := cursor.Err(); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Cursor error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(entries) == 0 {
+		config.App.Logger.Warn().Str("wikiID", wikiID).Msg("No entries found")
+		http.Error(w, "No entries found", http.StatusNotFound)
 		return
 	}
 

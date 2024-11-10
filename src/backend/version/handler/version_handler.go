@@ -3,6 +3,8 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -110,6 +112,12 @@ func GetVersions(w http.ResponseWriter, r *http.Request) {
 	if err := cursor.Err(); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Cursor error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(versions) == 0 {
+		config.App.Logger.Info().Msg("No versions found")
+		http.Error(w, "No versions found", http.StatusNotFound)
 		return
 	}
 
@@ -243,31 +251,69 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 // @Failure      500 {string} string "Internal server error"
 // @Router       /api/versions/id/ [delete]
 func DeleteVersion(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	vars := r.URL.Query()
+	versionID := vars.Get("id")
 
-	objID, err := primitive.ObjectIDFromHex(id)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Delete associated comments first
+	commentServiceURL := fmt.Sprintf("%s/api/comments/version?versionID=%s", config.App.API_GATEWAY_URL, versionID)
+	config.App.Logger.Info().Str("url", commentServiceURL).Msg("Preparing to delete associated comments")
+
+	req, err := http.NewRequest("DELETE", commentServiceURL, nil)
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to comment service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	config.App.Logger.Info().Str("url", commentServiceURL).Msg("Sending request to delete associated comments")
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to comment service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", bodyString).
+			Msg("Comment service returned error")
+		http.Error(w, "Failed to delete associated comments", http.StatusInternalServerError)
+		return
+	}
+
+	// Now proceed to delete the version document
+	objID, err := primitive.ObjectIDFromHex(versionID)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Invalid version ID")
+		http.Error(w, "Invalid version ID", http.StatusBadRequest)
+		return
+	}
 
 	result, err := database.VersionCollection.DeleteOne(ctx, bson.M{"_id": objID})
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
+		config.App.Logger.Error().Err(err).Msg("Failed to delete version")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 	if result.DeletedCount == 0 {
-		config.App.Logger.Warn().Str("id", id).Msg("Version not found for deletion")
+		config.App.Logger.Info().Msg("Version not found")
 		http.Error(w, "Version not found", http.StatusNotFound)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent) // 204 No Content
+	config.App.Logger.Info().Str("versionID", versionID).Msg("Version and associated comments deleted successfully")
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // GetVersionsByEntryID godoc
@@ -281,7 +327,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 // @Router       /api/versions/entry [get]
 func GetVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 	var versions []model.Version
-	entryID := r.URL.Query().Get("entryId")
+	entryID := r.URL.Query().Get("entryID")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -310,6 +356,12 @@ func GetVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(versions) == 0 {
+		config.App.Logger.Info().Msg("No versions found")
+		http.Error(w, "No versions found", http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(versions); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
@@ -334,7 +386,14 @@ func GetVersionsByContent(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cursor, err := database.VersionCollection.Find(ctx, bson.M{"content": content})
+	filter := bson.M{
+		"content": bson.M{
+			"$regex":   content,
+			"$options": "i",
+		},
+	}
+
+	cursor, err := database.VersionCollection.Find(ctx, filter)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -355,6 +414,12 @@ func GetVersionsByContent(w http.ResponseWriter, r *http.Request) {
 	if err := cursor.Err(); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Cursor error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(versions) == 0 {
+		config.App.Logger.Info().Msg("No versions found")
+		http.Error(w, "No versions found", http.StatusNotFound)
 		return
 	}
 
@@ -403,6 +468,12 @@ func GetVersionsByEditor(w http.ResponseWriter, r *http.Request) {
 	if err := cursor.Err(); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Cursor error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(versions) == 0 {
+		config.App.Logger.Info().Msg("No versions found")
+		http.Error(w, "No versions found", http.StatusNotFound)
 		return
 	}
 
@@ -473,6 +544,12 @@ func GetVersionsByDate(w http.ResponseWriter, r *http.Request) {
 	if err := cursor.Err(); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Cursor error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(versions) == 0 {
+		config.App.Logger.Info().Msg("No versions found")
+		http.Error(w, "No versions found", http.StatusNotFound)
 		return
 	}
 
