@@ -3,6 +3,8 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -243,31 +245,68 @@ func PutWiki(w http.ResponseWriter, r *http.Request) {
 // @Failure      500   {string}  string  "Internal server error"
 // @Router       /api/wikis/id/ [delete]
 func DeleteWiki(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	wikiID := r.URL.Query().Get("id")
 
-	objID, err := primitive.ObjectIDFromHex(id)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Delete associated entries first
+	entryServiceURL := fmt.Sprintf("%s/api/entries/wiki?wikiID=%s", config.App.API_GATEWAY_URL, wikiID)
+	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Preparing to delete associated entries")
+
+	req, err := http.NewRequest("DELETE", entryServiceURL, nil)
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Sending request to delete associated entries")
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", bodyString).
+			Msg("Entry service returned error")
+		http.Error(w, "Failed to delete associated entries", http.StatusInternalServerError)
+		return
+	}
+
+	// Now proceed to delete the wiki document
+	objID, err := primitive.ObjectIDFromHex(wikiID)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Invalid wiki ID")
+		http.Error(w, "Invalid wiki ID", http.StatusBadRequest)
+		return
+	}
 
 	result, err := database.WikiCollection.DeleteOne(ctx, bson.M{"_id": objID})
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
+		config.App.Logger.Error().Err(err).Msg("Failed to delete wiki")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 	if result.DeletedCount == 0 {
-		config.App.Logger.Warn().Str("id", id).Msg("Wiki not found for deletion")
+		config.App.Logger.Info().Msg("Wiki not found")
 		http.Error(w, "Wiki not found", http.StatusNotFound)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent) // 204 No Content
+	config.App.Logger.Info().Str("wikiID", wikiID).Msg("Wiki and associated entries deleted successfully")
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // GetWikisByTitle godoc
