@@ -14,8 +14,8 @@
 ## Cómo ejecutar sin docker:
 
 1. Tener go instalado.
-2. Abrir el directorio de microservicio (Por ejemplo: `cd ./gateway`).
-3. Copiar el contenido `default_config.toml` y pegarlo en un archivo llamado `config.toml`.
+2. Copiar el contenido `default_config.toml` y pegarlo en un archivo llamado `config.toml`.
+3. Abrir el directorio de microservicio (Por ejemplo: `cd ./gateway`).
 4. Rellenar `config.toml` con los datos necesarios. Por ejemplo: MONGODB_URI="mongodb+srv://username:password@cluster0.rfz8f.mongodb.net/".
 5. `go run main.go`
 
