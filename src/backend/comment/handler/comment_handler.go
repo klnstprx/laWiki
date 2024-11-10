@@ -388,7 +388,7 @@ func GetCommentsByVersionID(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cursor, err := database.CommentCollection.Find(ctx, bson.M{"versionID": versionID})
+	cursor, err := database.CommentCollection.Find(ctx, bson.M{"version_id": versionID})
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
