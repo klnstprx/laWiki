@@ -67,12 +67,6 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 
 	missingVars := []string{}
 
-	if config.Global.ApiGatewayURL == "" {
-		missingVars = append(missingVars, "API_GATEWAY_URL")
-	} else {
-		cfg.ApiGatewayURL = config.Global.ApiGatewayURL
-	}
-
 	// PORT with default value
 	if config.Entry.Port == 0 {
 		cfg.Port = ":8002" // Default port
