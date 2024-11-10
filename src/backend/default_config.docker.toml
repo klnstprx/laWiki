@@ -1,5 +1,9 @@
 [global]
 API_GATEWAY_URL = "http://api-gateway:8000"
+DB_NAME = "laWiki"
+PRETTY_LOGS = true
+DEBUG = true
+MONGODB_URI = ""
 
 [gateway]
 PORT = 8000
@@ -9,40 +13,22 @@ COMMENT_SERVICE_URL = "http://comment-service:8003"
 VERSION_SERVICE_URL = "http://version-service:8005"
 AUTH_SERVICE_URL = "http://auth-service:8080"
 MEDIA_SERVICE_URL = "http://media-service:8081"
-PRETTY_LOGS = true
-DEBUG = true
 
 [wiki]
 PORT = 8001
-MONGODB_URI = ""
 DB_COLLECTION_NAME = "wikis"
-DB_NAME = "laWiki"
-PRETTY_LOGS = true
-DEBUG = true
 
 [entry]
 PORT = 8002
-MONGODB_URI = ""
 DB_COLLECTION_NAME = "entradas"
-DB_NAME = "laWiki"
-PRETTY_LOGS = true
-DEBUG = true
 
 [comment]
 PORT = 8003
-MONGODB_URI = ""
 DB_COLLECTION_NAME = "comentarios"
-DB_NAME = "laWiki"
-PRETTY_LOGS = true
-DEBUG = true
 
 [version]
 PORT = 8005
-MONGODB_URI = ""
 DB_COLLECTION_NAME = "versiones"
-DB_NAME = "laWiki"
-PRETTY_LOGS = true
-DEBUG = true
 
 [auth]
 PORT = 8080
@@ -50,16 +36,10 @@ GOOGLE_OAUTH_CLIENT_ID = ""
 GOOGLE_OAUTH_CLIENT_SECRET = ""
 GOOGLE_OAUTH_REDIRECT_URL = ""
 JWT_SECRET = ""
-PRETTY_LOGS = true
-DEBUG = true
 
 [media]
 PORT = 8081
 CLOUDIFY_CLOUD_NAME = ""
 CLOUDIFY_API_KEY = ""
 CLOUDIFY_API_SECRET = ""
-MONGODB_URI = ""
 DB_COLLECTION_NAME = "media"
-DB_NAME = "laWiki"
-PRETTY_LOGS = true
-DEBUG = true

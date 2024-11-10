@@ -13,6 +13,12 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
+// GlobalConfig holds the configuration for the application
+type GlobalConfig struct {
+	PrettyLogs *bool `toml:"PRETTY_LOGS"`
+	Debug      *bool `toml:"DEBUG"`
+}
+
 // AuthConfig holds the configuration specific to the auth service
 type AuthConfig struct {
 	Port                    int    `toml:"PORT"`
@@ -20,13 +26,12 @@ type AuthConfig struct {
 	GoogleOAuthClientSecret string `toml:"GOOGLE_OAUTH_CLIENT_SECRET"`
 	GoogleOAuthRedirectURL  string `toml:"GOOGLE_OAUTH_REDIRECT_URL"`
 	JWTSecret               string `toml:"JWT_SECRET"`
-	PrettyLogs              *bool  `toml:"PRETTY_LOGS"`
-	Debug                   *bool  `toml:"DEBUG"`
 }
 
 // Config represents the structure of the config.toml file
 type Config struct {
-	Auth AuthConfig `toml:"auth"`
+	Auth   AuthConfig   `toml:"auth"`
+	Global GlobalConfig `toml:"global"`
 }
 
 type AppConfig struct {
@@ -75,16 +80,16 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	}
 
 	// PRETTY_LOGS with default value
-	if config.Auth.PrettyLogs != nil {
-		cfg.PrettyLogs = *config.Auth.PrettyLogs
+	if config.Global.PrettyLogs != nil {
+		cfg.PrettyLogs = *config.Global.PrettyLogs
 	} else {
 		cfg.PrettyLogs = true // Default to true
 		log.Warn().Msg("PRETTY_LOGS not set in config file. Using default 'true'.")
 	}
 
 	// DEBUG with default value
-	if config.Auth.Debug != nil {
-		cfg.Debug = *config.Auth.Debug
+	if config.Global.Debug != nil {
+		cfg.Debug = *config.Global.Debug
 	} else {
 		cfg.Debug = true // Default to true
 		log.Warn().Msg("DEBUG not set in config file. Using default 'true'.")

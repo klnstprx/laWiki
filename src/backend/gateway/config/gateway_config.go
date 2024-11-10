@@ -11,6 +11,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// GlobalConfig holds the configuration for the application
+type GlobalConfig struct {
+	PrettyLogs *bool `toml:"PRETTY_LOGS"`
+	Debug      *bool `toml:"DEBUG"`
+}
+
 // GatewayConfig holds the configuration specific to the gateway service
 type GatewayConfig struct {
 	Port              int    `toml:"PORT"`
@@ -20,13 +26,12 @@ type GatewayConfig struct {
 	VersionServiceURL string `toml:"VERSION_SERVICE_URL"`
 	CommentServiceURL string `toml:"COMMENT_SERVICE_URL"`
 	MediaServiceURL   string `toml:"MEDIA_SERVICE_URL"`
-	PrettyLogs        *bool  `toml:"PRETTY_LOGS"`
-	Debug             *bool  `toml:"DEBUG"`
 }
 
 // Config represents the structure of the config.toml file
 type Config struct {
 	Gateway GatewayConfig `toml:"gateway"`
+	Global  GlobalConfig  `toml:"global"`
 }
 
 type AppConfig struct {
@@ -77,16 +82,16 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	}
 
 	// PRETTY_LOGS with default value
-	if config.Gateway.PrettyLogs != nil {
-		cfg.PrettyLogs = *config.Gateway.PrettyLogs
+	if config.Global.PrettyLogs != nil {
+		cfg.PrettyLogs = *config.Global.PrettyLogs
 	} else {
 		cfg.PrettyLogs = true // Default to true
 		log.Warn().Msg("PRETTY_LOGS not set in config file. Using default 'true'.")
 	}
 
 	// DEBUG with default value
-	if config.Gateway.Debug != nil {
-		cfg.Debug = *config.Gateway.Debug
+	if config.Global.Debug != nil {
+		cfg.Debug = *config.Global.Debug
 	} else {
 		cfg.Debug = true // Default to true
 		log.Warn().Msg("DEBUG not set in config file. Using default 'true'.")

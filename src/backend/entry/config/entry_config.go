@@ -14,16 +14,16 @@ import (
 // GlobalConfig holds the configuration for the application
 type GlobalConfig struct {
 	API_GATEWAY_URL string `toml:"API_GATEWAY_URL"`
+	PrettyLogs      *bool  `toml:"PRETTY_LOGS"`
+	Debug           *bool  `toml:"DEBUG"`
+	DBName          string `toml:"DB_NAME"`
+	MongoDBURI      string `toml:"MONGODB_URI"`
 }
 
 // EntryConfig holds the configuration specific to the entry service
 type EntryConfig struct {
 	Port             int    `toml:"PORT"`
-	MongoDBURI       string `toml:"MONGODB_URI"`
 	DBCollectionName string `toml:"DB_COLLECTION_NAME"`
-	DBName           string `toml:"DB_NAME"`
-	PrettyLogs       *bool  `toml:"PRETTY_LOGS"`
-	Debug            *bool  `toml:"DEBUG"`
 }
 
 // Config represents the structure of the config.toml file
@@ -76,24 +76,24 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	}
 
 	// PRETTY_LOGS with default value
-	if config.Entry.PrettyLogs != nil {
-		cfg.PrettyLogs = *config.Entry.PrettyLogs
+	if config.Global.PrettyLogs != nil {
+		cfg.PrettyLogs = *config.Global.PrettyLogs
 	} else {
 		cfg.PrettyLogs = true // Default to true
 		log.Warn().Msg("PRETTY_LOGS not set in config file. Using default 'true'.")
 	}
 
 	// DEBUG with default value
-	if config.Entry.Debug != nil {
-		cfg.Debug = *config.Entry.Debug
+	if config.Global.Debug != nil {
+		cfg.Debug = *config.Global.Debug
 	} else {
 		cfg.Debug = true // Default to true
 		log.Warn().Msg("DEBUG not set in config file. Using default 'true'.")
 	}
 
 	// DBNAME with default value
-	if config.Entry.DBName != "" {
-		cfg.DBName = config.Entry.DBName
+	if config.Global.DBName != "" {
+		cfg.DBName = config.Global.DBName
 	} else {
 		cfg.DBName = "laWiki" // Default to "laWiki"
 		log.Warn().Msg("DBNAME not set in config file. Using default 'laWiki'.")
@@ -107,8 +107,8 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	}
 
 	// MONGODB_URI is required
-	if config.Entry.MongoDBURI != "" {
-		cfg.MongoDBURI = config.Entry.MongoDBURI
+	if config.Global.MongoDBURI != "" {
+		cfg.MongoDBURI = config.Global.MongoDBURI
 	} else {
 		cfg.MongoDBURI = "mongodb://localhost:27017" // Default to locally hosted DB
 		log.Warn().Msg("DMONGODB_URI not set in config file. Using default 'mongodb://localhost:27017'.")

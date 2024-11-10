@@ -12,23 +12,29 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// GlobalConfig holds the configuration for the application
+type GlobalConfig struct {
+	API_GATEWAY_URL string `toml:"API_GATEWAY_URL"`
+	PrettyLogs      *bool  `toml:"PRETTY_LOGS"`
+	Debug           *bool  `toml:"DEBUG"`
+	MongoDBURI      string `toml:"MONGODB_URI"`
+	DBName          string `toml:"DB_NAME"`
+}
+
 // MediaConfig holds the configuration specific to the Media service
 type MediaConfig struct {
 	Port                int    `toml:"PORT"`
 	CLOUDIFY_CLOUD_NAME string `toml:"CLOUDIFY_CLOUD_NAME"`
 	CLOUDIFY_API_KEY    string `toml:"CLOUDIFY_API_KEY"`
 	CLOUDIFY_API_SECRET string `toml:"CLOUDIFY_API_SECRET"`
-	MongoDBURI          string `toml:"MONGODB_URI"`
 	DBCollectionName    string `toml:"DB_COLLECTION_NAME"`
-	DBName              string `toml:"DB_NAME"`
-	PrettyLogs          *bool  `toml:"PRETTY_LOGS"`
-	Debug               *bool  `toml:"DEBUG"`
 	MB_LIMIT            int64  `toml:"MB_LIMIT"`
 }
 
 // Config represents the structure of the config.toml file
 type Config struct {
-	Media MediaConfig `toml:"Media"`
+	Media  MediaConfig  `toml:"Media"`
+	Global GlobalConfig `toml:"global"`
 }
 type AppConfig struct {
 	Logger           *zerolog.Logger
@@ -76,24 +82,24 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	}
 
 	// PRETTY_LOGS with default value
-	if config.Media.PrettyLogs != nil {
-		cfg.PrettyLogs = *config.Media.PrettyLogs
+	if config.Global.PrettyLogs != nil {
+		cfg.PrettyLogs = *config.Global.PrettyLogs
 	} else {
 		cfg.PrettyLogs = true // Default to true
 		log.Warn().Msg("PRETTY_LOGS not set in config file. Using default 'true'.")
 	}
 
 	// DEBUG with default value
-	if config.Media.Debug != nil {
-		cfg.Debug = *config.Media.Debug
+	if config.Global.Debug != nil {
+		cfg.Debug = *config.Global.Debug
 	} else {
 		cfg.Debug = true // Default to true
 		log.Warn().Msg("DEBUG not set in config file. Using default 'true'.")
 	}
 
 	// DBNAME with default value
-	if config.Media.DBName != "" {
-		cfg.DBName = config.Media.DBName
+	if config.Global.DBName != "" {
+		cfg.DBName = config.Global.DBName
 	} else {
 		cfg.DBName = "laWiki" // Default to "laWiki"
 		log.Warn().Msg("DBNAME not set in config file. Using default 'laWiki'.")
@@ -107,8 +113,8 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	}
 
 	// MONGODB_URI is required
-	if config.Media.MongoDBURI != "" {
-		cfg.MongoDBURI = config.Media.MongoDBURI
+	if config.Global.MongoDBURI != "" {
+		cfg.MongoDBURI = config.Global.MongoDBURI
 	} else {
 		cfg.MongoDBURI = "mongodb://localhost:27017" // Default to locally hosted DB
 		log.Warn().Msg("DMONGODB_URI not set in config file. Using default 'mongodb://localhost:27017'.")
