@@ -14,7 +14,7 @@ func NewRouter() http.Handler {
 		r.Get("/health", handler.HealthCheck)
 		r.Get("/", handler.GetMedia)
 		r.Post("/", handler.PostMedia)
-		r.Get("/id", handler.GetMediaByPublicID)
+		r.Get("/pubid", handler.GetMediaByPublicID)
 
 		r.Route("/id/", func(r chi.Router) {
 			r.Get("/", handler.GetMediaByID)

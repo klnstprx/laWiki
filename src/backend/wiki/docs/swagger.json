@@ -158,6 +158,41 @@
                 }
             }
         },
+        "/api/wikis/exactTitle": {
+            "get": {
+                "description": "Retrieves wiki that matches the given title.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wikis"
+                ],
+                "summary": "Get wiki by exact title",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Title to search",
+                        "name": "title",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Wiki"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/wikis/health": {
             "get": {
                 "description": "Checks if the service is up",
@@ -326,14 +361,14 @@
         },
         "/api/wikis/title": {
             "get": {
-                "description": "Retrieves wikis that match the given title.",
+                "description": "Retrieves the list of all wikis that matches the title.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Wikis"
                 ],
-                "summary": "Get wikis by title",
+                "summary": "Get all wikis by title.",
                 "parameters": [
                     {
                         "type": "string",

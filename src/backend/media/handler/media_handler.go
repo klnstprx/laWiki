@@ -230,6 +230,17 @@ func GetMediaByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetMediaByID godoc
+// @Summary      Get media by PublicID
+// @Description  Retrieves a media file by its PublicID (filename).
+// @Tags         Media
+// @Produce      application/json
+// @Param        id   query     string  true  "Media PublicID"
+// @Success      200  {object}  model.Media
+// @Failure      400  {string}  string  "Invalid ID"
+// @Failure      404  {string}  string  "Media not found"
+// @Failure      500  {string}  string  "Internal server error"
+// @Router       /api/media/pubid/ [get]
 func GetMediaByPublicID(w http.ResponseWriter, r *http.Request) {
 	publicID := r.URL.Query().Get("publicId")
 

@@ -17,6 +17,7 @@ func NewRouter() http.Handler {
 		r.Get("/content", handler.GetCommentsByContent)
 		r.Get("/rating", handler.GetCommentsByRating)
 		r.Get("/date", handler.GetCommentsByDate)
+		r.Get("/author", handler.GetCommentsByAuthor)
 		r.Get("/version", handler.GetCommentsByVersionID)
 		r.Delete("/version", handler.DeleteCommentsByVersionID)
 

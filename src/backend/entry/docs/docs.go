@@ -170,6 +170,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/entries/exactTitle": {
+            "get": {
+                "description": "Retrieves entry that matches exactly the given title.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Entries"
+                ],
+                "summary": "Get entries by title",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Title to search",
+                        "name": "title",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Entry"
+                        }
+                    },
+                    "404": {
+                        "description": "Entry not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/entries/health": {
             "get": {
                 "description": "Checks if the service is up",
@@ -338,14 +379,14 @@ const docTemplate = `{
         },
         "/api/entries/title": {
             "get": {
-                "description": "Retrieves entries that match the given title.",
+                "description": "Retrieves the list of all entries that matches the title.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Entries"
                 ],
-                "summary": "Get entries by title",
+                "summary": "Get all entries by title.",
                 "parameters": [
                     {
                         "type": "string",
@@ -359,13 +400,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Entry"
-                        }
-                    },
-                    "404": {
-                        "description": "Entry not found",
-                        "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Entry"
+                            }
                         }
                     },
                     "500": {

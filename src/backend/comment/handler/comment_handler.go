@@ -274,7 +274,7 @@ func PutComment(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetCommentByContent godoc
+// GetCommentsByContent godoc
 // @Summary      Get comment by content
 // @Description  Retrieves a comment by its content.
 // @Tags         Comments
@@ -284,7 +284,7 @@ func PutComment(w http.ResponseWriter, r *http.Request) {
 // @Failure      404      {string}  string  "Comment not found"
 // @Failure      500      {string}  string  "Internal server error"
 // @Router       /api/comments/content [get]
-func GetCommentByContent(w http.ResponseWriter, r *http.Request) {
+func GetCommentsByContent(w http.ResponseWriter, r *http.Request) {
 	content := r.URL.Query().Get("content")
 
 	var comments []model.Comment
@@ -337,7 +337,7 @@ func GetCommentByContent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetCommentByRating godoc
+// GetCommentsByRating godoc
 // @Summary      Get comments by rating
 // @Description  Retrieves comments with a specific rating.
 // @Tags         Comments
@@ -347,7 +347,7 @@ func GetCommentByContent(w http.ResponseWriter, r *http.Request) {
 // @Failure      400     {string}  string  "Invalid rating format"
 // @Failure      500     {string}  string  "Internal server error"
 // @Router       /api/comments/rating [get]
-func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
+func GetCommentsByRating(w http.ResponseWriter, r *http.Request) {
 	ratingString := r.URL.Query().Get("rating")
 
 	// cast rating to int
@@ -401,7 +401,7 @@ func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetCommentByDate godoc
+// GetCommentsByDate godoc
 // @Summary      Get comments by date
 // @Description  Retrieves comments created on a specific date.
 // @Tags         Comments
@@ -411,7 +411,7 @@ func GetCommentByRating(w http.ResponseWriter, r *http.Request) {
 // @Failure      400        {string}  string  "Invalid date format. Expected YYYY-MM-DD"
 // @Failure      500        {string}  string  "Internal server error"
 // @Router       /api/comments/date [get]
-func GetCommentByDate(w http.ResponseWriter, r *http.Request) {
+func GetCommentsByDate(w http.ResponseWriter, r *http.Request) {
 	createdAtString := r.URL.Query().Get("createdAt")
 
 	// Parse the date (expected format: YYYY-MM-DD)
@@ -477,6 +477,15 @@ func GetCommentByDate(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetCommentsByAuthor godoc
+// @Summary      Get comments by author
+// @Description  Retrieves comments created by a specific author.
+// @Tags         Comments
+// @Produce      application/json
+// @Param        author  query     string  true  "Author nickname"
+// @Success      200        {array}   model.Comment
+// @Failure      500        {string}  string  "Internal server error"
+// @Router       /api/comments/author [get]
 func GetCommentsByAuthor(w http.ResponseWriter, r *http.Request) {
 	author := r.URL.Query().Get("author")
 
@@ -523,6 +532,15 @@ func GetCommentsByAuthor(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetCommentsByVersionID godoc
+// @Summary      Get comments by the id of a version its associated to
+// @Description  Retrieves comments associated with a specific version.
+// @Tags         Comments
+// @Produce      application/json
+// @Param        versionID  query     string  true  "Version ID"
+// @Success      200        {array}   model.Comment
+// @Failure      500        {string}  string  "Internal server error"
+// @Router       /api/comments/version [get]
 func GetCommentsByVersionID(w http.ResponseWriter, r *http.Request) {
 	versionID := r.URL.Query().Get("versionID")
 
@@ -569,6 +587,14 @@ func GetCommentsByVersionID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// DeleteCommentsByVersionID godoc
+// @Summary      Delete comments by version ID
+// @Description  Deletes all comments associated with a specific version.
+// @Tags         Comments
+// @Param        versionID      query     string  true  "Version ID"
+// @Success      204     {string}  string  "No Content"
+// @Failure      500     {string}  string  "Internal server error"
+// @Router       /api/comments/version [delete]
 func DeleteCommentsByVersionID(w http.ResponseWriter, r *http.Request) {
 	versionID := r.URL.Query().Get("versionID")
 

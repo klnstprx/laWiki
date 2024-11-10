@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "API documentation for the Auth Service.",
+        "description": "API documentation for the Auth Service. !!THIS SERVICE IS WIP!!",
         "title": "Auth Service API",
         "contact": {},
         "version": "1.0"

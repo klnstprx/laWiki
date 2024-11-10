@@ -306,6 +306,55 @@
         }
       }
     },
+    "/api/wikis/exactTitle": {
+      "get": {
+        "description": "Retrieves wiki that matches the given title.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Wikis"
+        ],
+        "summary": "Get wiki by exact title",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Title to search",
+            "name": "title",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "/api/wikis/health": {
       "get": {
         "description": "Checks if the service is up",
@@ -516,14 +565,14 @@
     },
     "/api/wikis/title": {
       "get": {
-        "description": "Retrieves wikis that match the given title.",
+        "description": "Retrieves the list of all wikis that matches the title.",
         "produces": [
           "application/json"
         ],
         "tags": [
           "Wikis"
         ],
-        "summary": "Get wikis by title",
+        "summary": "Get all wikis by title.",
         "parameters": [
           {
             "type": "string",
@@ -806,6 +855,64 @@
         }
       }
     },
+    "/api/entries/exactTitle": {
+      "get": {
+        "description": "Retrieves entry that matches exactly the given title.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Entries"
+        ],
+        "summary": "Get entries by title",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Title to search",
+            "name": "title",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "author": {
+                  "type": "string"
+                },
+                "created_at": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "wiki_id": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entry not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "/api/entries/health": {
       "get": {
         "description": "Checks if the service is up",
@@ -1025,14 +1132,14 @@
     },
     "/api/entries/title": {
       "get": {
-        "description": "Retrieves entries that match the given title.",
+        "description": "Retrieves the list of all entries that matches the title.",
         "produces": [
           "application/json"
         ],
         "tags": [
           "Entries"
         ],
-        "summary": "Get entries by title",
+        "summary": "Get all entries by title.",
         "parameters": [
           {
             "type": "string",
@@ -1046,30 +1153,27 @@
           "200": {
             "description": "OK",
             "schema": {
-              "type": "object",
-              "properties": {
-                "author": {
-                  "type": "string"
-                },
-                "created_at": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                },
-                "title": {
-                  "type": "string"
-                },
-                "wiki_id": {
-                  "type": "string"
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "author": {
+                    "type": "string"
+                  },
+                  "created_at": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "wiki_id": {
+                    "type": "string"
+                  }
                 }
               }
-            }
-          },
-          "404": {
-            "description": "Entry not found",
-            "schema": {
-              "type": "string"
             }
           },
           "500": {
@@ -1174,6 +1278,9 @@
                   },
                   "rating": {
                     "type": "integer"
+                  },
+                  "version_id": {
+                    "type": "string"
                   }
                 }
               }
@@ -1222,6 +1329,9 @@
                 },
                 "rating": {
                   "type": "integer"
+                },
+                "version_id": {
+                  "type": "string"
                 }
               }
             }
@@ -1247,6 +1357,9 @@
                 },
                 "rating": {
                   "type": "integer"
+                },
+                "version_id": {
+                  "type": "string"
                 }
               }
             }
@@ -1255,6 +1368,64 @@
             "description": "Invalid request body",
             "schema": {
               "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/comments/author": {
+      "get": {
+        "description": "Retrieves comments created by a specific author.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Comments"
+        ],
+        "summary": "Get comments by author",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Author nickname",
+            "name": "author",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "author": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  },
+                  "created_at": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "rating": {
+                    "type": "integer"
+                  },
+                  "version_id": {
+                    "type": "string"
+                  }
+                }
+              }
             }
           },
           "500": {
@@ -1305,6 +1476,9 @@
                 },
                 "rating": {
                   "type": "integer"
+                },
+                "version_id": {
+                  "type": "string"
                 }
               }
             }
@@ -1365,6 +1539,9 @@
                   },
                   "rating": {
                     "type": "integer"
+                  },
+                  "version_id": {
+                    "type": "string"
                   }
                 }
               }
@@ -1444,6 +1621,9 @@
                 },
                 "rating": {
                   "type": "integer"
+                },
+                "version_id": {
+                  "type": "string"
                 }
               }
             }
@@ -1552,6 +1732,9 @@
                   },
                   "rating": {
                     "type": "integer"
+                  },
+                  "version_id": {
+                    "type": "string"
                   }
                 }
               }
@@ -1559,6 +1742,94 @@
           },
           "400": {
             "description": "Invalid rating format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/comments/version": {
+      "get": {
+        "description": "Retrieves comments associated with a specific version.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Comments"
+        ],
+        "summary": "Get comments by the id of a version its associated to",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Version ID",
+            "name": "versionID",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "author": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  },
+                  "created_at": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "rating": {
+                    "type": "integer"
+                  },
+                  "version_id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Deletes all comments associated with a specific version.",
+        "tags": [
+          "Comments"
+        ],
+        "summary": "Delete comments by version ID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Version ID",
+            "name": "versionID",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
             "schema": {
               "type": "string"
             }
@@ -1615,6 +1886,9 @@
                 },
                 "rating": {
                   "type": "integer"
+                },
+                "version_id": {
+                  "type": "string"
                 }
               }
             }
@@ -1640,6 +1914,9 @@
                 },
                 "rating": {
                   "type": "integer"
+                },
+                "version_id": {
+                  "type": "string"
                 }
               }
             }
@@ -2477,6 +2754,64 @@
             "description": "No Content",
             "schema": {
               "type": "string"
+            }
+          },
+          "400": {
+            "description": "Invalid ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "Media not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/media/pubid/": {
+      "get": {
+        "description": "Retrieves a media file by its PublicID (filename).",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Media"
+        ],
+        "summary": "Get media by PublicID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Media PublicID",
+            "name": "id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "publicId": {
+                  "type": "string"
+                },
+                "uploadUrl": {
+                  "type": "string"
+                }
+              }
             }
           },
           "400": {

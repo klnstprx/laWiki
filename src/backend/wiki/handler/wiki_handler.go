@@ -271,15 +271,69 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetWikisByTitle godoc
-// @Summary      Get wikis by title
-// @Description  Retrieves wikis that match the given title.
+// @Summary      Get all wikis by title.
+// @Description  Retrieves the list of all wikis that matches the title.
+// @Tags         Wikis
+// @Produce      application/json
+// @Param        title  query     string  true  "Title to search"
+// @Success      200  {array}   model.Wiki
+// @Failure      500  {string}  string  "Internal server error"
+// @Router       /api/wikis/title [get]
+func GetWikisByTitle(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Query().Get("title")
+	var wikis []model.Wiki
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	filter := bson.M{
+		"title": bson.M{
+			"$regex":   title,
+			"$options": "i",
+		},
+	}
+	cursor, err := database.WikiCollection.Find(ctx, filter)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var wiki model.Wiki
+		if err := cursor.Decode(&wiki); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode entry")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		wikis = append(wikis, wiki)
+	}
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if len(wikis) == 0 {
+		config.App.Logger.Info().Str("title", title).Msg("No wikis found")
+		http.Error(w, "No wikis found", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(wikis); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+// GetWikiByExactTitle godoc
+// @Summary      Get wiki by exact title
+// @Description  Retrieves wiki that matches the given title.
 // @Tags         Wikis
 // @Produce      application/json
 // @Param        title   query     string  true  "Title to search"
-// @Success      200     {array}   model.Wiki
+// @Success      200     {object}   model.Wiki
 // @Failure      500     {string}  string  "Internal server error"
-// @Router       /api/wikis/title [get]
-func GetWikisByTitle(w http.ResponseWriter, r *http.Request) {
+// @Router       /api/wikis/exactTitle [get]
+func GetWikiByExactTitle(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Query().Get("title")
 
 	var wikis []model.Wiki

@@ -116,6 +116,29 @@ paths:
       summary: Get wikis by description
       tags:
       - Wikis
+  /api/wikis/exactTitle:
+    get:
+      description: Retrieves wiki that matches the given title.
+      parameters:
+      - description: Title to search
+        in: query
+        name: title
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Wiki'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get wiki by exact title
+      tags:
+      - Wikis
   /api/wikis/health:
     get:
       description: Checks if the service is up
@@ -228,7 +251,7 @@ paths:
       - Wikis
   /api/wikis/title:
     get:
-      description: Retrieves wikis that match the given title.
+      description: Retrieves the list of all wikis that matches the title.
       parameters:
       - description: Title to search
         in: query
@@ -248,7 +271,7 @@ paths:
           description: Internal server error
           schema:
             type: string
-      summary: Get wikis by title
+      summary: Get all wikis by title.
       tags:
       - Wikis
 swagger: "2.0"
