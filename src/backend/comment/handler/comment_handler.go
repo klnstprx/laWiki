@@ -484,3 +484,19 @@ func GetCommentsByVersionID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func DeleteCommentsByVersionID(w http.ResponseWriter, r *http.Request) {
+	versionID := r.URL.Query().Get("versionID")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := database.CommentCollection.DeleteMany(ctx, bson.M{"version_id": versionID})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to delete comments")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

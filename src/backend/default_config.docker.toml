@@ -1,5 +1,6 @@
 [gateway]
 PORT = 8000
+API_GATEWAY_URL = "http://api-gateway:8000"
 WIKI_SERVICE_URL = "http://wiki-service:8001"
 ENTRY_SERVICE_URL = "http://entry-service:8002"
 COMMENT_SERVICE_URL = "http://comment-service:8003"
