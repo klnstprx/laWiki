@@ -1,8 +1,8 @@
-FROM golang:1.23-bullseye
+FROM golang:1.23-alpine3.18 AS builder
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apk update && apk add --no-cache git ca-certificates
 
 COPY go.mod go.sum ./
 
@@ -11,6 +11,15 @@ RUN go mod tidy
 COPY . .
 
 RUN go build -o wiki-service . && chmod +x wiki-service
+
+# Final stage
+FROM alpine:3.18
+
+RUN apk add --no-cache ca-certificates
+
+WORKDIR /app
+
+COPY --from=builder /app/version-service .
 
 EXPOSE 8001
 
