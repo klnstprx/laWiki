@@ -600,7 +600,6 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 
 	if len(versions) == 0 {
 		config.App.Logger.Info().Str("entryID", entryID).Msg("No versions found for the given entryID")
-		http.Error(w, "No versions found for the given entry ID", http.StatusNotFound)
 		return
 	}
 

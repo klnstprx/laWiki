@@ -652,7 +652,6 @@ func DeleteEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 
 	if len(entries) == 0 {
 		config.App.Logger.Info().Str("wikiID", wikiID).Msg("No entries found")
-		http.Error(w, "No entries found", http.StatusNotFound)
 		return
 	}
 
