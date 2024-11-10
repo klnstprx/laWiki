@@ -603,7 +603,7 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if result.DeletedCount == 0 {
-		config.App.Logger.Info().Msg("Version not found")
+		config.App.Logger.Info().Msg("Entry not found")
 		http.Error(w, "Entry not found", http.StatusNotFound)
 		return
 	}
