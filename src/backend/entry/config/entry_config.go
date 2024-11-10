@@ -11,6 +11,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// GlobalConfig holds the configuration for the application
+type GlobalConfig struct {
+	API_GATEWAY_URL string `toml:"API_GATEWAY_URL"`
+}
+
 // EntryConfig holds the configuration specific to the entry service
 type EntryConfig struct {
 	Port             int    `toml:"PORT"`
@@ -23,7 +28,8 @@ type EntryConfig struct {
 
 // Config represents the structure of the config.toml file
 type Config struct {
-	Entry EntryConfig `toml:"entry"`
+	Entry  EntryConfig  `toml:"entry"`
+	Global GlobalConfig `toml:"global"`
 }
 type AppConfig struct {
 	Logger           *zerolog.Logger
@@ -33,6 +39,7 @@ type AppConfig struct {
 	MongoDBURI       string
 	DBCollectionName string
 	DBName           string
+	API_GATEWAY_URL  string
 }
 
 // App holds app configuration
@@ -105,6 +112,13 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	} else {
 		cfg.MongoDBURI = "mongodb://localhost:27017" // Default to locally hosted DB
 		log.Warn().Msg("DMONGODB_URI not set in config file. Using default 'mongodb://localhost:27017'.")
+	}
+
+	// API_GATEWAY_URL is required
+	if config.Global.API_GATEWAY_URL != "" {
+		cfg.API_GATEWAY_URL = config.Global.API_GATEWAY_URL
+	} else {
+		missingVars = append(missingVars, "API_GATEWAY_URL")
 	}
 
 	// If there are missing required variables, log them and exit

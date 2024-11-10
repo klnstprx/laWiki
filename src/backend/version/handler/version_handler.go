@@ -219,8 +219,7 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 * deletes a Version
  */
 func DeleteVersion(w http.ResponseWriter, r *http.Request) {
-	vars := r.URL.Query()
-	versionID := vars.Get("id")
+	versionID := r.URL.Query().Get("id")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -494,4 +493,99 @@ func GetVersionsByDate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+}
+
+func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
+	entryID := r.URL.Query().Get("entryID")
+	if entryID == "" {
+		config.App.Logger.Warn().Msg("Missing entryID parameter")
+		http.Error(w, "Missing entryID parameter", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Retrieve all versions associated with the entryID
+	versionsCursor, err := database.VersionCollection.Find(ctx, bson.M{"entry_id": entryID})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error while fetching versions")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer versionsCursor.Close(ctx)
+
+	var versions []model.Version
+	if err := versionsCursor.All(ctx, &versions); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode versions")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(versions) == 0 {
+		config.App.Logger.Info().Str("entryID", entryID).Msg("No versions found for the given entryID")
+		http.Error(w, "No versions found for the given entryID", http.StatusNotFound)
+		return
+	}
+
+	// Collect all versionIDs
+	var versionIDs []string
+	for _, version := range versions {
+		versionIDs = append(versionIDs, version.ID)
+	}
+
+	// Delete associated comments for each versionID
+	for _, versionID := range versionIDs {
+		commentServiceURL := fmt.Sprintf("%s/api/comments/version?versionID=%s", config.App.API_GATEWAY_URL, versionID)
+		req, err := http.NewRequest("DELETE", commentServiceURL, nil)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to create request to comment service")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		config.App.Logger.Info().Str("url", commentServiceURL).Msg("Sending delete request to comment service")
+		client := &http.Client{
+			Timeout: 10 * time.Second,
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to send delete request to comment service")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+			bodyBytes, _ := io.ReadAll(resp.Body)
+			bodyString := string(bodyBytes)
+			config.App.Logger.Error().
+				Int("status", resp.StatusCode).
+				Str("body", bodyString).
+				Msg("Comment service returned error during deletion")
+			http.Error(w, "Failed to delete associated comments", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	config.App.Logger.Info().Str("entryID", entryID).Msg("Associated comments deleted successfully")
+
+	// Delete all versions associated with the entryID
+	deleteResult, err := database.VersionCollection.DeleteMany(ctx, bson.M{"entry_id": entryID})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to delete versions")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if deleteResult.DeletedCount == 0 {
+		config.App.Logger.Info().Str("entryID", entryID).Msg("No versions found to delete for the given entryID")
+		http.Error(w, "No versions found to delete for the given entryID", http.StatusNotFound)
+		return
+	}
+
+	config.App.Logger.Info().Int64("deletedCount", deleteResult.DeletedCount).Str("entryID", entryID).Msg("Versions deleted successfully")
+	w.WriteHeader(http.StatusNoContent)
 }
