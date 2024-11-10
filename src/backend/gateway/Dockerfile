@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine3.18 AS builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
@@ -19,7 +19,8 @@ RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
 
-COPY --from=builder /app/version-service .
+COPY --from=builder /app/api-gateway .
+COPY --from=builder /app/docs/ ./docs/
 
 EXPOSE 8000
 
