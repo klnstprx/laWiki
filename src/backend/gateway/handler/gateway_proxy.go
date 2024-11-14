@@ -9,7 +9,6 @@ import (
 	"github.com/laWiki/gateway/config"
 )
 
-// ReverseProxy is a handler that takes a target host and proxies requests to it
 func ReverseProxy(target string, prefixToStrip string) func(http.ResponseWriter, *http.Request) {
 	targetURL, err := url.Parse(target)
 	if err != nil {
@@ -24,11 +23,6 @@ func ReverseProxy(target string, prefixToStrip string) func(http.ResponseWriter,
 	originalDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
-		config.App.Logger.Debug().
-			Str("original_url", req.URL.String()).
-			Str("original_host", req.Host).
-			Msg("Original request details")
-		// Set the scheme and host to the target's scheme and host
 		req.URL.Scheme = targetURL.Scheme
 		req.URL.Host = targetURL.Host
 
@@ -42,10 +36,6 @@ func ReverseProxy(target string, prefixToStrip string) func(http.ResponseWriter,
 
 		// Update the request Host header to the target host
 		req.Host = targetURL.Host
-		config.App.Logger.Debug().
-			Str("modified_url", req.URL.String()).
-			Str("modified_host", req.Host).
-			Msg("Modified request details")
 	}
 
 	proxy.ModifyResponse = func(resp *http.Response) error {
