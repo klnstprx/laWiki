@@ -5,7 +5,7 @@ import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
 import { getAllWikis } from "../api.js";
 
-function Home() {
+function HomePage() {
   const [wikis, setWikis] = useState([]);
   const [error, setError] = useState(null);
 
@@ -41,4 +41,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default HomePage;

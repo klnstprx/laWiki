@@ -1,6 +1,6 @@
 [global]
 API_GATEWAY_URL = "http://api-gateway:8000"
-DB_NAME = "laWiki"
+DB_NAME = "laWikiCopia"
 PRETTY_LOGS = true
 DEBUG = true
 MONGODB_URI = ""
