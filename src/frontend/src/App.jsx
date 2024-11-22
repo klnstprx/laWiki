@@ -1,5 +1,6 @@
 import { Link, Route, Routes } from "react-router-dom";
-import Home from "./pages/Home.jsx";
+import HomePage from "./pages/HomePage.jsx";
+import EntradaPage from "./pages/EntradaPage.jsx";
 
 function App() {
   return (
@@ -8,7 +9,8 @@ function App() {
         <Link to="/">Home</Link>
       </nav>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/entrada/:id" element={<EntradaPage />} />
         {/* <Route path="/about" element={<About />} /> */}
         {/* <Route path="/articles/:id" element={<Article />} /> */}
       </Routes>
