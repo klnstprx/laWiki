@@ -16,4 +16,17 @@ export async function getWiki(id) {
   return resp.json();
 }
 
+
+export async function getEntrada(id) {
+  const resp = await fetch(`${API_BASE_URL}/entries/${id}`);
+  if (!resp.ok) {
+    throw new Error("Failed to fetch entries");
+  }
+  return resp.json();
+}
+
+
+
+
+
 //other api calls
