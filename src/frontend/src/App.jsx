@@ -10,7 +10,7 @@ function App() {
       </nav>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/entrada/:id" element={<EntradaPage />} />
+        <Route path="/entrada" element={<EntradaPage />} />
         {/* <Route path="/about" element={<About />} /> */}
         {/* <Route path="/articles/:id" element={<Article />} /> */}
       </Routes>
