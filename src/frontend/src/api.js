@@ -18,7 +18,7 @@ export async function getWiki(id) {
 
 
 export async function getEntrada(id) {
-  const resp = await fetch(`${API_BASE_URL}/entries/${id}`);
+  const resp = await fetch(`${API_BASE_URL}/entries/id?id=${id}`);
   if (!resp.ok) {
     throw new Error("Failed to fetch entries");
   }
