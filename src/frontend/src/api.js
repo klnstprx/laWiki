@@ -25,6 +25,24 @@ export async function getEntrada(id) {
   return resp.json();
 }
 
+export async function getAllComentariosByVersion(id) {
+  const resp = await fetch(`${API_BASE_URL}/comments/version?versionID=${id}`);
+  if (!resp.ok) {
+    throw new Error("Failed to fetch comments");
+  }
+  return resp.json();
+}
+
+export async function getVersionById(id) {
+  const resp = await fetch(`${API_BASE_URL}/versions/id/?id=${id}`);
+  if (!resp.ok) {
+    throw new Error("Failed to fetch version");
+  }
+  return resp.json();
+}
+
+
+
 
 
 
