@@ -82,7 +82,7 @@ function EntradaPage() {
 
    
 
-    {/*La URL es de este tipo http://localhost:5173/entrada?id=67311bf03399f3b49ccb8072&versionID=67311c0143d96ecd81728a94*/}
+    {/*La URL es de este tipo http://localhost:5173/entrada?id=67311bf03399f3b49ccb8072&versionID=67311c0143d96ecd81728a94 */}
 
     return (
     <div>
