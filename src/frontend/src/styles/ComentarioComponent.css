@@ -1,0 +1,72 @@
+.comentario {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.comentario-avatar {
+    margin-right: 16px;
+}
+
+.comentario-avatar-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.comentario-body {
+    flex: 1;
+}
+
+.comentario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.comentario-author {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.comentario-date {
+    font-size: 12px;
+    color: #757575;
+}
+
+.comentario-content {
+    font-size: 14px;
+    margin: 8px 0;
+    color: #333;
+}
+
+.comentario-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comentario-rating {
+    font-size: 13px;
+    color: #f57c00;
+}
+
+.comentario-delete {
+    background: none;
+    border: none;
+    color: #f44336;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.comentario-delete:hover {
+    background-color: #ffe5e5;
+}
