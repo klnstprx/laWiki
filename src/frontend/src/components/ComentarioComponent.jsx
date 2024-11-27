@@ -20,7 +20,7 @@ const ComentarioComponent = ({ content, rating, created_at, author, onDelete }) 
                 </div>
                 <p className="comentario-content">{content}</p>
                 <div className="comentario-footer">
-                    <span className="comentario-rating">Rating: {rating}</span>
+                    <span className="comentario-rating">Rating: {rating}/5</span>
                     <button className="comentario-delete" onClick={onDelete}>
                         Borrar
                     </button>
