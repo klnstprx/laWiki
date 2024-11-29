@@ -1,7 +1,7 @@
-import '../styles/ComentarioComponent.css';
+import '../styles/Comentario.css';
 import PropTypes from 'prop-types';
 
-const ComentarioComponent = ({ content, rating, created_at, author, onDelete }) => {
+const Comentario = ({ content, rating, created_at, author, onDelete }) => {
     return (
         <div className="comentario">
             <div className="comentario-avatar">
@@ -29,7 +29,7 @@ const ComentarioComponent = ({ content, rating, created_at, author, onDelete }) 
         </div>
     );
 };
-ComentarioComponent.propTypes = {
+Comentario.propTypes = {
     content: PropTypes.string.isRequired,
     rating: PropTypes.number.isRequired,
     created_at: PropTypes.string.isRequired,
@@ -38,7 +38,7 @@ ComentarioComponent.propTypes = {
 };
 
 /*
-const ComentarioComponent = ({ content, rating, created_at, author }) => {
+const Comentario = ({ content, rating, created_at, author }) => {
 	return (
 		<div className="comentario">
 			<h4 className="comentario-author">{author}</h4>
@@ -53,4 +53,4 @@ const ComentarioComponent = ({ content, rating, created_at, author }) => {
 
 */
 
-export default ComentarioComponent;
+export default Comentario;

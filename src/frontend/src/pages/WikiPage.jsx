@@ -5,7 +5,7 @@ import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
 import { getEntradasByWikiId, getWiki } from "../api.js";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import EntradaComponent from "../components/EntradaComponent.jsx";
+import EntradaCard from "../components/EntradaCard.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import MainLayout from "../layout/MainLayout.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
@@ -188,7 +188,7 @@ function WikiPage() {
                       padding: "15px 0",
                     }}
                   >
-                    <EntradaComponent
+                    <EntradaCard
                       title={comentario.title}
                       author={comentario.author}
                       created_at={comentario.created_at}

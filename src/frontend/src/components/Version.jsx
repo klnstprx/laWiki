@@ -1,7 +1,7 @@
 import React from "react";
 import Typography from "@mui/material/Typography";
 
-const VersionComponent = (props) => {
+const Version = (props) => {
   
     const { content, editor, created_at, entry_id  } = props;
 
@@ -23,7 +23,7 @@ const VersionComponent = (props) => {
     );
 };
 
-export default VersionComponent;
+export default Version;
 
 
 
