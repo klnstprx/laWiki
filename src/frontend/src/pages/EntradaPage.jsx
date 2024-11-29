@@ -5,9 +5,9 @@ import ListItem from "@mui/material/ListItem";
 import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
 import {
-  getAllComentariosByVersion,
-  getEntrada,
-  getVersionById,
+  getCommentsByVersionId,
+  getEntry,
+  getVersion,
 } from "../api.js";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
@@ -43,24 +43,24 @@ function EntradaPage() {
   };
 
   useEffect(() => {
-    getEntrada(id)
+    getEntry(id)
       .then(setEntrada)
       .catch((err) => setError(err.message));
   }, [id]);
 
   useEffect(() => {
-    getAllComentariosByVersion(versionID)
+    getCommentsByVersionId(versionID)
       .then(setComentarios)
       .catch((err) => setError(err.message));
   }, [versionID]);
 
   useEffect(() => {
-    getVersionById(versionID)
+    getVersion(versionID)
       .then(setVersion)
       .catch((err) => setError(err.message));
   }, [versionID]);
 
-  async function enviarJSON(event) {
+  async function subirComentario(event) {
     console.log("Enviando formulario...");
     // Prevenir el envío normal del formulario
     event.preventDefault();
@@ -239,6 +239,7 @@ function EntradaPage() {
                     }}
                   >
                     <Comentario
+                      id={comentario.id}
                       content={comentario.content}
                       rating={comentario.rating}
                       created_at={comentario.created_at}
@@ -265,7 +266,7 @@ function EntradaPage() {
             Añadir comentario
           </h2>
 
-          <form id="miFormulario" ref={formRef} onSubmit={enviarJSON}>
+          <form id="miFormulario" onSubmit={subirComentario}>
             <div style={{ marginBottom: "20px" }}>
               <label
                 htmlFor="content"
