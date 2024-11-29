@@ -180,8 +180,8 @@ export async function putEntry(id){
 
 //get an entry by wiki
 
-export async function getEntryByWikiId(wikiId) {
-  const resp = await fetch(`${API_BASE_URL}/entries/wiki_id?=${wikiId}`);
+export async function getEntriesByWikiId(wikiId) {
+  const resp = await fetch(`${API_BASE_URL}/entries/wiki${wikiId}`);
   if (!resp.ok) {
     throw new Error("Failed to fetch entries");
   }
@@ -321,6 +321,91 @@ export async function getVersionsByEntryId(entryId) {
 
 
 // API COMENTARIOS
+
+//get all comments
+export async function getAllComments() {
+  const resp = await fetch(`${API_BASE_URL}/comments`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!resp.ok) {
+    throw new Error("Failed to fetch comments");
+  }
+  return resp.json();
+}
+
+//post a comment
+
+export async function postComment(data) {
+  const resp = await fetch(`${API_BASE_URL}/comments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  if (!resp.ok) {
+    throw new Error("Failed to post comment");
+  }
+  return resp.json();
+}
+
+//get a comment by id
+
+export async function getComment(id) {
+  const resp = await fetch(`${API_BASE_URL}/comments/${id}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!resp.ok) {
+    throw new Error("Failed to fetch comment");
+  }
+  return resp.json();
+}
+
+//delete a comment by id
+
+export async function deleteComment(id) {
+  const resp = await fetch(`${API_BASE_URL}/comments/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!resp.ok) {
+    throw new Error("Failed to delete comment with id " + id);
+  }
+  return resp.json();
+}
+
+//put a comment by id
+
+export async function putComment(id){
+  const resp = await fetch(`${API_BASE_URL}/comments/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!resp.ok) {
+    throw new Error("Failed to fetch comment with id " + id);
+  }
+  return resp.json();
+}
+
+//get all comments by version id
+
+export async function getCommentsByVersionId(versionId) {
+  const resp = await fetch(`${API_BASE_URL}/comments/version?versionID=${versionId}`);
+  if (!resp.ok) {
+    throw new Error("Failed to fetch comments");
+  }
+  return resp.json();
+}
 
 
 // API MEDIA
