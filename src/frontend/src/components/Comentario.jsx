@@ -1,7 +1,28 @@
 import '../styles/Comentario.css';
 import PropTypes from 'prop-types';
 
-const Comentario = ({ content, rating, created_at, author, onDelete }) => {
+const Comentario = ({ id, content, rating, created_at, author }) => {
+    
+    async function eliminarComentario(event) {
+        console.log("Enviando formulario...");
+        // Prevenir el envío normal del formulario
+        event.preventDefault();
+    
+        try {
+           await fetch("http://localhost:8000/api/comments/id?id=" + id.toString(), {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+        } catch (error) {
+          console.error("Error al enviar:", error);
+        }
+      }
+    
+    
+    
     return (
         <div className="comentario">
             <div className="comentario-avatar">
@@ -21,7 +42,7 @@ const Comentario = ({ content, rating, created_at, author, onDelete }) => {
                 <p className="comentario-content" style={{color:"black"}}>{content}</p>
                 <div className="comentario-footer">
                     <span className="comentario-rating">Rating: {rating}/5</span>
-                    <button className="comentario-delete" onClick={onDelete}>
+                    <button className="comentario-delete" onClick={eliminarComentario}>
                         Borrar
                     </button>
                 </div>
@@ -30,6 +51,7 @@ const Comentario = ({ content, rating, created_at, author, onDelete }) => {
     );
 };
 Comentario.propTypes = {
+    id:PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
     rating: PropTypes.number.isRequired,
     created_at: PropTypes.string.isRequired,
@@ -37,20 +59,5 @@ Comentario.propTypes = {
     onDelete: PropTypes.func.isRequired,
 };
 
-/*
-const Comentario = ({ content, rating, created_at, author }) => {
-	return (
-		<div className="comentario">
-			<h4 className="comentario-author">{author}</h4>
-			<p className="comentario-content">{content}</p>
-			<div className="comentario-meta">
-				<p className="comentario-rating">Rating: {rating}</p>
-				<span className="comentario-date">Fecha: {new Date(created_at).toLocaleDateString()}</span>
-			</div>
-    	</div>
-	);
-};
-
-*/
 
 export default Comentario;

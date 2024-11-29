@@ -3,7 +3,7 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
-import { getEntradasByWikiId, getWiki } from "../api.js";
+import { getEntriesByWikiId, getWiki } from "../api.js";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import EntradaCard from "../components/EntradaCard.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -41,7 +41,7 @@ function WikiPage() {
   }, [id]);
 
   useEffect(() => {
-    getEntradasByWikiId(wikiId)
+    getEntriesByWikiId(wikiId)
       .then(setEntradas)
       .catch((err) => setError(err.message));
   }, [wikiId]);
