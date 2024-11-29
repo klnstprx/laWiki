@@ -58,7 +58,7 @@ function EntradaPage() {
       .catch((err) => setError(err.message));
   }, [versionID]);
 
-  async function enviarJSON(event) {
+  async function subirComentario(event) {
     console.log("Enviando formulario...");
     // Prevenir el envío normal del formulario
     event.preventDefault();
@@ -230,6 +230,7 @@ function EntradaPage() {
                     }}
                   >
                     <Comentario
+                      id={comentario.id}
                       content={comentario.content}
                       rating={comentario.rating}
                       created_at={comentario.created_at}
@@ -256,7 +257,7 @@ function EntradaPage() {
             Añadir comentario
           </h2>
 
-          <form id="miFormulario" onSubmit={enviarJSON}>
+          <form id="miFormulario" onSubmit={subirComentario}>
             <div style={{ marginBottom: "20px" }}>
               <label
                 htmlFor="content"
