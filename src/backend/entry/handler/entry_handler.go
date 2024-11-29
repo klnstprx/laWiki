@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/laWiki/entry/config"
 	"github.com/laWiki/entry/database"
 	"github.com/laWiki/entry/model"
@@ -83,9 +84,9 @@ func GetEntries(w http.ResponseWriter, r *http.Request) {
 // @Failure      400   {string}  string  "Invalid ID"
 // @Failure      404   {string}  string  "Entry not found"
 // @Failure      500   {string}  string  "Internal server error"
-// @Router       /api/entries/id/ [get]
+// @Router       /api/entries/{id} [get]
 func GetEntryByID(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	id := chi.URLParam(r, "id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -479,9 +480,9 @@ func PostEntry(w http.ResponseWriter, r *http.Request) {
 // @Failure      400    {string}  string  "Invalid ID or request body"
 // @Failure      404    {string}  string  "Entry not found"
 // @Failure      500    {string}  string  "Internal server error"
-// @Router       /api/entries/id/ [put]
+// @Router       /api/entries/{id} [put]
 func PutEntry(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	id := chi.URLParam(r, "id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -546,15 +547,15 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 // @Failure      400   {string}  string  "Invalid ID"
 // @Failure      404   {string}  string  "Entry not found"
 // @Failure      500   {string}  string  "Internal server error"
-// @Router       /api/entries/id/ [delete]
+// @Router       /api/entries/{id} [delete]
 func DeleteEntry(w http.ResponseWriter, r *http.Request) {
-	entryID := r.URL.Query().Get("id")
+	id := chi.URLParam(r, "id")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Delete associated versions first
-	versionServiceURL := fmt.Sprintf("%s/api/versions/entry?entryID=%s", config.App.API_GATEWAY_URL, entryID)
+	versionServiceURL := fmt.Sprintf("%s/api/versions/entry?entryID=%s", config.App.API_GATEWAY_URL, id)
 	config.App.Logger.Info().Str("url", versionServiceURL).Msg("Preparing to delete associated versions")
 
 	req, err := http.NewRequest("DELETE", versionServiceURL, nil)
@@ -589,7 +590,7 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Now proceed to delete the entry document
-	objID, err := primitive.ObjectIDFromHex(entryID)
+	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Invalid entry ID")
 		http.Error(w, "Invalid entry ID", http.StatusBadRequest)
@@ -608,7 +609,7 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	config.App.Logger.Info().Str("entryID", entryID).Msg("Version and associated versions deleted successfully")
+	config.App.Logger.Info().Str("entryID", id).Msg("Version and associated versions deleted successfully")
 	w.WriteHeader(http.StatusNoContent)
 }
 
