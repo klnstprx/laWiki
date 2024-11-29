@@ -41,10 +41,11 @@ export async function getVersionById(id) {
   return resp.json();
 }
 
-
-
-
-
-
-
-//other api calls
+// get all entradas by wiki id
+export async function getEntradasByWikiId(id) {
+  const resp = await fetch(`${API_BASE_URL}/entries/wiki?id=${id}`);
+  if (!resp.ok) {
+    throw new Error("Failed to fetch entries");
+  }
+  return resp.json();
+}
