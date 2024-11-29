@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Alert from "@mui/material/Alert";
-import Typography from "@mui/material/Typography";
+import { List, Card, Alert, Typography } from "antd";
 import { getAllWikis } from "../api.js";
 import MainLayout from "../layout/MainLayout.jsx";
-
+const { Title, Paragraph } = Typography;
 
 function HomePage() {
   const [wikis, setWikis] = useState([]);
@@ -19,27 +16,26 @@ function HomePage() {
 
   return (
     <MainLayout>
-      <div>
-        <Typography variant="h1" gutterBottom>
-          Wikis
-        </Typography>
-        {error && <Alert severity="error">{error}</Alert>}
-        {wikis.length > 0
-          ? (
-            <List>
-              {wikis.map((wiki) => (
-                <ListItem key={wiki.id}>
-                  <Typography variant="h2" gutterBottom>
-                    {wiki.title}
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    {wiki.description}
-                  </Typography>
-                </ListItem>
-              ))}
-            </List>
-          )
-          : <Alert>No wikis found.</Alert>}
+      <div style={{ padding: '20px' }}>
+        <Title level={1}>Wikis</Title>
+        {error && <Alert message={error} type="error" />}
+        <List
+          grid={{ gutter: 16, column: 2 }}
+          dataSource={wikis}
+          renderItem={wiki => (
+            <List.Item>
+              <Card
+                hoverable
+                cover={<img alt="example" src="https://via.placeholder.com/150" />}
+              >
+                <Card.Meta
+                  title={<Title level={2}>{wiki.title}</Title>}
+                  description={<Paragraph>{wiki.description}</Paragraph>}
+                />
+              </Card>
+            </List.Item>
+          )}
+        />
       </div>
     </MainLayout>
   );
