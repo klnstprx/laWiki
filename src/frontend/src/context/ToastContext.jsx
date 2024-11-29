@@ -1,7 +1,8 @@
-import { createContext, useState } from "react";
-import PropTypes from 'prop-types';
+import { createContext, useContext, useState } from "react";
+import PropTypes from "prop-types";
 
 export const ToastContext = createContext();
+export const useToast = () => useContext(ToastContext);
 
 export const ToastProvider = ({ children }) => {
   const [toast, setToast] = useState({

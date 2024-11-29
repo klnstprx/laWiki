@@ -77,8 +77,6 @@ combine-swagger:
 	cd media && swag init
 	cd auth && swag init
 	cd gateway && swag init
-
 	@echo "Combining Swagger documentation..."
 	npx swagger-combine swagger-config.json -o gateway/docs/swagger.json
-
 	@echo "Swagger documentation combined successfully."
