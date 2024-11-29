@@ -9,8 +9,8 @@ import {
   getVersionById,
 } from "../api.js";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import ComentarioComponent from "../components/ComentarioComponent.jsx";
-import VersionComponent from "../components/VersionComponent.jsx";
+import Comentario from "../components/Comentario.jsx";
+import Version from "../components/Version.jsx";
 import MainLayout from "../layout/MainLayout.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -191,7 +191,7 @@ function EntradaPage() {
           >
             Contenido de la versión
           </h2>
-          <VersionComponent
+          <Version
             content={version.content}
             editor={version.editor}
             created_at={version.created_at}
@@ -229,7 +229,7 @@ function EntradaPage() {
                       padding: "15px 0",
                     }}
                   >
-                    <ComentarioComponent
+                    <Comentario
                       content={comentario.content}
                       rating={comentario.rating}
                       created_at={comentario.created_at}
