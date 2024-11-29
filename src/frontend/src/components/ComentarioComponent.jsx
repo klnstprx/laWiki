@@ -1,5 +1,5 @@
 import '../styles/ComentarioComponent.css';
-
+import PropTypes from 'prop-types';
 
 const ComentarioComponent = ({ content, rating, created_at, author, onDelete }) => {
     return (
@@ -29,9 +29,13 @@ const ComentarioComponent = ({ content, rating, created_at, author, onDelete }) 
         </div>
     );
 };
-
-export default ComentarioComponent;
-
+ComentarioComponent.propTypes = {
+    content: PropTypes.string.isRequired,
+    rating: PropTypes.number.isRequired,
+    created_at: PropTypes.string.isRequired,
+    author: PropTypes.string.isRequired,
+    onDelete: PropTypes.func.isRequired,
+};
 
 /*
 const ComentarioComponent = ({ content, rating, created_at, author }) => {
@@ -47,5 +51,6 @@ const ComentarioComponent = ({ content, rating, created_at, author }) => {
 	);
 };
 
-export default ComentarioComponent;
 */
+
+export default ComentarioComponent;
