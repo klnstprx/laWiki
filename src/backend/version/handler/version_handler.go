@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/laWiki/version/config"
 	"github.com/laWiki/version/database"
 	"github.com/laWiki/version/model"
@@ -89,9 +90,9 @@ func GetVersions(w http.ResponseWriter, r *http.Request) {
 // @Failure      400   {string}  string  "Invalid ID"
 // @Failure      404   {string}  string  "Version not found"
 // @Failure      500   {string}  string  "Internal server error"
-// @Router       /api/versions/id/ [get]
+// @Router       /api/versions/{id} [get]
 func GetVersionByID(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	id := chi.URLParam(r, "id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -427,9 +428,9 @@ func PostVersion(w http.ResponseWriter, r *http.Request) {
 // @Failure      400     {string}  string  "Invalid ID or request body"
 // @Failure      404     {string}  string  "Version not found"
 // @Failure      500     {string}  string  "Internal server error"
-// @Router       /api/versions/id/ [put]
+// @Router       /api/versions/{id} [put]
 func PutVersion(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	id := chi.URLParam(r, "id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -494,15 +495,15 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 // @Failure      400 {string} string "Invalid ID"
 // @Failure      404 {string} string "Version not found"
 // @Failure      500 {string} string "Internal server error"
-// @Router       /api/versions/id/ [delete]
+// @Router       /api/versions/{id} [delete]
 func DeleteVersion(w http.ResponseWriter, r *http.Request) {
-	versionID := r.URL.Query().Get("id")
+	id := chi.URLParam(r, "id")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Delete associated comments first
-	commentServiceURL := fmt.Sprintf("%s/api/comments/version?versionID=%s", config.App.API_GATEWAY_URL, versionID)
+	commentServiceURL := fmt.Sprintf("%s/api/comments/version?versionID=%s", config.App.API_GATEWAY_URL, id)
 	config.App.Logger.Info().Str("url", commentServiceURL).Msg("Preparing to delete associated comments")
 
 	req, err := http.NewRequest("DELETE", commentServiceURL, nil)
@@ -537,7 +538,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Now proceed to delete the version document
-	objID, err := primitive.ObjectIDFromHex(versionID)
+	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Invalid version ID")
 		http.Error(w, "Invalid version ID", http.StatusBadRequest)
@@ -556,7 +557,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	config.App.Logger.Info().Str("versionID", versionID).Msg("Version and associated comments deleted successfully")
+	config.App.Logger.Info().Str("versionID", id).Msg("Version and associated comments deleted successfully")
 	w.WriteHeader(http.StatusNoContent)
 }
 
