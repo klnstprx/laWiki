@@ -91,6 +91,11 @@ function EntradaPage() {
         const result = await response.json();
         console.log("Respuesta del servidor:", result);
 
+        setComentarios(prevComentarios => [
+          ...prevComentarios,
+          result  // Suponiendo que 'result' contiene el comentario recién creado
+        ]);
+
         formRef.current.reset(); // esto es para limpiar el formulario
       } else {
         console.error("Error en la respuesta:", response.status);
