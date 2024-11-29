@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import Header from "../Components/Header";
-import Footer from "../Components/Footer";
-import ToastMessage from "../Components/ToastMessage";
-import { useToast } from "../Context/ToastContext";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import ToastMessage from "../components/ToastMessage";
+import { useToast } from "../context/ToastContext";
 import { Outlet } from "react-router-dom";
 
 function MainLayout({ children }) {
