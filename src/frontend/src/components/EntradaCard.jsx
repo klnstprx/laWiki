@@ -1,5 +1,5 @@
-function EntradaComponent() {
+function EntradaCard() {
   return <div>entrada</div>;
 }
 
-export default EntradaComponent();
+export default EntradaCard();
