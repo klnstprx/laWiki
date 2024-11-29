@@ -5,7 +5,7 @@ import ListItem from "@mui/material/ListItem";
 import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
 import { getEntrada, getAllComentariosByVersion, getVersionById } from "../api.js";
-import { useSearchParams, useNavigate} from 'react-router-dom';
+import { useSearchParams} from 'react-router-dom';
 import ComentarioComponent from "../components/ComentarioComponent.jsx";
 import VersionComponent from "../components/VersionComponent.jsx";
 
