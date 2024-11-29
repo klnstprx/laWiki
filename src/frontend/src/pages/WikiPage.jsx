@@ -92,12 +92,12 @@ function WikiPage() {
           fontFamily: "'Arial', sans-serif",
           backgroundColor: "#f5f5f5",
           padding: "40px",
-          maxWidth: "1200px", // Aumentamos el ancho máximo para pantallas grandes
           margin: "0 auto",
           border: "1px solid #ddd",
           borderRadius: "8px",
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Sombra más suave para el contenedor
           color: "black",
+          width: "100vw"
         }}
       >
         {/* Cabecera de la página */}
