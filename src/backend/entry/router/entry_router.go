@@ -14,11 +14,8 @@ func NewRouter() http.Handler {
 		r.Get("/health", handler.HealthCheck)
 		r.Get("/", handler.GetEntries)
 		r.Post("/", handler.PostEntry)
-		r.Get("/exact_title", handler.GetEntryByExactTitle)
-		r.Get("/title", handler.GetEntriesByTitle)
-		r.Get("/author", handler.GetEntriesByAuthor)
-		r.Get("/date", handler.GetEntriesByDate)
-		r.Get("/wiki", handler.GetEntriesByWikiID)
+		r.Get("/search", handler.SearchEntries)
+
 		r.Delete("/wiki", handler.DeleteEntriesByWikiID)
 
 		r.Route("/{id}", func(r chi.Router) {

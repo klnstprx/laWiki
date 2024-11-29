@@ -202,159 +202,6 @@
         }
       }
     },
-    "/api/wikis/category": {
-      "get": {
-        "description": "Retrieves wikis under the given category.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Wikis"
-        ],
-        "summary": "Get wikis by category",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Category to search",
-            "name": "category",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "category": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "title": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "/api/wikis/description": {
-      "get": {
-        "description": "Retrieves wikis that match the given description.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Wikis"
-        ],
-        "summary": "Get wikis by description",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Description to search",
-            "name": "description",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "category": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "title": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "/api/wikis/exactTitle": {
-      "get": {
-        "description": "Retrieves wiki that matches the given title.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Wikis"
-        ],
-        "summary": "Get wiki by exact title",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Title to search",
-            "name": "title",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "category": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                },
-                "title": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
     "/api/wikis/health": {
       "get": {
         "description": "Checks if the service is up",
@@ -375,7 +222,82 @@
         }
       }
     },
-    "/api/wikis/id/": {
+    "/api/wikis/search": {
+      "get": {
+        "description": "Search for wikis using various query parameters. You can search by title, exact_title, description, or category. All parameters are optional and can be combined.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Wikis"
+        ],
+        "summary": "Search wikis",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Partial title to search for (case-insensitive)",
+            "name": "title",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Exact title to search for",
+            "name": "exact_title",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Description to search for (case-insensitive)",
+            "name": "description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Category to search for",
+            "name": "category",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/wikis/{id}": {
       "get": {
         "description": "Retrieves a wiki by its ID.",
         "produces": [
@@ -563,58 +485,6 @@
         }
       }
     },
-    "/api/wikis/title": {
-      "get": {
-        "description": "Retrieves the list of all wikis that matches the title.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Wikis"
-        ],
-        "summary": "Get all wikis by title.",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Title to search",
-            "name": "title",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "category": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "title": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
     "/api/entries/": {
       "get": {
         "description": "Retrieves the list of all entries from the database.",
@@ -739,54 +609,19 @@
         }
       }
     },
-    "/api/entries/author": {
+    "/api/entries/health": {
       "get": {
-        "description": "Retrieves entries authored by the given author(s).",
+        "description": "Checks if the service is up",
         "produces": [
-          "application/json"
+          "text/plain"
         ],
         "tags": [
-          "Entries"
+          "Health"
         ],
-        "summary": "Get entries by author",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Author to search",
-            "name": "author",
-            "in": "query",
-            "required": true
-          }
-        ],
+        "summary": "Health Check",
         "responses": {
           "200": {
             "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "author": {
-                    "type": "string"
-                  },
-                  "created_at": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "title": {
-                    "type": "string"
-                  },
-                  "wiki_id": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
             "schema": {
               "type": "string"
             }
@@ -794,23 +629,46 @@
         }
       }
     },
-    "/api/entries/date": {
+    "/api/entries/search": {
       "get": {
-        "description": "Retrieves entries created on the given date.",
+        "description": "Search for entries using various query parameters. You can search by title, exact_title, author, createdAt, or wikiID. All parameters are optional and can be combined.",
         "produces": [
           "application/json"
         ],
         "tags": [
           "Entries"
         ],
-        "summary": "Get entries by date",
+        "summary": "Search entries",
         "parameters": [
+          {
+            "type": "string",
+            "description": "Partial title to search for (case-insensitive)",
+            "name": "title",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Exact title to search for",
+            "name": "exact_title",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Author to search for",
+            "name": "author",
+            "in": "query"
+          },
           {
             "type": "string",
             "description": "Creation date (YYYY-MM-DD)",
             "name": "createdAt",
-            "in": "query",
-            "required": true
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Wiki ID to search for",
+            "name": "wikiID",
+            "in": "query"
           }
         ],
         "responses": {
@@ -841,13 +699,13 @@
             }
           },
           "400": {
-            "description": "Invalid date format. Expected YYYY-MM-DD",
+            "description": "Bad Request",
             "schema": {
               "type": "string"
             }
           },
           "500": {
-            "description": "Internal server error",
+            "description": "Internal Server Error",
             "schema": {
               "type": "string"
             }
@@ -855,51 +713,37 @@
         }
       }
     },
-    "/api/entries/exactTitle": {
-      "get": {
-        "description": "Retrieves entry that matches exactly the given title.",
-        "produces": [
-          "application/json"
-        ],
+    "/api/entries/wiki/": {
+      "delete": {
+        "description": "Deletes all entries associated with a specific Wiki ID.",
         "tags": [
           "Entries"
         ],
-        "summary": "Get entries by title",
+        "summary": "Deletes all entries by the Wiki ID",
         "parameters": [
           {
             "type": "string",
-            "description": "Title to search",
-            "name": "title",
+            "description": "Wiki ID",
+            "name": "id",
             "in": "query",
             "required": true
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK",
+          "204": {
+            "description": "No Content",
             "schema": {
-              "type": "object",
-              "properties": {
-                "author": {
-                  "type": "string"
-                },
-                "created_at": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                },
-                "title": {
-                  "type": "string"
-                },
-                "wiki_id": {
-                  "type": "string"
-                }
-              }
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "WikiID is required",
+            "schema": {
+              "type": "string"
             }
           },
           "404": {
-            "description": "Entry not found",
+            "description": "No entries found",
             "schema": {
               "type": "string"
             }
@@ -913,27 +757,7 @@
         }
       }
     },
-    "/api/entries/health": {
-      "get": {
-        "description": "Checks if the service is up",
-        "produces": [
-          "text/plain"
-        ],
-        "tags": [
-          "Health"
-        ],
-        "summary": "Health Check",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "/api/entries/id/": {
+    "/api/entries/{id}": {
       "get": {
         "description": "Retrieves an entry by its ID.",
         "produces": [
@@ -1130,166 +954,6 @@
         }
       }
     },
-    "/api/entries/title": {
-      "get": {
-        "description": "Retrieves the list of all entries that matches the title.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Entries"
-        ],
-        "summary": "Get all entries by title.",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Title to search",
-            "name": "title",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "author": {
-                    "type": "string"
-                  },
-                  "created_at": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "title": {
-                    "type": "string"
-                  },
-                  "wiki_id": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "/api/entries/wiki": {
-      "get": {
-        "description": "Retrieves entries associated with a specific Wiki ID.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Entries"
-        ],
-        "summary": "Get entries by Wiki ID",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Wiki ID",
-            "name": "wikiID",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "author": {
-                    "type": "string"
-                  },
-                  "created_at": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "title": {
-                    "type": "string"
-                  },
-                  "wiki_id": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "WikiID is required",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "/api/entries/wiki/": {
-      "delete": {
-        "description": "Deletes all entries associated with a specific Wiki ID.",
-        "tags": [
-          "Entries"
-        ],
-        "summary": "Deletes all entries by the Wiki ID",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Wiki ID",
-            "name": "id",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "400": {
-            "description": "WikiID is required",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "404": {
-            "description": "No entries found",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
     "/api/comments/": {
       "get": {
         "description": "Retrieves a list of all comments.",
@@ -1423,57 +1087,19 @@
         }
       }
     },
-    "/api/comments/author": {
+    "/api/comments/health": {
       "get": {
-        "description": "Retrieves comments created by a specific author.",
+        "description": "Checks if the service is up",
         "produces": [
-          "application/json"
+          "text/plain"
         ],
         "tags": [
-          "Comments"
+          "Health"
         ],
-        "summary": "Get comments by author",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Author nickname",
-            "name": "author",
-            "in": "query",
-            "required": true
-          }
-        ],
+        "summary": "Health Check",
         "responses": {
           "200": {
             "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "author": {
-                    "type": "string"
-                  },
-                  "content": {
-                    "type": "string"
-                  },
-                  "created_at": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "rating": {
-                    "type": "integer"
-                  },
-                  "version_id": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
             "schema": {
               "type": "string"
             }
@@ -1481,84 +1107,46 @@
         }
       }
     },
-    "/api/comments/content": {
+    "/api/comments/search": {
       "get": {
-        "description": "Retrieves a comment by its content.",
+        "description": "Search for comments using various query parameters. You can search by content, author, createdAt, rating, or versionID. All parameters are optional and can be combined.",
         "produces": [
           "application/json"
         ],
         "tags": [
           "Comments"
         ],
-        "summary": "Get comment by content",
+        "summary": "Search comments",
         "parameters": [
           {
             "type": "string",
-            "description": "Content to search",
+            "description": "Partial content to search for (case-insensitive)",
             "name": "content",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "author": {
-                  "type": "string"
-                },
-                "content": {
-                  "type": "string"
-                },
-                "created_at": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                },
-                "rating": {
-                  "type": "integer"
-                },
-                "version_id": {
-                  "type": "string"
-                }
-              }
-            }
+            "in": "query"
           },
-          "404": {
-            "description": "Comment not found",
-            "schema": {
-              "type": "string"
-            }
+          {
+            "type": "string",
+            "description": "Author nickname to search for",
+            "name": "author",
+            "in": "query"
           },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "/api/comments/date": {
-      "get": {
-        "description": "Retrieves comments created on a specific date.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Comments"
-        ],
-        "summary": "Get comments by date",
-        "parameters": [
           {
             "type": "string",
             "description": "Creation date (YYYY-MM-DD)",
             "name": "createdAt",
-            "in": "query",
-            "required": true
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Rating to filter by",
+            "name": "rating",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Version ID to search for",
+            "name": "versionID",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1592,7 +1180,39 @@
             }
           },
           "400": {
-            "description": "Invalid date format. Expected YYYY-MM-DD",
+            "description": "Bad Request",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/comments/version": {
+      "delete": {
+        "description": "Deletes all comments associated with a specific version.",
+        "tags": [
+          "Comments"
+        ],
+        "summary": "Delete comments by version ID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Version ID",
+            "name": "versionID",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
             "schema": {
               "type": "string"
             }
@@ -1606,27 +1226,7 @@
         }
       }
     },
-    "/api/comments/health": {
-      "get": {
-        "description": "Checks if the service is up",
-        "produces": [
-          "text/plain"
-        ],
-        "tags": [
-          "Health"
-        ],
-        "summary": "Health Check",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "/api/comments/id/": {
+    "/api/comments/{id}": {
       "get": {
         "description": "Retrieves a comment by its ID.",
         "produces": [
@@ -1832,158 +1432,6 @@
         }
       }
     },
-    "/api/comments/rating": {
-      "get": {
-        "description": "Retrieves comments with a specific rating.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Comments"
-        ],
-        "summary": "Get comments by rating",
-        "parameters": [
-          {
-            "type": "integer",
-            "description": "Rating to filter",
-            "name": "rating",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "author": {
-                    "type": "string"
-                  },
-                  "content": {
-                    "type": "string"
-                  },
-                  "created_at": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "rating": {
-                    "type": "integer"
-                  },
-                  "version_id": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid rating format",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "/api/comments/version": {
-      "get": {
-        "description": "Retrieves comments associated with a specific version.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Comments"
-        ],
-        "summary": "Get comments by the id of a version its associated to",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Version ID",
-            "name": "versionID",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "author": {
-                    "type": "string"
-                  },
-                  "content": {
-                    "type": "string"
-                  },
-                  "created_at": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "rating": {
-                    "type": "integer"
-                  },
-                  "version_id": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "delete": {
-        "description": "Deletes all comments associated with a specific version.",
-        "tags": [
-          "Comments"
-        ],
-        "summary": "Delete comments by version ID",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Version ID",
-            "name": "versionID",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
     "/api/versions/": {
       "get": {
         "description": "Retrieves the list of all version JSON objects from the database.",
@@ -2108,232 +1556,6 @@
         }
       }
     },
-    "/api/versions/content": {
-      "get": {
-        "description": "Retrieves versions that match the given content.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Versions"
-        ],
-        "summary": "Get versions by content",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Content to search",
-            "name": "content",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "content": {
-                    "type": "string"
-                  },
-                  "created_at": {
-                    "type": "string"
-                  },
-                  "editor": {
-                    "type": "string"
-                  },
-                  "entry_id": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "/api/versions/date": {
-      "get": {
-        "description": "Retrieves versions created on the given date.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Versions"
-        ],
-        "summary": "Get versions by date",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Creation date (YYYY-MM-DD)",
-            "name": "createdAt",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "content": {
-                    "type": "string"
-                  },
-                  "created_at": {
-                    "type": "string"
-                  },
-                  "editor": {
-                    "type": "string"
-                  },
-                  "entry_id": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid date format. Expected YYYY-MM-DD",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "/api/versions/editor": {
-      "get": {
-        "description": "Retrieves versions edited by the given editor.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Versions"
-        ],
-        "summary": "Get versions by editor",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Editor to search",
-            "name": "editor",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "content": {
-                    "type": "string"
-                  },
-                  "created_at": {
-                    "type": "string"
-                  },
-                  "editor": {
-                    "type": "string"
-                  },
-                  "entry_id": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "/api/versions/entry": {
-      "get": {
-        "description": "Retrieves versions that correspond to a specific Entry ID.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Versions"
-        ],
-        "summary": "Get versions by Entry ID",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Entry ID",
-            "name": "entryId",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "content": {
-                    "type": "string"
-                  },
-                  "created_at": {
-                    "type": "string"
-                  },
-                  "editor": {
-                    "type": "string"
-                  },
-                  "entry_id": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
     "/api/versions/entry/": {
       "delete": {
         "description": "Deletes all versions associated with a specific Entry ID.",
@@ -2398,7 +1620,85 @@
         }
       }
     },
-    "/api/versions/id/": {
+    "/api/versions/search": {
+      "get": {
+        "description": "Search for versions using various query parameters. You can search by content, editor, createdAt, or entryID. All parameters are optional and can be combined.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Versions"
+        ],
+        "summary": "Search versions",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Partial content to search for (case-insensitive)",
+            "name": "content",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Editor to search for",
+            "name": "editor",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Creation date (YYYY-MM-DD)",
+            "name": "createdAt",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Entry ID to search for",
+            "name": "entryID",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string"
+                  },
+                  "created_at": {
+                    "type": "string"
+                  },
+                  "editor": {
+                    "type": "string"
+                  },
+                  "entry_id": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/versions/{id}": {
       "get": {
         "description": "Retrieves a version by its ID.",
         "produces": [
@@ -2709,62 +2009,6 @@
       }
     },
     "/api/media/id/": {
-      "get": {
-        "description": "Retrieves a media file by its ID.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Media"
-        ],
-        "summary": "Get media by ID",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Media ID",
-            "name": "id",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "publicId": {
-                  "type": "string"
-                },
-                "uploadUrl": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid ID",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "404": {
-            "description": "Media not found",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
       "put": {
         "description": "Updates a media file by its ID in Cloudinary and updates media info in the database.",
         "consumes": [
@@ -2877,6 +2121,64 @@
           {
             "type": "string",
             "description": "Media PublicID",
+            "name": "id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "publicId": {
+                  "type": "string"
+                },
+                "uploadUrl": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "Media not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/media/{id}/": {
+      "get": {
+        "description": "Retrieves a media file by its ID.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Media"
+        ],
+        "summary": "Get media by ID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Media ID",
             "name": "id",
             "in": "query",
             "required": true

@@ -70,101 +70,7 @@ paths:
       summary: Create a new comment
       tags:
       - Comments
-  /api/comments/author:
-    get:
-      description: Retrieves comments created by a specific author.
-      parameters:
-      - description: Author nickname
-        in: query
-        name: author
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Comment'
-            type: array
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Get comments by author
-      tags:
-      - Comments
-  /api/comments/content:
-    get:
-      description: Retrieves a comment by its content.
-      parameters:
-      - description: Content to search
-        in: query
-        name: content
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Comment'
-        "404":
-          description: Comment not found
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Get comment by content
-      tags:
-      - Comments
-  /api/comments/date:
-    get:
-      description: Retrieves comments created on a specific date.
-      parameters:
-      - description: Creation date (YYYY-MM-DD)
-        in: query
-        name: createdAt
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Comment'
-            type: array
-        "400":
-          description: Invalid date format. Expected YYYY-MM-DD
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Get comments by date
-      tags:
-      - Comments
-  /api/comments/health:
-    get:
-      description: Checks if the service is up
-      produces:
-      - text/plain
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Health Check
-      tags:
-      - Health
-  /api/comments/id/:
+  /api/comments/{id}:
     delete:
       description: Deletes a comment by its ID.
       parameters:
@@ -262,15 +168,45 @@ paths:
       summary: Update comment by ID
       tags:
       - Comments
-  /api/comments/rating:
+  /api/comments/health:
     get:
-      description: Retrieves comments with a specific rating.
+      description: Checks if the service is up
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health Check
+      tags:
+      - Health
+  /api/comments/search:
+    get:
+      description: Search for comments using various query parameters. You can search
+        by content, author, createdAt, rating, or versionID. All parameters are optional
+        and can be combined.
       parameters:
-      - description: Rating to filter
+      - description: Partial content to search for (case-insensitive)
+        in: query
+        name: content
+        type: string
+      - description: Author nickname to search for
+        in: query
+        name: author
+        type: string
+      - description: Creation date (YYYY-MM-DD)
+        in: query
+        name: createdAt
+        type: string
+      - description: Rating to filter by
         in: query
         name: rating
-        required: true
         type: integer
+      - description: Version ID to search for
+        in: query
+        name: versionID
+        type: string
       produces:
       - application/json
       responses:
@@ -281,14 +217,14 @@ paths:
               $ref: '#/definitions/model.Comment'
             type: array
         "400":
-          description: Invalid rating format
+          description: Bad Request
           schema:
             type: string
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
             type: string
-      summary: Get comments by rating
+      summary: Search comments
       tags:
       - Comments
   /api/comments/version:
@@ -310,30 +246,6 @@ paths:
           schema:
             type: string
       summary: Delete comments by version ID
-      tags:
-      - Comments
-    get:
-      description: Retrieves comments associated with a specific version.
-      parameters:
-      - description: Version ID
-        in: query
-        name: versionID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Comment'
-            type: array
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Get comments by the id of a version its associated to
       tags:
       - Comments
 swagger: "2.0"

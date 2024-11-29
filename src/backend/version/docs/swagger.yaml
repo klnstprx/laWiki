@@ -68,153 +68,7 @@ paths:
       summary: Create a new version
       tags:
       - Versions
-  /api/versions/content:
-    get:
-      description: Retrieves versions that match the given content.
-      parameters:
-      - description: Content to search
-        in: query
-        name: content
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Version'
-            type: array
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Get versions by content
-      tags:
-      - Versions
-  /api/versions/date:
-    get:
-      description: Retrieves versions created on the given date.
-      parameters:
-      - description: Creation date (YYYY-MM-DD)
-        in: query
-        name: createdAt
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Version'
-            type: array
-        "400":
-          description: Invalid date format. Expected YYYY-MM-DD
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Get versions by date
-      tags:
-      - Versions
-  /api/versions/editor:
-    get:
-      description: Retrieves versions edited by the given editor.
-      parameters:
-      - description: Editor to search
-        in: query
-        name: editor
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Version'
-            type: array
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Get versions by editor
-      tags:
-      - Versions
-  /api/versions/entry:
-    get:
-      description: Retrieves versions that correspond to a specific Entry ID.
-      parameters:
-      - description: Entry ID
-        in: query
-        name: entryId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Version'
-            type: array
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Get versions by Entry ID
-      tags:
-      - Versions
-  /api/versions/entry/:
-    delete:
-      description: Deletes all versions associated with a specific Entry ID.
-      parameters:
-      - description: Entry ID
-        in: query
-        name: id
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content
-          schema:
-            type: string
-        "400":
-          description: EntryID is required
-          schema:
-            type: string
-        "404":
-          description: No versions found for the given entry ID
-          schema:
-            type: string
-        "500":
-          description: Failed to delete associated comments
-          schema:
-            type: string
-      summary: Deletes all versions by the Entry ID
-      tags:
-      - Versions
-  /api/versions/health:
-    get:
-      description: Checks if the service is up
-      produces:
-      - text/plain
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Health Check
-      tags:
-      - Health
-  /api/versions/id/:
+  /api/versions/{id}:
     delete:
       description: Deletes a version by its ID.
       parameters:
@@ -310,6 +164,90 @@ paths:
           schema:
             type: string
       summary: Update a version by ID
+      tags:
+      - Versions
+  /api/versions/entry/:
+    delete:
+      description: Deletes all versions associated with a specific Entry ID.
+      parameters:
+      - description: Entry ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: EntryID is required
+          schema:
+            type: string
+        "404":
+          description: No versions found for the given entry ID
+          schema:
+            type: string
+        "500":
+          description: Failed to delete associated comments
+          schema:
+            type: string
+      summary: Deletes all versions by the Entry ID
+      tags:
+      - Versions
+  /api/versions/health:
+    get:
+      description: Checks if the service is up
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health Check
+      tags:
+      - Health
+  /api/versions/search:
+    get:
+      description: Search for versions using various query parameters. You can search
+        by content, editor, createdAt, or entryID. All parameters are optional and
+        can be combined.
+      parameters:
+      - description: Partial content to search for (case-insensitive)
+        in: query
+        name: content
+        type: string
+      - description: Editor to search for
+        in: query
+        name: editor
+        type: string
+      - description: Creation date (YYYY-MM-DD)
+        in: query
+        name: createdAt
+        type: string
+      - description: Entry ID to search for
+        in: query
+        name: entryID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Version'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Search versions
       tags:
       - Versions
 swagger: "2.0"

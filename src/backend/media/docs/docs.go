@@ -107,51 +107,6 @@ const docTemplate = `{
             }
         },
         "/api/media/id/": {
-            "get": {
-                "description": "Retrieves a media file by its ID.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Media"
-                ],
-                "summary": "Get media by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Media ID",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Media"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid ID",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Media not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
             "put": {
                 "description": "Updates a media file by its ID in Cloudinary and updates media info in the database.",
                 "consumes": [
@@ -264,6 +219,53 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Media PublicID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Media"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Media not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/media/{id}/": {
+            "get": {
+                "description": "Retrieves a media file by its ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Media"
+                ],
+                "summary": "Get media by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Media ID",
                         "name": "id",
                         "in": "query",
                         "required": true

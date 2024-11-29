@@ -66,93 +66,7 @@ paths:
       summary: Create a new wiki
       tags:
       - Wikis
-  /api/wikis/category:
-    get:
-      description: Retrieves wikis under the given category.
-      parameters:
-      - description: Category to search
-        in: query
-        name: category
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Wiki'
-            type: array
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Get wikis by category
-      tags:
-      - Wikis
-  /api/wikis/description:
-    get:
-      description: Retrieves wikis that match the given description.
-      parameters:
-      - description: Description to search
-        in: query
-        name: description
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Wiki'
-            type: array
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Get wikis by description
-      tags:
-      - Wikis
-  /api/wikis/exactTitle:
-    get:
-      description: Retrieves wiki that matches the given title.
-      parameters:
-      - description: Title to search
-        in: query
-        name: title
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Wiki'
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Get wiki by exact title
-      tags:
-      - Wikis
-  /api/wikis/health:
-    get:
-      description: Checks if the service is up
-      produces:
-      - text/plain
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Health Check
-      tags:
-      - Health
-  /api/wikis/id/:
+  /api/wikis/{id}:
     delete:
       description: Deletes a wiki by its ID.
       parameters:
@@ -249,14 +163,40 @@ paths:
       summary: Update a wiki by ID
       tags:
       - Wikis
-  /api/wikis/title:
+  /api/wikis/health:
     get:
-      description: Retrieves the list of all wikis that matches the title.
+      description: Checks if the service is up
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health Check
+      tags:
+      - Health
+  /api/wikis/search:
+    get:
+      description: Search for wikis using various query parameters. You can search
+        by title, exact_title, description, or category. All parameters are optional
+        and can be combined.
       parameters:
-      - description: Title to search
+      - description: Partial title to search for (case-insensitive)
         in: query
         name: title
-        required: true
+        type: string
+      - description: Exact title to search for
+        in: query
+        name: exact_title
+        type: string
+      - description: Description to search for (case-insensitive)
+        in: query
+        name: description
+        type: string
+      - description: Category to search for
+        in: query
+        name: category
         type: string
       produces:
       - application/json
@@ -267,11 +207,15 @@ paths:
             items:
               $ref: '#/definitions/model.Wiki'
             type: array
-        "500":
-          description: Internal server error
+        "400":
+          description: Bad Request
           schema:
             type: string
-      summary: Get all wikis by title.
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Search wikis
       tags:
       - Wikis
 swagger: "2.0"

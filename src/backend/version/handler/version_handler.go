@@ -121,212 +121,61 @@ func GetVersionByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetVersionsByEntryID godoc
-// @Summary      Get versions by Entry ID
-// @Description  Retrieves versions that correspond to a specific Entry ID.
+// SearchVersions godoc
+// @Summary      Search versions
+// @Description  Search for versions using various query parameters. You can search by content, editor, createdAt, or entryID. All parameters are optional and can be combined.
 // @Tags         Versions
 // @Produce      application/json
-// @Param        entryId query string true "Entry ID"
-// @Success      200  {array}   model.Version
-// @Failure      500  {string}  string  "Internal server error"
-// @Router       /api/versions/entry [get]
-func GetVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
-	var versions []model.Version
+// @Param        content     query     string  false  "Partial content to search for (case-insensitive)"
+// @Param        editor      query     string  false  "Editor to search for"
+// @Param        createdAt   query     string  false  "Creation date (YYYY-MM-DD)"
+// @Param        entryID     query     string  false  "Entry ID to search for"
+// @Success      200         {array}   model.Version
+// @Failure      400         {string}  string  "Bad Request"
+// @Failure      500         {string}  string  "Internal Server Error"
+// @Router       /api/versions/search [get]
+func SearchVersions(w http.ResponseWriter, r *http.Request) {
+	content := r.URL.Query().Get("content")
+	editor := r.URL.Query().Get("editor")
+	createdAtString := r.URL.Query().Get("createdAt")
 	entryID := r.URL.Query().Get("entryID")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	filter := bson.M{}
 
-	cursor, err := database.VersionCollection.Find(ctx, bson.M{"entry_id": entryID})
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var version model.Version
-		if err := cursor.Decode(&version); err != nil {
-			config.App.Logger.Error().Err(err).Msg("Failed to decode version")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		versions = append(versions, version)
-	}
-
-	if err := cursor.Err(); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Cursor error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if len(versions) == 0 {
-		config.App.Logger.Info().Msg("No versions found")
-		http.Error(w, "No versions found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(versions); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// GetVersionsByContent godoc
-// @Summary      Get versions by content
-// @Description  Retrieves versions that match the given content.
-// @Tags         Versions
-// @Produce      application/json
-// @Param        content query string true "Content to search"
-// @Success      200     {array}   model.Version
-// @Failure      500     {string}  string  "Internal server error"
-// @Router       /api/versions/content [get]
-func GetVersionsByContent(w http.ResponseWriter, r *http.Request) {
-	var versions []model.Version
-	content := r.URL.Query().Get("content")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	filter := bson.M{
-		"content": bson.M{
+	if content != "" {
+		filter["content"] = bson.M{
 			"$regex":   content,
 			"$options": "i",
-		},
+		}
 	}
 
-	cursor, err := database.VersionCollection.Find(ctx, filter)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
+	if editor != "" {
+		filter["editor"] = editor
 	}
-	defer cursor.Close(ctx)
 
-	for cursor.Next(ctx) {
-		var version model.Version
-		if err := cursor.Decode(&version); err != nil {
-			config.App.Logger.Error().Err(err).Msg("Failed to decode version")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+	if createdAtString != "" {
+		createdAt, err := time.Parse("2006-01-02", createdAtString)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Msg("Invalid date format. Expected YYYY-MM-DD")
+			http.Error(w, "Invalid date format. Expected YYYY-MM-DD", http.StatusBadRequest)
 			return
 		}
-		versions = append(versions, version)
-	}
-
-	if err := cursor.Err(); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Cursor error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if len(versions) == 0 {
-		config.App.Logger.Info().Msg("No versions found")
-		http.Error(w, "No versions found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(versions); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// GetVersionsByEditor godoc
-// @Summary      Get versions by editor
-// @Description  Retrieves versions edited by the given editor.
-// @Tags         Versions
-// @Produce      application/json
-// @Param        editor query string true "Editor to search"
-// @Success      200    {array}   model.Version
-// @Failure      500    {string}  string  "Internal server error"
-// @Router       /api/versions/editor [get]
-func GetVersionsByEditor(w http.ResponseWriter, r *http.Request) {
-	var versions []model.Version
-	editor := r.URL.Query().Get("editor")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	cursor, err := database.VersionCollection.Find(ctx, bson.M{"editor": editor})
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var version model.Version
-		if err := cursor.Decode(&version); err != nil {
-			config.App.Logger.Error().Err(err).Msg("Failed to decode version")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		versions = append(versions, version)
-	}
-
-	if err := cursor.Err(); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Cursor error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if len(versions) == 0 {
-		config.App.Logger.Info().Msg("No versions found")
-		http.Error(w, "No versions found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(versions); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// GetVersionsByDate godoc
-// @Summary      Get versions by date
-// @Description  Retrieves versions created on the given date.
-// @Tags         Versions
-// @Produce      application/json
-// @Param        createdAt query string true "Creation date (YYYY-MM-DD)"
-// @Success      200       {array}   model.Version
-// @Failure      400       {string}  string  "Invalid date format. Expected YYYY-MM-DD"
-// @Failure      500       {string}  string  "Internal server error"
-// @Router       /api/versions/date [get]
-func GetVersionsByDate(w http.ResponseWriter, r *http.Request) {
-	createdAtString := r.URL.Query().Get("createdAt")
-
-	// Parse the date (expected format: YYYY-MM-DD)
-	createdAt, err := time.Parse("2006-01-02", createdAtString)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid date format. Expected YYYY-MM-DD")
-		http.Error(w, "Invalid date format. Expected YYYY-MM-DD", http.StatusBadRequest)
-		return
-	}
-
-	// Define the start and end of the day
-	startOfDay := createdAt
-	endOfDay := createdAt.AddDate(0, 0, 1)
-
-	var versions []model.Version
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	// Build the query to find versions within the date range
-	filter := bson.M{
-		"created_at": bson.M{
+		startOfDay := createdAt
+		endOfDay := createdAt.AddDate(0, 0, 1)
+		filter["created_at"] = bson.M{
 			"$gte": startOfDay,
 			"$lt":  endOfDay,
-		},
+		}
 	}
+
+	if entryID != "" {
+		filter["entry_id"] = entryID
+	}
+
+	var versions []model.Version
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	cursor, err := database.VersionCollection.Find(ctx, filter)
 	if err != nil {
