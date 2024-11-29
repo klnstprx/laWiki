@@ -21,7 +21,7 @@ func NewRouter() http.Handler {
 		r.Get("/version", handler.GetCommentsByVersionID)
 		r.Delete("/version", handler.DeleteCommentsByVersionID)
 
-		r.Route("/id", func(r chi.Router) {
+		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", handler.GetCommentByID)
 			r.Put("/", handler.PutComment)
 			r.Delete("/", handler.DeleteComment)

@@ -20,7 +20,7 @@ func NewRouter() http.Handler {
 		r.Get("/entry", handler.GetVersionsByEntryID)
 		r.Delete("/entry", handler.DeleteVersionsByEntryID)
 
-		r.Route("/id", func(r chi.Router) {
+		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", handler.GetVersionByID)
 			r.Put("/", handler.PutVersion)
 			r.Delete("/", handler.DeleteVersion)

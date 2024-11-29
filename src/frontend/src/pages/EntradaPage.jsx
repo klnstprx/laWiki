@@ -105,12 +105,12 @@ function EntradaPage() {
           fontFamily: "'Arial', sans-serif",
           backgroundColor: "#f5f5f5",
           padding: "40px",
-          maxWidth: "1200px", // Aumentamos el ancho máximo para pantallas grandes
           margin: "0 auto",
           border: "1px solid #ddd",
           borderRadius: "8px",
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Sombra más suave para el contenedor
           color: "black",
+          width: "100vw"
         }}
       >
         {/* Cabecera de la página */}
@@ -270,7 +270,7 @@ function EntradaPage() {
                 name="content"
                 required
                 style={{
-                  width: "100%",
+                  width: "70%",
                   padding: "12px",
                   marginTop: "10px",
                   border: "1px solid #dd",
@@ -293,7 +293,7 @@ function EntradaPage() {
                 name="rating"
                 required
                 style={{
-                  width: "100%",
+                  width: "5%",
                   padding: "12px",
                   marginTop: "10px",
                   border: "1px solid #ddd",
@@ -316,7 +316,7 @@ function EntradaPage() {
                 name="author"
                 required
                 style={{
-                  width: "100%",
+                  width: "15%",
                   padding: "12px",
                   marginTop: "10px",
                   border: "1px solid #ddd",
@@ -329,7 +329,7 @@ function EntradaPage() {
             <button
               type="submit"
               style={{
-                width: "100%",
+                width: "5%",
                 padding: "15px",
                 fontSize: "18px",
                 backgroundColor: "#3c4f76",
