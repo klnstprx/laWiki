@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useRef } from "react";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Alert from "@mui/material/Alert";
@@ -28,6 +29,7 @@ function EntradaPage() {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const formRef = useRef(null);
 
   const handleClose = () => {
     setShowModal(false);
@@ -88,6 +90,8 @@ function EntradaPage() {
       if (response.ok) {
         const result = await response.json();
         console.log("Respuesta del servidor:", result);
+
+        formRef.current.reset(); // esto es para limpiar el formulario
       } else {
         console.error("Error en la respuesta:", response.status);
       }
@@ -256,7 +260,7 @@ function EntradaPage() {
             Añadir comentario
           </h2>
 
-          <form id="miFormulario" onSubmit={enviarJSON}>
+          <form id="miFormulario" ref={formRef} onSubmit={enviarJSON}>
             <div style={{ marginBottom: "20px" }}>
               <label
                 htmlFor="content"
