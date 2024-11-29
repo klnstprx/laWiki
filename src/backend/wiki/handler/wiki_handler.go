@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/laWiki/wiki/config"
 	"github.com/laWiki/wiki/database"
 	"github.com/laWiki/wiki/model"
@@ -83,9 +84,9 @@ func GetWikis(w http.ResponseWriter, r *http.Request) {
 // @Failure      400   {string}  string  "Invalid ID"
 // @Failure      404   {string}  string  "Wiki not found"
 // @Failure      500   {string}  string  "Internal server error"
-// @Router       /api/wikis/id/ [get]
+// @Router       /api/wikis/{id} [get]
 func GetWikiByID(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	id := chi.URLParam(r, "id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -377,9 +378,9 @@ func PostWiki(w http.ResponseWriter, r *http.Request) {
 // @Failure      400   {string}  string  "Invalid ID or request body"
 // @Failure      404   {string}  string  "Wiki not found"
 // @Failure      500   {string}  string  "Internal server error"
-// @Router       /api/wikis/id/ [put]
+// @Router       /api/wikis/{id} [put]
 func PutWiki(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	id := chi.URLParam(r, "id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -444,9 +445,9 @@ func PutWiki(w http.ResponseWriter, r *http.Request) {
 // @Failure      400   {string}  string  "Invalid ID"
 // @Failure      404   {string}  string  "Wiki not found"
 // @Failure      500   {string}  string  "Internal server error"
-// @Router       /api/wikis/id/ [delete]
+// @Router       /api/wikis/{id} [delete]
 func DeleteWiki(w http.ResponseWriter, r *http.Request) {
-	wikiID := r.URL.Query().Get("id")
+	wikiID := chi.URLParam(r, "id")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
