@@ -11,6 +11,7 @@ import (
 
 	"github.com/cloudinary/cloudinary-go/v2/api"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
+	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -107,9 +108,9 @@ func GetMedia(w http.ResponseWriter, r *http.Request) {
 // @Failure      400  {string}  string  "Invalid ID"
 // @Failure      404  {string}  string  "Media not found"
 // @Failure      500  {string}  string  "Internal server error"
-// @Router       /api/media/id/ [get]
+// @Router       /api/media/{id}/ [get]
 func GetMediaByID(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	id := chi.URLParam(r, "id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -278,7 +279,7 @@ func PostMedia(w http.ResponseWriter, r *http.Request) {
 // @Failure      500    {string}  string  "Internal server error"
 // @Router       /api/media/id/ [put]
 func PutMedia(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	id := chi.URLParam(r, "id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -346,7 +347,7 @@ func PutMedia(w http.ResponseWriter, r *http.Request) {
 // @Failure      500 {string}  string  "Internal server error"
 // @Router       /api/media/id/ [delete]
 func DeleteMedia(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	id := chi.URLParam(r, "id")
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
