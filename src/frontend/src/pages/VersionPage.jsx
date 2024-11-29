@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import {
-  getAllComentariosByVersion,
-  getEntrada,
-  getVersionById,
+  getCommentsByVersionId,
+  getEntry,
+  getVersion,
 } from "../api.js";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import MainLayout from "../layout/MainLayout.jsx";

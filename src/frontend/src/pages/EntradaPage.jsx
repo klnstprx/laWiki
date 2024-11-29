@@ -4,9 +4,9 @@ import ListItem from "@mui/material/ListItem";
 import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
 import {
-  getAllComentariosByVersion,
-  getEntrada,
-  getVersionById,
+  getCommentsByVersionId,
+  getEntry,
+  getVersion,
 } from "../api.js";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
@@ -41,19 +41,19 @@ function EntradaPage() {
   };
 
   useEffect(() => {
-    getEntrada(id)
+    getEntry(id)
       .then(setEntrada)
       .catch((err) => setError(err.message));
   }, [id]);
 
   useEffect(() => {
-    getAllComentariosByVersion(versionID)
+    getCommentsByVersionId(versionID)
       .then(setComentarios)
       .catch((err) => setError(err.message));
   }, [versionID]);
 
   useEffect(() => {
-    getVersionById(versionID)
+    getVersion(versionID)
       .then(setVersion)
       .catch((err) => setError(err.message));
   }, [versionID]);
