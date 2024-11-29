@@ -18,7 +18,7 @@ const Comentario = ({ content, rating, created_at, author, onDelete }) => {
                         {new Date(created_at).toLocaleDateString()}
                     </span>
                 </div>
-                <p className="comentario-content">{content}</p>
+                <p className="comentario-content" style={{color:"black"}}>{content}</p>
                 <div className="comentario-footer">
                     <span className="comentario-rating">Rating: {rating}/5</span>
                     <button className="comentario-delete" onClick={onDelete}>

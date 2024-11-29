@@ -110,7 +110,7 @@ function EntradaPage() {
           borderRadius: "8px",
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Sombra más suave para el contenedor
           color: "black",
-          width: "100vw"
+          width: "94vw"
         }}
       >
         {/* Cabecera de la página */}
@@ -262,10 +262,10 @@ function EntradaPage() {
                 htmlFor="content"
                 style={{ fontWeight: "bold", fontSize: "18px" }}
               >
-                Contenido:
+                Contenido:<br/>
               </label>
-              <input
-                type="text"
+              <textarea
+                //type="text"
                 id="content"
                 name="content"
                 required
