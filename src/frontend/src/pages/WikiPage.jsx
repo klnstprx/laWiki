@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -18,12 +17,12 @@ function WikiPage() {
     const [error, setError] = useState(null);
     
     const [searchParams] = useSearchParams();
+    const id = searchParams.get('id');
+    const wikiId = searchParams.get('wikiID');
+    
     const [showModal, setShowModal] = useState(false);
     const navigate = useNavigate();
     const { showToast } = useToast();
-
-    const id = searchParams.get('id');
-    const wikiId = searchParams.get('wikiID');
 
     const handleClose = () => {
         setShowModal(false);
@@ -231,10 +230,10 @@ function WikiPage() {
             </div>
 
             <ConfirmationModal
-            message="¿Estás seguro de que quieres crear este post?"
-            show={showModal}
-            handleClose={handleClose}
-            handleConfirm={handleConfirm}
+                message="¿Estás seguro de que quieres crear esta entrada?"
+                show={showModal}
+                handleClose={handleClose}
+                handleConfirm={handleConfirm}
             ></ConfirmationModal>
         </MainLayout>
     );
