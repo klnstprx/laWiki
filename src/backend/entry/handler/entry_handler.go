@@ -115,271 +115,74 @@ func GetEntryByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetEntryByExactTitle godoc
-// @Summary      Get entries by title
-// @Description  Retrieves entry that matches exactly the given title.
+// SearchEntries godoc
+// @Summary      Search entries
+// @Description  Search for entries using various query parameters. You can search by title, exact_title, author, createdAt, or wikiID. All parameters are optional and can be combined.
 // @Tags         Entries
 // @Produce      application/json
-// @Param        title  query     string  true  "Title to search"
-// @Success      200    {object}  model.Entry
-// @Failure      404    {string}  string  "Entry not found"
-// @Failure      500    {string}  string  "Internal server error"
-// @Router       /api/entries/exactTitle [get]
-func GetEntryByExactTitle(w http.ResponseWriter, r *http.Request) {
+// @Param        title        query     string  false  "Partial title to search for (case-insensitive)"
+// @Param        exact_title  query     string  false  "Exact title to search for"
+// @Param        author       query     string  false  "Author to search for"
+// @Param        createdAt    query     string  false  "Creation date (YYYY-MM-DD)"
+// @Param        wikiID       query     string  false  "Wiki ID to search for"
+// @Success      200          {array}   model.Entry
+// @Failure      400          {string}  string  "Bad Request"
+// @Failure      500          {string}  string  "Internal Server Error"
+// @Router       /api/entries/search [get]
+func SearchEntries(w http.ResponseWriter, r *http.Request) {
+	// Parse query parameters
 	title := r.URL.Query().Get("title")
-
-	var entries []model.Entry
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cursor, err := database.EntryCollection.Find(ctx, bson.M{"title": title})
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var entry model.Entry
-		if err := cursor.Decode(&entry); err != nil {
-			config.App.Logger.Error().Err(err).Msg("Failed to decode entry")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		entries = append(entries, entry)
-	}
-
-	if err := cursor.Err(); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Cursor error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if len(entries) == 0 {
-		config.App.Logger.Info().Str("title", title).Msg("No entries found")
-		http.Error(w, "No entries found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(entries); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// GetEntriesByTitle godoc
-// @Summary      Get all entries by title.
-// @Description  Retrieves the list of all entries that matches the title.
-// @Tags         Entries
-// @Produce      application/json
-// @Param        title  query     string  true  "Title to search"
-// @Success      200  {array}   model.Entry
-// @Failure      500  {string}  string  "Internal server error"
-// @Router       /api/entries/title [get]
-func GetEntriesByTitle(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Query().Get("title")
-	var entries []model.Entry
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	filter := bson.M{
-		"title": bson.M{
-			"$regex":   title,
-			"$options": "i",
-		},
-	}
-	cursor, err := database.EntryCollection.Find(ctx, filter)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer cursor.Close(ctx)
-	for cursor.Next(ctx) {
-		var entry model.Entry
-		if err := cursor.Decode(&entry); err != nil {
-			config.App.Logger.Error().Err(err).Msg("Failed to decode entry")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		entries = append(entries, entry)
-	}
-	if err := cursor.Err(); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Cursor error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	if len(entries) == 0 {
-		config.App.Logger.Info().Str("title", title).Msg("No entries found")
-		http.Error(w, "No entries found", http.StatusNotFound)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(entries); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// GetEntriesByAuthor godoc
-// @Summary      Get entries by author
-// @Description  Retrieves entries authored by the given author(s).
-// @Tags         Entries
-// @Produce      application/json
-// @Param        author  query     string true  "Author to search"
-// @Success      200     {array}   model.Entry
-// @Failure      500     {string}  string  "Internal server error"
-// @Router       /api/entries/author [get]
-func GetEntriesByAuthor(w http.ResponseWriter, r *http.Request) {
+	exactTitle := r.URL.Query().Get("exact_title")
 	author := r.URL.Query().Get("author")
-
-	var entries []model.Entry
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cursor, err := database.EntryCollection.Find(ctx, bson.M{"author": author})
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var entry model.Entry
-		if err := cursor.Decode(&entry); err != nil {
-			config.App.Logger.Error().Err(err).Msg("Failed to decode entry")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		entries = append(entries, entry)
-	}
-
-	if err := cursor.Err(); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Cursor error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if len(entries) == 0 {
-		config.App.Logger.Warn().Str("author", author).Msg("No entries found")
-		http.Error(w, "No entries found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(entries); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// GetEntriesByDate godoc
-// @Summary      Get entries by date
-// @Description  Retrieves entries created on the given date.
-// @Tags         Entries
-// @Produce      application/json
-// @Param        createdAt  query     string  true  "Creation date (YYYY-MM-DD)"
-// @Success      200        {array}   model.Entry
-// @Failure      400        {string}  string  "Invalid date format. Expected YYYY-MM-DD"
-// @Failure      500        {string}  string  "Internal server error"
-// @Router       /api/entries/date [get]
-func GetEntriesByDate(w http.ResponseWriter, r *http.Request) {
 	createdAtString := r.URL.Query().Get("createdAt")
-
-	// Parse the date (expected format: YYYY-MM-DD)
-	createdAt, err := time.Parse("2006-01-02", createdAtString)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid date format. Expected YYYY-MM-DD")
-		http.Error(w, "Invalid date format. Expected YYYY-MM-DD", http.StatusBadRequest)
-		return
-	}
-
-	// Define the start and end of the day
-	startOfDay := createdAt
-	endOfDay := createdAt.AddDate(0, 0, 1)
-
-	var entries []model.Entry
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// Build the query to find entries within the date range
-	filter := bson.M{
-		"created_at": bson.M{
-			"$gte": startOfDay,
-			"$lt":  endOfDay,
-		},
-	}
-
-	cursor, err := database.EntryCollection.Find(ctx, filter)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var entry model.Entry
-		if err := cursor.Decode(&entry); err != nil {
-			config.App.Logger.Error().Err(err).Msg("Failed to decode entry")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		entries = append(entries, entry)
-	}
-
-	if err := cursor.Err(); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Cursor error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if len(entries) == 0 {
-		config.App.Logger.Warn().Str("createdAt", createdAtString).Msg("No entries found")
-		http.Error(w, "No entries found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(entries); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// GetEntriesByWikiID godoc
-// @Summary      Get entries by Wiki ID
-// @Description  Retrieves entries associated with a specific Wiki ID.
-// @Tags         Entries
-// @Produce      application/json
-// @Param        wikiID  query     string  true  "Wiki ID"
-// @Success      200     {array}   model.Entry
-// @Failure      400     {string}  string  "WikiID is required"
-// @Failure      500     {string}  string  "Internal server error"
-// @Router       /api/entries/wiki [get]
-func GetEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 	wikiID := r.URL.Query().Get("wikiID")
 
-	if wikiID == "" {
-		config.App.Logger.Error().Msg("WikiID is required")
-		http.Error(w, "WikiID is required", http.StatusBadRequest)
-		return
+	// Build the MongoDB filter dynamically
+	filter := bson.M{}
+
+	if title != "" {
+		filter["title"] = bson.M{
+			"$regex":   title,
+			"$options": "i",
+		}
 	}
 
+	if exactTitle != "" {
+		filter["title"] = exactTitle
+	}
+
+	if author != "" {
+		filter["author"] = author
+	}
+
+	if createdAtString != "" {
+		// Parse the date string
+		createdAt, err := time.Parse("2006-01-02", createdAtString)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Msg("Invalid date format. Expected YYYY-MM-DD")
+			http.Error(w, "Invalid date format. Expected YYYY-MM-DD", http.StatusBadRequest)
+			return
+		}
+		// Define the start and end of the day
+		startOfDay := createdAt
+		endOfDay := createdAt.AddDate(0, 0, 1)
+		filter["created_at"] = bson.M{
+			"$gte": startOfDay,
+			"$lt":  endOfDay,
+		}
+	}
+
+	if wikiID != "" {
+		filter["wiki_id"] = wikiID
+	}
+
+	// Query the database
 	var entries []model.Entry
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cursor, err := database.EntryCollection.Find(ctx, bson.M{"wiki_id": wikiID})
+	cursor, err := database.EntryCollection.Find(ctx, filter)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -404,7 +207,7 @@ func GetEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(entries) == 0 {
-		config.App.Logger.Warn().Str("wikiID", wikiID).Msg("No entries found")
+		config.App.Logger.Info().Msg("No entries found")
 		http.Error(w, "No entries found", http.StatusNotFound)
 		return
 	}

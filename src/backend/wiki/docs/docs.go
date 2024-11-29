@@ -88,117 +88,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/wikis/category": {
-            "get": {
-                "description": "Retrieves wikis under the given category.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Wikis"
-                ],
-                "summary": "Get wikis by category",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Category to search",
-                        "name": "category",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Wiki"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/wikis/description": {
-            "get": {
-                "description": "Retrieves wikis that match the given description.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Wikis"
-                ],
-                "summary": "Get wikis by description",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Description to search",
-                        "name": "description",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Wiki"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/wikis/exactTitle": {
-            "get": {
-                "description": "Retrieves wiki that matches the given title.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Wikis"
-                ],
-                "summary": "Get wiki by exact title",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Title to search",
-                        "name": "title",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Wiki"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/wikis/health": {
             "get": {
                 "description": "Checks if the service is up",
@@ -219,7 +108,68 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/wikis/id/": {
+        "/api/wikis/search": {
+            "get": {
+                "description": "Search for wikis using various query parameters. You can search by title, exact_title, description, or category. All parameters are optional and can be combined.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wikis"
+                ],
+                "summary": "Search wikis",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Partial title to search for (case-insensitive)",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Exact title to search for",
+                        "name": "exact_title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Description to search for (case-insensitive)",
+                        "name": "description",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category to search for",
+                        "name": "category",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Wiki"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/wikis/{id}": {
             "get": {
                 "description": "Retrieves a wiki by its ID.",
                 "produces": [
@@ -354,44 +304,6 @@ const docTemplate = `{
                         "description": "Wiki not found",
                         "schema": {
                             "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/wikis/title": {
-            "get": {
-                "description": "Retrieves the list of all wikis that matches the title.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Wikis"
-                ],
-                "summary": "Get all wikis by title.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Title to search",
-                        "name": "title",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Wiki"
-                            }
                         }
                     },
                     "500": {

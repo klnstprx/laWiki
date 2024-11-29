@@ -114,282 +114,80 @@ func GetCommentByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetCommentsByContent godoc
-// @Summary      Get comment by content
-// @Description  Retrieves a comment by its content.
+// SearchComments godoc
+// @Summary      Search comments
+// @Description  Search for comments using various query parameters. You can search by content, author, createdAt, rating, or versionID. All parameters are optional and can be combined.
 // @Tags         Comments
 // @Produce      application/json
-// @Param        content  query     string  true  "Content to search"
-// @Success      200      {object}  model.Comment
-// @Failure      404      {string}  string  "Comment not found"
-// @Failure      500      {string}  string  "Internal server error"
-// @Router       /api/comments/content [get]
-func GetCommentsByContent(w http.ResponseWriter, r *http.Request) {
+// @Param        content     query     string  false  "Partial content to search for (case-insensitive)"
+// @Param        author      query     string  false  "Author nickname to search for"
+// @Param        createdAt   query     string  false  "Creation date (YYYY-MM-DD)"
+// @Param        rating      query     int     false  "Rating to filter by"
+// @Param        versionID   query     string  false  "Version ID to search for"
+// @Success      200         {array}   model.Comment
+// @Failure      400         {string}  string  "Bad Request"
+// @Failure      500         {string}  string  "Internal Server Error"
+// @Router       /api/comments/search [get]
+func SearchComments(w http.ResponseWriter, r *http.Request) {
+	// Parse query parameters
 	content := r.URL.Query().Get("content")
-
-	var comments []model.Comment
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	filter := bson.M{
-		"content": bson.M{
-			"$regex":   content,
-			"$options": "i",
-		},
-	}
-
-	cursor, err := database.CommentCollection.Find(ctx, filter)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var comment model.Comment
-		if err := cursor.Decode(&comment); err != nil {
-			config.App.Logger.Error().Err(err).Msg("Failed to decode comment")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		comments = append(comments, comment)
-	}
-
-	if err := cursor.Err(); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Cursor error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if len(comments) == 0 {
-		config.App.Logger.Warn().Str("content", content).Msg("No comments found")
-		http.Error(w, "No comments found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(comments); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// GetCommentsByRating godoc
-// @Summary      Get comments by rating
-// @Description  Retrieves comments with a specific rating.
-// @Tags         Comments
-// @Produce      application/json
-// @Param        rating  query     int     true  "Rating to filter"
-// @Success      200     {array}   model.Comment
-// @Failure      400     {string}  string  "Invalid rating format"
-// @Failure      500     {string}  string  "Internal server error"
-// @Router       /api/comments/rating [get]
-func GetCommentsByRating(w http.ResponseWriter, r *http.Request) {
-	ratingString := r.URL.Query().Get("rating")
-
-	// cast rating to int
-	rating, err := strconv.Atoi(ratingString)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid rating format")
-		http.Error(w, "Invalid rating format", http.StatusBadRequest)
-		return
-	}
-
-	var comments []model.Comment
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cursor, err := database.CommentCollection.Find(ctx, bson.M{"rating": rating})
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var comment model.Comment
-		if err := cursor.Decode(&comment); err != nil {
-			config.App.Logger.Error().Err(err).Msg("Failed to decode comment")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		comments = append(comments, comment)
-	}
-
-	if err := cursor.Err(); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Cursor error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if len(comments) == 0 {
-		config.App.Logger.Warn().Int("rating", rating).Msg("No comments found")
-		http.Error(w, "No comments found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(comments); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// GetCommentsByDate godoc
-// @Summary      Get comments by date
-// @Description  Retrieves comments created on a specific date.
-// @Tags         Comments
-// @Produce      application/json
-// @Param        createdAt  query     string  true  "Creation date (YYYY-MM-DD)"
-// @Success      200        {array}   model.Comment
-// @Failure      400        {string}  string  "Invalid date format. Expected YYYY-MM-DD"
-// @Failure      500        {string}  string  "Internal server error"
-// @Router       /api/comments/date [get]
-func GetCommentsByDate(w http.ResponseWriter, r *http.Request) {
-	createdAtString := r.URL.Query().Get("createdAt")
-
-	// Parse the date (expected format: YYYY-MM-DD)
-	createdAt, err := time.Parse("2006-01-02", createdAtString)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid date format. Expected YYYY-MM-DD")
-		http.Error(w, "Invalid date format. Expected YYYY-MM-DD", http.StatusBadRequest)
-		return
-	}
-
-	// Define the start and end of the day
-	startOfDay := createdAt
-	endOfDay := createdAt.AddDate(0, 0, 1)
-
-	var comments []model.Comment
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// Build the query to find comments within the date range
-	filter := bson.M{
-		"created_at": bson.M{
-			"$gte": startOfDay,
-			"$lt":  endOfDay,
-		},
-	}
-
-	cursor, err := database.CommentCollection.Find(ctx, filter)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var comment model.Comment
-		if err := cursor.Decode(&comment); err != nil {
-			config.App.Logger.Error().Err(err).Msg("Failed to decode comment")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		comments = append(comments, comment)
-	}
-
-	if err := cursor.Err(); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Cursor error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if len(comments) == 0 {
-		config.App.Logger.Warn().Str("createdAt", createdAtString).Msg("No comments found")
-		http.Error(w, "No comments found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(comments); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// GetCommentsByAuthor godoc
-// @Summary      Get comments by author
-// @Description  Retrieves comments created by a specific author.
-// @Tags         Comments
-// @Produce      application/json
-// @Param        author  query     string  true  "Author nickname"
-// @Success      200        {array}   model.Comment
-// @Failure      500        {string}  string  "Internal server error"
-// @Router       /api/comments/author [get]
-func GetCommentsByAuthor(w http.ResponseWriter, r *http.Request) {
 	author := r.URL.Query().Get("author")
-
-	var comments []model.Comment
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cursor, err := database.CommentCollection.Find(ctx, bson.M{"author": author})
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Database error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var comment model.Comment
-		if err := cursor.Decode(&comment); err != nil {
-			config.App.Logger.Error().Err(err).Msg("Failed to decode comment")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		comments = append(comments, comment)
-	}
-
-	if err := cursor.Err(); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Cursor error")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if len(comments) == 0 {
-		config.App.Logger.Warn().Str("author", author).Msg("No comments found")
-		http.Error(w, "No comments found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(comments); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-// GetCommentsByVersionID godoc
-// @Summary      Get comments by the id of a version its associated to
-// @Description  Retrieves comments associated with a specific version.
-// @Tags         Comments
-// @Produce      application/json
-// @Param        versionID  query     string  true  "Version ID"
-// @Success      200        {array}   model.Comment
-// @Failure      500        {string}  string  "Internal server error"
-// @Router       /api/comments/version [get]
-func GetCommentsByVersionID(w http.ResponseWriter, r *http.Request) {
+	createdAtString := r.URL.Query().Get("createdAt")
+	ratingString := r.URL.Query().Get("rating")
 	versionID := r.URL.Query().Get("versionID")
 
+	// Build the MongoDB filter dynamically
+	filter := bson.M{}
+
+	if content != "" {
+		filter["content"] = bson.M{
+			"$regex":   content,
+			"$options": "i",
+		}
+	}
+
+	if author != "" {
+		filter["author"] = author
+	}
+
+	if createdAtString != "" {
+		// Parse the date string
+		createdAt, err := time.Parse("2006-01-02", createdAtString)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Msg("Invalid date format. Expected YYYY-MM-DD")
+			http.Error(w, "Invalid date format. Expected YYYY-MM-DD", http.StatusBadRequest)
+			return
+		}
+		// Define the start and end of the day
+		startOfDay := createdAt
+		endOfDay := createdAt.AddDate(0, 0, 1)
+		filter["created_at"] = bson.M{
+			"$gte": startOfDay,
+			"$lt":  endOfDay,
+		}
+	}
+
+	if ratingString != "" {
+		rating, err := strconv.Atoi(ratingString)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Msg("Invalid rating format")
+			http.Error(w, "Invalid rating format", http.StatusBadRequest)
+			return
+		}
+		filter["rating"] = rating
+	}
+
+	if versionID != "" {
+		filter["version_id"] = versionID
+	}
+
+	// Query the database
 	var comments []model.Comment
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cursor, err := database.CommentCollection.Find(ctx, bson.M{"version_id": versionID})
+	cursor, err := database.CommentCollection.Find(ctx, filter)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -414,7 +212,7 @@ func GetCommentsByVersionID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(comments) == 0 {
-		config.App.Logger.Warn().Str("versionID", versionID).Msg("No comments found")
+		config.App.Logger.Info().Msg("No comments found")
 		http.Error(w, "No comments found", http.StatusNotFound)
 		return
 	}

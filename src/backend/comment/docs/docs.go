@@ -88,129 +88,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/comments/author": {
-            "get": {
-                "description": "Retrieves comments created by a specific author.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Comments"
-                ],
-                "summary": "Get comments by author",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Author nickname",
-                        "name": "author",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Comment"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/comments/content": {
-            "get": {
-                "description": "Retrieves a comment by its content.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Comments"
-                ],
-                "summary": "Get comment by content",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Content to search",
-                        "name": "content",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Comment"
-                        }
-                    },
-                    "404": {
-                        "description": "Comment not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/comments/date": {
-            "get": {
-                "description": "Retrieves comments created on a specific date.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Comments"
-                ],
-                "summary": "Get comments by date",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Creation date (YYYY-MM-DD)",
-                        "name": "createdAt",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Comment"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid date format. Expected YYYY-MM-DD",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/comments/health": {
             "get": {
                 "description": "Checks if the service is up",
@@ -231,7 +108,106 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/comments/id/": {
+        "/api/comments/search": {
+            "get": {
+                "description": "Search for comments using various query parameters. You can search by content, author, createdAt, rating, or versionID. All parameters are optional and can be combined.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Search comments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Partial content to search for (case-insensitive)",
+                        "name": "content",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Author nickname to search for",
+                        "name": "author",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Creation date (YYYY-MM-DD)",
+                        "name": "createdAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Rating to filter by",
+                        "name": "rating",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version ID to search for",
+                        "name": "versionID",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Comment"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/comments/version": {
+            "delete": {
+                "description": "Deletes all comments associated with a specific version.",
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Delete comments by version ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "versionID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/comments/{id}": {
             "get": {
                 "description": "Retrieves a comment by its ID.",
                 "produces": [
@@ -364,118 +340,6 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Comment not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/comments/rating": {
-            "get": {
-                "description": "Retrieves comments with a specific rating.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Comments"
-                ],
-                "summary": "Get comments by rating",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Rating to filter",
-                        "name": "rating",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Comment"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid rating format",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/comments/version": {
-            "get": {
-                "description": "Retrieves comments associated with a specific version.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Comments"
-                ],
-                "summary": "Get comments by the id of a version its associated to",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Version ID",
-                        "name": "versionID",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Comment"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Deletes all comments associated with a specific version.",
-                "tags": [
-                    "Comments"
-                ],
-                "summary": "Delete comments by version ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Version ID",
-                        "name": "versionID",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content",
                         "schema": {
                             "type": "string"
                         }

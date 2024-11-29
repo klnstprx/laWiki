@@ -64,6 +64,37 @@ paths:
       summary: Upload a new media file
       tags:
       - Media
+  /api/media/{id}/:
+    get:
+      description: Retrieves a media file by its ID.
+      parameters:
+      - description: Media ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Media'
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Media not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get media by ID
+      tags:
+      - Media
   /api/media/health:
     get:
       description: Checks if the service is up
@@ -104,36 +135,6 @@ paths:
           schema:
             type: string
       summary: Delete media by ID
-      tags:
-      - Media
-    get:
-      description: Retrieves a media file by its ID.
-      parameters:
-      - description: Media ID
-        in: query
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Media'
-        "400":
-          description: Invalid ID
-          schema:
-            type: string
-        "404":
-          description: Media not found
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Get media by ID
       tags:
       - Media
     put:

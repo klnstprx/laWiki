@@ -88,164 +88,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/versions/content": {
-            "get": {
-                "description": "Retrieves versions that match the given content.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Versions"
-                ],
-                "summary": "Get versions by content",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Content to search",
-                        "name": "content",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Version"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/versions/date": {
-            "get": {
-                "description": "Retrieves versions created on the given date.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Versions"
-                ],
-                "summary": "Get versions by date",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Creation date (YYYY-MM-DD)",
-                        "name": "createdAt",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Version"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid date format. Expected YYYY-MM-DD",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/versions/editor": {
-            "get": {
-                "description": "Retrieves versions edited by the given editor.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Versions"
-                ],
-                "summary": "Get versions by editor",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Editor to search",
-                        "name": "editor",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Version"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/versions/entry": {
-            "get": {
-                "description": "Retrieves versions that correspond to a specific Entry ID.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Versions"
-                ],
-                "summary": "Get versions by Entry ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Entry ID",
-                        "name": "entryId",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Version"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/versions/entry/": {
             "delete": {
                 "description": "Deletes all versions associated with a specific Entry ID.",
@@ -310,7 +152,68 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/versions/id/": {
+        "/api/versions/search": {
+            "get": {
+                "description": "Search for versions using various query parameters. You can search by content, editor, createdAt, or entryID. All parameters are optional and can be combined.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Search versions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Partial content to search for (case-insensitive)",
+                        "name": "content",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Editor to search for",
+                        "name": "editor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Creation date (YYYY-MM-DD)",
+                        "name": "createdAt",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entry ID to search for",
+                        "name": "entryID",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Version"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/versions/{id}": {
             "get": {
                 "description": "Retrieves a version by its ID.",
                 "produces": [
