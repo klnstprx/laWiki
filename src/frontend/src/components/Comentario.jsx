@@ -1,4 +1,5 @@
-import "../styles/Comentario.css";
+import { Avatar, Typography, IconButton, Box } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import PropTypes from "prop-types";
 
 const Comentario = ({ id, content, rating, created_at, author, onDelete }) => {
@@ -7,32 +8,32 @@ const Comentario = ({ id, content, rating, created_at, author, onDelete }) => {
   };
 
   return (
-    <div className="comentario">
-      <div className="comentario-avatar">
-        <img
-          src={`https://ui-avatars.com/api/?name=${author}&background=random`}
-          alt={author}
-          className="comentario-avatar-img"
-        />
-      </div>
-      <div className="comentario-body">
-        <div className="comentario-header">
-          <h4 className="comentario-author">{author}</h4>
-          <span className="comentario-date">
+    <Box display="flex" mb={2}>
+      <Avatar
+        src={`https://ui-avatars.com/api/?name=${author}&background=random`}
+        alt={author}
+        sx={{ mr: 2 }}
+      />
+      <Box flexGrow={1}>
+        <Box display="flex" justifyContent="space-between">
+          <Typography variant="subtitle1">{author}</Typography>
+          <Typography variant="caption" color="textSecondary">
             {new Date(created_at).toLocaleDateString()}
-          </span>
-        </div>
-        <p className="comentario-content" style={{ color: "black" }}>
+          </Typography>
+        </Box>
+        <Typography variant="body1" color="textPrimary" gutterBottom>
           {content}
-        </p>
-        <div className="comentario-footer">
-          <span className="comentario-rating">Rating: {rating}/5</span>
-          <button className="comentario-delete" onClick={handleDelete}>
-            Borrar
-          </button>
-        </div>
-      </div>
-    </div>
+        </Typography>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="body2" color="textSecondary">
+            Rating: {rating}/5
+          </Typography>
+          <IconButton color="error" onClick={handleDelete}>
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 Comentario.propTypes = {

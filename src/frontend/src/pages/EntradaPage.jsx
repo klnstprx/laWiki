@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
 import { useRef } from "react";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Alert from "@mui/material/Alert";
-import Typography from "@mui/material/Typography";
 import { searchComments } from "../api/CommentApi.js";
 import { getEntry } from "../api/EntryApi.js";
 import { getVersion } from "../api/VersionApi.js";
@@ -14,7 +10,18 @@ import Comentario from "../components/Comentario.jsx";
 import Version from "../components/Version.jsx";
 import MainLayout from "../layout/MainLayout.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
-import { useToast } from "../context/ToastContext.jsx";
+import { useToast } from "../context/ToastContext.1.jsx";
+import {
+  Container,
+  Paper,
+  Typography,
+  Grid2,
+  Button,
+  Input,
+  Alert,
+  List,
+  ListItem,
+} from "@mui/material";
 
 function EntradaPage() {
   const [entrada, setEntrada] = useState({});
@@ -36,7 +43,7 @@ function EntradaPage() {
   const handleClose = () => {
     setShowModal(false);
     setPendingComment(null);
-    showToast("El comentario no se ha creado", "bg-danger");
+    showToast("El comentario no se ha creado", "danger");
   };
 
   const handleConfirm = async () => {
@@ -49,10 +56,10 @@ function EntradaPage() {
       formRef.current.reset();
       setPendingComment(null);
 
-      showToast("El comentario se ha creado correctamente!", "bg-success");
+      showToast("El comentario se ha creado correctamente!", "success");
     } catch (error) {
       console.error("Error al enviar:", error);
-      showToast("Error al enviar el comentario", "bg-danger");
+      showToast("Error al enviar el comentario", "danger");
     }
   };
 
@@ -63,10 +70,10 @@ function EntradaPage() {
       setComentarios((prevComentarios) =>
         prevComentarios.filter((comment) => comment.id !== commentId),
       );
-      showToast("Comentario eliminado correctamente", "bg-success");
+      showToast("Comentario eliminado correctamente", "success");
     } catch (error) {
       console.error("Error al eliminar el comentario:", error);
-      showToast("Error al eliminar el comentario", "bg-danger");
+      showToast("Error al eliminar el comentario", "danger");
     }
   };
 
@@ -108,113 +115,31 @@ function EntradaPage() {
 
   return (
     <MainLayout>
-      <div
-        style={{
-          fontFamily: "'Arial', sans-serif",
-          backgroundColor: "#f5f5f5",
-          padding: "40px",
-          margin: "0 auto",
-          border: "1px solid #ddd",
-          borderRadius: "8px",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Sombra más suave para el contenedor
-          color: "black",
-          width: "94vw",
-        }}
-      >
-        {/* Cabecera de la página */}
-        <header
-          style={{
-            backgroundColor: "#3c4f76",
-            color: "white",
-            padding: "20px",
-            borderRadius: "8px 8px 0 0",
-            textAlign: "center",
-          }}
-        >
-          <h1 style={{ fontSize: "36px", margin: "0" }}>Datos de la Wiki</h1>
-          {entryError && (
-            <div
-              style={{
-                backgroundColor: "#e57373",
-                padding: "15px",
-                marginTop: "15px",
-                borderRadius: "4px",
-              }}
-            >
-              <p>Error al cargar la entrada: {entryError}</p>
-            </div>
-          )}
-        </header>
-
-        {/* Información de la entrada */}
-        <section
-          style={{
-            padding: "30px",
-            backgroundColor: "white",
-            margin: "20px 0",
-            borderRadius: "8px",
-          }}
-        >
-          {versionError && (
-            <div
-              style={{
-                backgroundColor: "#e57373",
-                padding: "15px",
-                marginBottom: "15px",
-                borderRadius: "4px",
-              }}
-            >
-              <p>Error al cargar la versión: {versionError}</p>
-            </div>
-          )}
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        {/* Entry Details */}
+        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+          <Typography variant="h4" gutterBottom>
+            Datos de la Wiki
+          </Typography>
+          {entryError && <Alert severity="error">{entryError}</Alert>}
           {!entryError && (
             <>
-              <Typography
-                variant="h6"
-                style={{ fontWeight: "bold", marginBottom: "10px" }}
-              >
-                Título:{" "}
-                <span style={{ fontWeight: "normal" }}>{entrada.title}</span>
-              </Typography>
-              <Typography
-                variant="h6"
-                style={{ fontWeight: "bold", marginBottom: "10px" }}
-              >
-                Autor:{" "}
-                <span style={{ fontWeight: "normal" }}>{entrada.author}</span>
-              </Typography>
-              <Typography
-                variant="h6"
-                style={{ fontWeight: "bold", marginBottom: "10px" }}
-              >
+              <Typography variant="h6">Título: {entrada.title}</Typography>
+              <Typography variant="h6">Autor: {entrada.author}</Typography>
+              <Typography variant="h6">
                 Fecha de creación:{" "}
-                <span style={{ fontWeight: "normal" }}>
-                  {entrada.created_at}
-                </span>
+                {new Date(entrada.created_at).toLocaleDateString()}
               </Typography>
             </>
           )}
-        </section>
+        </Paper>
 
-        {/* Contenido de la versión */}
-        <section
-          style={{
-            padding: "30px",
-            backgroundColor: "white",
-            marginBottom: "20px",
-            borderRadius: "8px",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "28px",
-              borderBottom: "2px solid #ddd",
-              paddingBottom: "10px",
-              marginBottom: "20px",
-            }}
-          >
+        {/* Version Content */}
+        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+          <Typography variant="h5" gutterBottom>
             Contenido de la versión
-          </h2>
+          </Typography>
+          {versionError && <Alert severity="error">{versionError}</Alert>}
           {!versionError && (
             <Version
               content={version.content}
@@ -223,49 +148,18 @@ function EntradaPage() {
               entry_id={version.entry_id}
             />
           )}
-        </section>
+        </Paper>
 
-        {/* Comentarios */}
-        <section
-          style={{
-            padding: "30px",
-            backgroundColor: "white",
-            marginBottom: "20px",
-            borderRadius: "8px",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "28px",
-              borderBottom: "2px solid #ddd",
-              paddingBottom: "10px",
-              marginBottom: "20px",
-            }}
-          >
+        {/* Comments */}
+        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+          <Typography variant="h5" gutterBottom>
             Comentarios
-          </h2>
-          {commentsError && (
-            <div
-              style={{
-                backgroundColor: "#e57373",
-                padding: "15px",
-                marginBottom: "15px",
-                borderRadius: "4px",
-              }}
-            >
-              <p>Error al cargar los comentarios: {commentsError}</p>
-            </div>
-          )}
+          </Typography>
+          {commentsError && <Alert severity="error">{commentsError}</Alert>}
           {!commentsError && comentarios.length > 0 ? (
             <List>
               {comentarios.map((comentario) => (
-                <ListItem
-                  key={comentario.id}
-                  style={{
-                    borderBottom: "1px solid #ddd",
-                    padding: "15px 0",
-                  }}
-                >
+                <ListItem key={comentario.id}>
                   <Comentario
                     id={comentario.id}
                     content={comentario.content}
@@ -278,114 +172,62 @@ function EntradaPage() {
               ))}
             </List>
           ) : (
-            <Alert>No comments found.</Alert>
+            <Alert severity="info">No se encontraron comentarios.</Alert>
           )}
-        </section>
+        </Paper>
 
-        {/* Formulario para añadir comentarios */}
-        <section
-          style={{
-            padding: "30px",
-            backgroundColor: "white",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <h2 style={{ fontSize: "28px", marginBottom: "20px" }}>
+        {/* Add Comment Form */}
+        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+          <Typography variant="h5" gutterBottom>
             Añadir comentario
-          </h2>
-
+          </Typography>
           <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
-            <div style={{ marginBottom: "20px" }}>
-              <label
-                htmlFor="content"
-                style={{ fontWeight: "bold", fontSize: "18px" }}
-              >
-                Contenido:
-                <br />
-              </label>
-              <textarea
-                //type="text"
-                id="content"
-                name="content"
-                required
-                style={{
-                  width: "70%",
-                  padding: "12px",
-                  marginTop: "10px",
-                  border: "1px solid #dd",
-                  borderRadius: "6px",
-                  fontSize: "16px",
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: "20px" }}>
-              <label
-                htmlFor="rating"
-                style={{ fontWeight: "bold", fontSize: "18px" }}
-              >
-                Rating:
-              </label>
-              <input
-                type="text"
-                id="rating"
-                name="rating"
-                required
-                style={{
-                  width: "5%",
-                  padding: "12px",
-                  marginTop: "10px",
-                  border: "1px solid #ddd",
-                  borderRadius: "6px",
-                  fontSize: "16px",
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: "20px" }}>
-              <label
-                htmlFor="author"
-                style={{ fontWeight: "bold", fontSize: "18px" }}
-              >
-                Autor:
-              </label>
-              <input
-                type="text"
-                id="author"
-                name="author"
-                required
-                style={{
-                  width: "15%",
-                  padding: "12px",
-                  marginTop: "10px",
-                  border: "1px solid #ddd",
-                  borderRadius: "6px",
-                  fontSize: "16px",
-                }}
-              />
-            </div>
-
-            <button
-              type="submit"
-              style={{
-                width: "5%",
-                padding: "15px",
-                fontSize: "18px",
-                backgroundColor: "#3c4f76",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
-                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-              }}
-            >
-              Enviar
-            </button>
+            <Grid2 container spacing={2}>
+              <Grid2 item xs={12}>
+                <Input
+                  id="content"
+                  name="content"
+                  label="Contenido"
+                  multiline
+                  required
+                  fullWidth
+                />
+              </Grid2>
+              <Grid2 item xs={12} sm={6} md={4}>
+                <Input
+                  id="rating"
+                  name="rating"
+                  label="Rating"
+                  type="number"
+                  inputProps={{ min: 1, max: 5 }}
+                  required
+                  fullWidth
+                />
+              </Grid2>
+              <Grid2 item xs={12} sm={6} md={4}>
+                <Input
+                  id="author"
+                  name="author"
+                  label="Autor"
+                  required
+                  fullWidth
+                />
+              </Grid2>
+              <Grid2 item xs={12} md={4}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  sx={{ height: "100%" }}
+                >
+                  Enviar
+                </Button>
+              </Grid2>
+            </Grid2>
           </form>
-        </section>
-      </div>
+        </Paper>
+      </Container>
 
       <ConfirmationModal
         message="¿Estás seguro de que quieres crear este comentario?"

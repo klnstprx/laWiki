@@ -1,4 +1,4 @@
-import { Toast } from "react-bootstrap";
+import { Snackbar, Alert } from "@mui/material";
 import PropTypes from "prop-types";
 
 function ToastMessage({
@@ -6,27 +6,19 @@ function ToastMessage({
   message,
   onClose,
   delay = 3000,
-  color = "bg-info",
+  severity = "info",
 }) {
   return (
-    <Toast
-      show={show}
+    <Snackbar
+      open={show}
+      autoHideDuration={delay}
       onClose={onClose}
-      delay={delay}
-      autohide
-      className={`${color}`}
-      style={{
-        position: "fixed",
-        top: "20px",
-        right: "20px",
-        zIndex: 9999,
-      }}
+      anchorOrigin={{ vertical: "top", horizontal: "right" }}
     >
-      <Toast.Header>
-        <strong className="m-auto">Notificacion</strong>
-      </Toast.Header>
-      <Toast.Body style={{ color: "black" }}>{message}</Toast.Body>
-    </Toast>
+      <Alert onClose={onClose} severity={severity} sx={{ width: "100%" }}>
+        {message}
+      </Alert>
+    </Snackbar>
   );
 }
 
@@ -35,7 +27,7 @@ ToastMessage.propTypes = {
   message: PropTypes.string.isRequired,
   onClose: PropTypes.func.isRequired,
   delay: PropTypes.number,
-  color: PropTypes.string,
+  severity: PropTypes.oneOf(["error", "warning", "info", "success"]),
 };
 
 export default ToastMessage;

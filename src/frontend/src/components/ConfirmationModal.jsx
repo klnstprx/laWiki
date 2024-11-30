@@ -1,31 +1,37 @@
-import { Modal, Button } from "react-bootstrap";
-import PropTypes from 'prop-types';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from "@mui/material";
+import PropTypes from "prop-types";
 
 function ConfirmationModal({ show, handleClose, handleConfirm, message }) {
   return (
-    <Modal show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>Confirmar Acccion</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {message || "¿Estás seguro de que quieres hacer esto?"}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="primary" onClick={handleConfirm}>
+    <Dialog open={show} onClose={handleClose}>
+      <DialogTitle>Confirmar Acción</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          {message || "¿Estás seguro de que quieres hacer esto?"}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose}>Cancelar</Button>
+        <Button onClick={handleConfirm} color="primary" variant="contained">
           Confirmar
         </Button>
-        <Button variant="light" className="btn btn-primary" onClick={handleClose}>
-          Cancelar
-        </Button>
-      </Modal.Footer>
-    </Modal>
+      </DialogActions>
+    </Dialog>
   );
 }
+
 ConfirmationModal.propTypes = {
   show: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,
   handleConfirm: PropTypes.func.isRequired,
-  message: PropTypes.string
+  message: PropTypes.string,
 };
 
 export default ConfirmationModal;

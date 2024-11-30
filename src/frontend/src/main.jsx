@@ -8,12 +8,16 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { BrowserRouter } from "react-router-dom";
 import { ToastProvider } from "./context/ToastContext";
+import { ThemeProvider } from "@mui/material/styles";
+import theme from "./styles/theme";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <ToastProvider>
-        <App />
+        <ThemeProvider theme={theme}>
+          <App />
+        </ThemeProvider>
       </ToastProvider>
     </BrowserRouter>
   </StrictMode>,

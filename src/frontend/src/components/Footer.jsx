@@ -1,15 +1,23 @@
-import { NavLink } from "react-router-dom";
+import { Box, Typography, Link as MuiLink } from "@mui/material";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
   return (
-    <footer className="custom-footer">
-      <p className="m-0">
-        &copy; 2024 LaWiki. Todos los derechos reservados.{" "}
-        <NavLink to="/" style={{ color: "inherit" }}>
+    <Box
+      component="footer"
+      py={2}
+      bgcolor="primary.main"
+      color="white"
+      textAlign="center"
+    >
+      <Typography variant="body2">
+        &copy; {currentYear} LaWiki. Todos los derechos reservados.{" "}
+        <MuiLink component={Link} to="/" color="inherit" underline="none">
           Home
-        </NavLink>
-      </p>
-    </footer>
+        </MuiLink>
+      </Typography>
+    </Box>
   );
 };
 

@@ -1,18 +1,16 @@
-import { createContext, useContext, useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
-
-export const ToastContext = createContext();
-export const useToast = () => useContext(ToastContext);
+import { ToastContext } from "./ToastContext.1";
 
 export const ToastProvider = ({ children }) => {
   const [toast, setToast] = useState({
     show: false,
     message: "",
-    color: "bg-info",
+    severity: "info",
   });
 
-  const showToast = (message, color = "bg-info") => {
-    setToast({ show: true, message, color });
+  const showToast = (message, severity = "info") => {
+    setToast({ show: true, message, severity });
   };
 
   const hideToast = () => {
