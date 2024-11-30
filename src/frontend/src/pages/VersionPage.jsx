@@ -1,14 +1,27 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import MainLayout from "../layout/MainLayout.jsx";
-import { useToast } from "../context/ToastContext.jsx";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import Alert from "@mui/material/Alert";
+import VersionCard from "../components/VersionCard.jsx";
+import { searchVersions } from "../api/VersionApi.js";
 
 function VersionPage() {
-  const [version, setVersion] = useState({});
+  const [versiones, setVersiones] = useState([]);
   const [error, setError] = useState(null);
 
   const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
+  const entryID = searchParams.get("entryID");
+
+  useEffect(() => {
+    searchVersions({ entryID: entryID })
+      .then(setVersiones)
+      .catch((err) => setError(err.message));
+  }, [entryID]);
+
+
+  {/* http://localhost:5173/versiones?entryID=67311bf03399f3b49ccb8072 */}
 
   return (
     <MainLayout>
@@ -17,12 +30,13 @@ function VersionPage() {
           fontFamily: "'Arial', sans-serif",
           backgroundColor: "#f5f5f5",
           padding: "40px",
-          maxWidth: "1200px", // Aumentamos el ancho máximo para pantallas grandes
           margin: "0 auto",
           border: "1px solid #ddd",
           borderRadius: "8px",
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Sombra más suave para el contenedor
           color: "black",
+          width: "94vw",
+          height: "80vh"
         }}
       >
         {/* Cabecera de la página */}
@@ -58,7 +72,32 @@ function VersionPage() {
             borderRadius: "8px",
           }}
         >
-          {/* aqui van las versiones */}
+
+
+          {!error && versiones.length > 0 ? (
+            <List>
+              {versiones.map((version) => (
+                <ListItem
+                  key={version.id}
+                  style={{
+                    borderBottom: "1px solid #ddd",
+                    padding: "15px 0",
+                  }}
+                >
+                  <VersionCard
+                    entradaID={entryID}
+                    versionId={version.id}
+                    editor={version.editor}
+                    created_at={version.created_at}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Alert>No versions found.</Alert>
+          )}
+
+
         </section>
       </div>
     </MainLayout>
