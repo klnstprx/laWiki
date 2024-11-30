@@ -25,8 +25,8 @@ import {
 } from "@mui/material";
 
 function EntradaPage() {
-  const [entrada, setEntrada] = useState(null);
-  const [version, setVersion] = useState(null);
+  const [entrada, setEntrada] = useState({}); //Si pones estos 2 a null en vez de {} cuando creas una nueva versionn se bugea y no carga hasta que recargues la pagina, lo mismo me ocurre en la pagina de editar entrada.
+  const [version, setVersion] = useState({});
   const [comentarios, setComentarios] = useState([]);
   const [entryError, setEntryError] = useState(null);
   const [commentsError, setCommentsError] = useState(null);
@@ -151,6 +151,8 @@ function EntradaPage() {
     setShowModal(true);
   }
 
+{/* http://localhost:5173/entrada?id=67311bf03399f3b49ccb8072&versionID=674b3ebf2d1dd23dd8164cea */}
+
   return (
     <MainLayout>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -174,6 +176,13 @@ function EntradaPage() {
                 >
                   Ver historial
                 </a>
+                <br></br>
+                <a
+                  href={`http://localhost:5173/editarEntrada?versionID=${version.id}&entradaID=${entrada.id}`} //Edita la entrada que se esta viendo actualmente, se podría hacer que editase la ultima entrada
+                >
+                  Editar Contenido
+                </a>
+
               </Typography>
             </>
           )}
