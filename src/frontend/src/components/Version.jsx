@@ -1,32 +1,56 @@
 import React from "react";
 import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
-const Version = (props) => {
-  
-    const { content, editor, created_at, entry_id  } = props;
-
-    return (
+const Version = ({ content, editor, created_at, address, coordinates }) => {
+  return (
     <div>
-        <Typography variant="h6" gutterBottom>
-            contenido: {content}
-        </Typography>
-       
-        <Typography variant="h6" gutterBottom>
-            Editor: {editor}
-        </Typography>
+      <Typography variant="h6" gutterBottom>
+        Editor: {editor}
+      </Typography>
+      <Typography variant="h6" gutterBottom>
+        Fecha de creación: {created_at}
+      </Typography>
+      <Typography variant="h6" gutterBottom>
+        Contenido: {content}
+      </Typography>
+      <Typography variant="h6" gutterBottom>
+        Ubicación: {address || "No especificada"}
+      </Typography>
 
-        <Typography variant="h6" gutterBottom>
-            Fecha de creación: {created_at}
-        </Typography>
+      {coordinates && (
+        <Paper elevation={3} sx={{ mt: 3 }}>
+          <Typography variant="body2">
+            Coordenadas: Lat: {coordinates.lat}, Lon: {coordinates.lon}
+          </Typography>  
+          <Typography variant="h6" gutterBottom>
+            Ubicación
+          </Typography>
+          <MapContainer
+            center={[coordinates.lat, coordinates.lon]}
+            zoom={15}
+            style={{ height: "400px", width: "100%" }}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            <Marker position={[coordinates.lat, coordinates.lon]}>
+              <Popup>Ubicación asociada a esta versión</Popup>
+            </Marker>
+          </MapContainer>
+        </Paper>
+      )}
 
+      {!coordinates && address && (
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          No se pudo obtener la ubicación para la dirección proporcionada.
+        </Typography>
+      )}
     </div>
-    );
+  );
 };
 
 export default Version;
-
-
-
-
-
-
