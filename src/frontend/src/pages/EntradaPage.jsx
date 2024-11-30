@@ -175,9 +175,6 @@ function EntradaPage() {
             setComments(data);
           } else {
             setComments([]);
-            setCommentsError(
-              "No se encontraron comentarios para esta versión.",
-            );
           }
         })
         .catch(() =>
@@ -236,7 +233,7 @@ function EntradaPage() {
             <Typography variant="subtitle1" gutterBottom>
               <Link to={`/versiones/${entry.id}/`}>Ver historial</Link>
               {" | "}
-              <Link to={`/editarEntrada/${entry.id}/${actualVersionId}`}>
+              <Link to={`/editarEntrada/${entry.id}/${actualVersionId || ""}`}>
                 Editar contenido
               </Link>
             </Typography>

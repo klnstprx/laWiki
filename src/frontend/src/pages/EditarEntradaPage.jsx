@@ -34,8 +34,6 @@ function EditarEntradaPage() {
         .catch(() =>
           setVersionError("Se produjo un error al obtener la versión."),
         );
-    } else {
-      setVersionError("No se proporcionó un ID de versión válido.");
     }
   }, [versionId]);
 

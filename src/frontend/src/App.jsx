@@ -17,7 +17,7 @@ function App() {
         <Route path="/versiones/:entryId" element={<VersionPage />} />
         <Route path="/crear-entrada/:id" element={<PostEntradaPage />} />
         <Route
-          path="/editarEntrada/:entryId/:versionId"
+          path="/editarEntrada/:entryId/:versionId?"
           element={<EditarEntradaPage />}
         />
         {/* <Route path="/about" element={<About />} /> */}
