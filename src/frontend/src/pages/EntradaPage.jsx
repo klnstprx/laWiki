@@ -165,6 +165,8 @@ function EntradaPage() {
     setShowModal(true);
   }
 
+{/* http://localhost:5173/entrada?id=67311bf03399f3b49ccb8072&versionID=674b3ebf2d1dd23dd8164cea */}
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {/* Entry Details */}
