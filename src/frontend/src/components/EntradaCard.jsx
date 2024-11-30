@@ -1,5 +1,12 @@
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
+import {
+  Card,
+  CardActionArea,
+  CardContent,
+  Typography,
+  Grid2,
+} from "@mui/material";
 
 const EntradaCard = ({ id, title, author, createdAt, onEntradaClick }) => {
   const handleClick = () => {
@@ -9,31 +16,33 @@ const EntradaCard = ({ id, title, author, createdAt, onEntradaClick }) => {
   };
 
   return (
-    <Link
-      to={`/entrada?id=${id}`}
-      onClick={handleClick}
-      className="custom-link m-0 p-0"
-    >
-      <div className="border border-dark-subtle bg-light text-dark mb-2 mx-0 p-0">
-        <div className="custom-link-container m-0 p-0">
-          <div className="p-3 d-flex align-items-center">
-            <span className="h4">{title}</span>
-          </div>
-          <div className="p-3">
-            <div className="row">
-              <div className="col m-auto">
-                <span className="h5">Author</span>
-                <p>{author}</p>
-              </div>
-              <div className="col m-auto">
-                <span className="h5">Created At</span>
-                <p>{createdAt}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Link>
+    <Card sx={{ mb: 2 }}>
+      <CardActionArea
+        component={Link}
+        to={`/entrada?id=${id}`}
+        onClick={handleClick}
+      >
+        <CardContent>
+          <Typography variant="h5" component="div">
+            {title}
+          </Typography>
+          <Grid2 container spacing={2} sx={{ mt: 1 }}>
+            <Grid2 item xs={6}>
+              <Typography variant="subtitle1" color="textSecondary">
+                Author
+              </Typography>
+              <Typography variant="body2">{author}</Typography>
+            </Grid2>
+            <Grid2 item xs={6}>
+              <Typography variant="subtitle1" color="textSecondary">
+                Created At
+              </Typography>
+              <Typography variant="body2">{createdAt}</Typography>
+            </Grid2>
+          </Grid2>
+        </CardContent>
+      </CardActionArea>
+    </Card>
   );
 };
 
