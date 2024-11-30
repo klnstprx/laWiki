@@ -17,7 +17,7 @@ function HomePage() {
   return (
     <MainLayout>
       <div style={{ padding: "20px" }}>
-        <Title level={1}>Wikis</Title>
+        <Title level={1} style={{color: "white"}}>Wikis</Title>
         {error && <Alert message={error} type="error" showIcon />}
         <List
           grid={{ gutter: 16, column: 2 }}
