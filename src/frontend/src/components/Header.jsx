@@ -1,13 +1,15 @@
+import { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
   Typography,
   InputBase,
   IconButton,
+  Button,
 } from "@mui/material";
 import { Search as SearchIcon, Home as HomeIcon } from "@mui/icons-material";
 import { alpha, styled } from "@mui/material/styles";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -40,6 +42,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   width: "100%",
   "& .MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 0),
+    // vertical padding + font size from searchIcon
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create("width"),
     width: "12ch",
@@ -50,14 +53,33 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 const Header = () => {
-  const onSearch = (value) => {
-    console.log(value);
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (debouncedQuery) {
+      navigate(`/search?q=${encodeURIComponent(debouncedQuery)}`);
+    }
+  }, [debouncedQuery, navigate]);
+
+  const handleAdvancedSearch = () => {
+    navigate("/advanced-search");
   };
 
   return (
     <AppBar position="static">
       <Toolbar>
-        {/* Home Icon for small screens */}
         <IconButton
           component={RouterLink}
           to="/"
@@ -71,7 +93,6 @@ const Header = () => {
           <HomeIcon />
         </IconButton>
 
-        {/* Home Text for larger screens */}
         <Typography
           variant="h6"
           noWrap
@@ -87,17 +108,21 @@ const Header = () => {
           Home
         </Typography>
 
-        {/* Search Bar */}
         <Search>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
           <StyledInputBase
-            placeholder="Buscar…"
+            placeholder="Search…"
             inputProps={{ "aria-label": "search" }}
-            onChange={(e) => onSearch(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </Search>
+
+        <Button color="inherit" onClick={handleAdvancedSearch}>
+          Busqueda Avanzada
+        </Button>
       </Toolbar>
     </AppBar>
   );
