@@ -1,32 +1,30 @@
-import React from "react";
-import Typography from "@mui/material/Typography";
+import PropTypes from "prop-types";
+import { Typography, Box } from "@mui/material";
+import DOMPurify from "dompurify";
 
-const Version = (props) => {
-  
-    const { content, editor, created_at, entry_id  } = props;
+const Version = ({ content, editor, created_at }) => {
+  return (
+    <Box>
+      <Typography variant="body2" color="text.secondary" gutterBottom>
+        Editor: {editor}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" gutterBottom>
+        Fecha de creación: {new Date(created_at).toLocaleDateString()}
+      </Typography>
+      <Box
+        sx={{ mt: 2 }}
+        dangerouslySetInnerHTML={{
+          __html: DOMPurify.sanitize(content),
+        }}
+      />
+    </Box>
+  );
+};
 
-    return (
-    <div>
-        <Typography variant="h6" gutterBottom>
-            contenido: {content}
-        </Typography>
-       
-        <Typography variant="h6" gutterBottom>
-            Editor: {editor}
-        </Typography>
-
-        <Typography variant="h6" gutterBottom>
-            Fecha de creación: {created_at}
-        </Typography>
-
-    </div>
-    );
+Version.propTypes = {
+  content: PropTypes.string.isRequired,
+  editor: PropTypes.string.isRequired,
+  created_at: PropTypes.string.isRequired,
 };
 
 export default Version;
-
-
-
-
-
-
