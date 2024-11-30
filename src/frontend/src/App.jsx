@@ -12,7 +12,7 @@ function App() {
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/entrada/:entryId/:versionId?" element={<EntradaPage />} />
+        <Route path="/entrada/:entryId/:versionId" element={<EntradaPage />} />
         <Route path="/wiki/:id" element={<WikiPage />} />
         <Route path="/versiones/:entryId" element={<VersionPage />} />
         <Route path="/crear-entrada/:id" element={<PostEntradaPage />} />

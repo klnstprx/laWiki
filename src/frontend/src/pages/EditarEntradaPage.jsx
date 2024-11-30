@@ -13,14 +13,14 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
 function EditarEntradaPage() {
+  const { entryId, versionId } = useParams();
+  const [entrada, setEntrada] = useState({});
   const [version, setVersion] = useState({});
-  const [versionError, setVersionError] = useState("");
+  const [versionError, setVersionError] = useState(null);
+  const formRef = useRef(null);
   const navigate = useNavigate();
 
-  const formRef = useRef(null);
-  const { entryId, versionId } = useParams();
-
-  // Load the current version
+  // Obtener la versión
   useEffect(() => {
     if (versionId) {
       getVersion(versionId)
