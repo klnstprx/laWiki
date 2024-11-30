@@ -1,10 +1,9 @@
-import React from "react";
 import Paper from "@mui/material/Paper";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 import PropTypes from "prop-types";
 import { Typography, Box } from "@mui/material";
 import DOMPurify from "dompurify";
+import "leaflet/dist/leaflet.css";
 
 const Version = ({ content, editor, created_at, address, coordinates }) => {
   return (
@@ -16,17 +15,23 @@ const Version = ({ content, editor, created_at, address, coordinates }) => {
         Fecha de creación: {created_at}
       </Typography>
       <Typography variant="h6" gutterBottom>
-        Contenido: {content}
+        Contenido:
       </Typography>
-      <Typography variant="h6" gutterBottom>
+      <Box
+        sx={{ mt: 2 }}
+        dangerouslySetInnerHTML={{
+          __html: DOMPurify.sanitize(content),
+        }}
+      ></Box>
+      <Box variant="h6" gutterBottom>
         Ubicación: {address || "No especificada"}
-      </Typography>
+      </Box>
 
       {coordinates && (
         <Paper elevation={3} sx={{ mt: 3 }}>
           <Typography variant="body2">
             Coordenadas: Lat: {coordinates.lat}, Lon: {coordinates.lon}
-          </Typography>  
+          </Typography>
           <Typography variant="h6" gutterBottom>
             Ubicación
           </Typography>
@@ -53,11 +58,16 @@ const Version = ({ content, editor, created_at, address, coordinates }) => {
       )}
     </div>
   );
-};      
+};
 Version.propTypes = {
   content: PropTypes.string.isRequired,
   editor: PropTypes.string.isRequired,
   created_at: PropTypes.string.isRequired,
+  address: PropTypes.string,
+  coordinates: PropTypes.shape({
+    lat: PropTypes.number,
+    lon: PropTypes.number,
+  }),
 };
 
 export default Version;
