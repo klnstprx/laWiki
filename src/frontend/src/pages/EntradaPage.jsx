@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
-import { useRef } from "react";
-import { searchComments } from "../api/CommentApi.js";
+import { useEffect, useState, useRef } from "react";
+import {
+  searchComments,
+  postComment,
+  deleteComment,
+} from "../api/CommentApi.js";
 import { getEntry } from "../api/EntryApi.js";
 import { getVersion } from "../api/VersionApi.js";
-import { postComment } from "../api/CommentApi.js";
-import { deleteComment } from "../api/CommentApi.js";
 import { useSearchParams } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
 import Version from "../components/Version.jsx";
@@ -15,12 +16,12 @@ import {
   Container,
   Paper,
   Typography,
-  Grid2,
   Button,
-  Input,
   Alert,
   List,
   ListItem,
+  Input,
+  Grid2,
 } from "@mui/material";
 
 function EntradaPage() {
@@ -31,14 +32,14 @@ function EntradaPage() {
   const [commentsError, setCommentsError] = useState(null);
   const [versionError, setVersionError] = useState(null);
 
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
-  const versionID = searchParams.get("versionID");
-
   const [showModal, setShowModal] = useState(false);
   const [pendingComment, setPendingComment] = useState(null);
   const { showToast } = useToast();
   const formRef = useRef(null);
+
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("id");
+  const versionID = searchParams.get("versionID");
 
   const handleClose = () => {
     setShowModal(false);
@@ -77,6 +78,7 @@ function EntradaPage() {
     }
   };
 
+  // Fetch data on mount
   useEffect(() => {
     getEntry(id)
       .then(setEntrada)
@@ -95,6 +97,7 @@ function EntradaPage() {
       .catch((err) => setVersionError(err.message));
   }, [versionID]);
 
+  // Form submission handler
   async function subirComentario(event) {
     event.preventDefault();
 
@@ -107,10 +110,6 @@ function EntradaPage() {
     // Store the comment data and show the modal
     setPendingComment(jsonData);
     setShowModal(true);
-  }
-
-  {
-    /*La URL es de este tipo http://localhost:5173/entrada?id=67311bf03399f3b49ccb8072&versionID=67311c0143d96ecd81728a94 */
   }
 
   return (
@@ -129,6 +128,13 @@ function EntradaPage() {
               <Typography variant="h6">
                 Fecha de creación:{" "}
                 {new Date(entrada.created_at).toLocaleDateString()}
+              </Typography>
+              <Typography variant="h6">
+                <a
+                  href={`http://localhost:5173/versiones?entryID=${entrada.id}`}
+                >
+                  Ver historial
+                </a>
               </Typography>
             </>
           )}
@@ -229,6 +235,7 @@ function EntradaPage() {
         </Paper>
       </Container>
 
+      {/* Confirmation Modal */}
       <ConfirmationModal
         message="¿Estás seguro de que quieres crear este comentario?"
         show={showModal}
