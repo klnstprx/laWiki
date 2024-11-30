@@ -103,7 +103,7 @@ function EntradaPage() {
     try {
       const result = await postComment(jsonData);
 
-      setComentarios((prevComentarios) => [...prevComentarios, result]);
+      setComentarios((prevComentarios) => [...(prevComentarios || []), result]);
 
       formRef.current.reset();
       //setPendingComment(null);
@@ -258,6 +258,7 @@ function EntradaPage() {
           >
             Comentarios
           </h2>
+          {/* 
           {commentsError && (
             <div
               style={{
@@ -269,31 +270,35 @@ function EntradaPage() {
             >
               <p>Error al cargar los comentarios: {commentsError}</p>
             </div>
-          )}
-          {!commentsError && comentarios.length > 0 ? (
-            <List>
-              {comentarios.map((comentario) => (
-                <ListItem
-                  key={comentario.id}
-                  style={{
-                    borderBottom: "1px solid #ddd",
-                    padding: "15px 0",
-                  }}
-                >
-                  <Comentario
-                    id={comentario.id}
-                    content={comentario.content}
-                    rating={comentario.rating}
-                    created_at={comentario.created_at}
-                    author={comentario.author}
-                    onDelete={handleDeleteComment}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          ) : (
+          )} 
+           */}
+          
+          <List>
+            {comentarios.map((comentario) => (
+              <ListItem
+                key={comentario.id}
+                style={{
+                  borderBottom: "1px solid #ddd",
+                  padding: "15px 0",
+                }}
+              >
+                <Comentario
+                  id={comentario.id}
+                  content={comentario.content}
+                  rating={comentario.rating}
+                  created_at={comentario.created_at}
+                  author={comentario.author}
+                  onDelete={handleDeleteComment}
+                />
+              </ListItem>
+            ))}
+          </List>
+
+          {comentarios.length == 0 && (
             <Alert>No comments found.</Alert>
           )}
+
+
         </section>
 
         {/* Formulario para añadir comentarios */}
