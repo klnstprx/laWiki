@@ -176,7 +176,7 @@ func SearchWikis(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(wikis) == 0 {
-		config.App.Logger.Info().Str("title", title).Msg("No wikis found")
+		config.App.Logger.Info().Str("title", title).Str("exact_title", exactTitle).Str("description", description).Str("category", category).Msg("No wikis found")
 		http.Error(w, "No wikis found", http.StatusNotFound)
 		return
 	}
