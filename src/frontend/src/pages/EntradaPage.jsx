@@ -31,6 +31,7 @@ function EntradaPage() {
   const [entryError, setEntryError] = useState(null);
   const [commentsError, setCommentsError] = useState(null);
   const [versionError, setVersionError] = useState(null);
+  const [coordinates, setCoordinates] = useState(null);
 
   const [showModal, setShowModal] = useState(false);
   const [pendingComment, setPendingComment] = useState(null);
@@ -40,6 +41,28 @@ function EntradaPage() {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const versionID = searchParams.get("versionID");
+
+  const fixedAdress = "bulevar louis pasteur";
+  const fetchCoordinatesNominatim = async (address) => {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&addressdetails=1&limit=1`;
+  
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+  
+      if (data.length > 0) {
+        const { lat, lon } = data[0];
+        console.log("Coordenadas:", lat, lon);
+        return { lat: parseFloat(lat), lon: parseFloat(lon) };
+      } else {
+        throw new Error("No se encontraron coordenadas para la dirección.");
+      }
+    } catch (error) {
+      console.error("Error al realizar la geocodificación:", error);
+      return null;
+    }
+  };
+
 
   const handleClose = () => {
     setShowModal(false);
@@ -101,9 +124,13 @@ function EntradaPage() {
   useEffect(() => {
     if (versionID) {
       getVersion(versionID)
-        .then((data) => {
+        .then(async (data) => {
           if (data && Object.keys(data).length > 0) {
             setVersion(data);
+            //if (data.address) {
+              const coords = await fetchCoordinatesNominatim(fixedAdress);   // Hay que descomentar el if y poner data.address en la función
+              setCoordinates(coords);
+            //}
           } else {
             setVersionError("No se encontró la versión solicitada.");
           }
@@ -191,6 +218,8 @@ function EntradaPage() {
               editor={version.editor}
               created_at={version.created_at}
               entry_id={version.entry_id}
+              address={fixedAdress}   // Hay que poner version.address
+              coordinates={coordinates}
             />
           )}
         </Paper>
