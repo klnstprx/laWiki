@@ -34,7 +34,13 @@ function WikiPage() {
 
   useEffect(() => {
     searchEntries({ wikiID: id })
-      .then(setEntradas)
+      .then((data) => {
+        if (data && Array.isArray(data)) {
+          setEntradas(data);
+        } else {
+          setEntradas([]); // Ensure entradas is always an array
+        }
+      })
       .catch((err) => setError(err.message));
   }, [id]);
 
@@ -80,7 +86,7 @@ function WikiPage() {
             >
               Entradas
             </Typography>
-            {entradas.length > 0 ? (
+            {entradas && entradas.length > 0 ? ( // Added null check for entradas
               <List>
                 {entradas.map((entrada) => (
                   <ListItem key={entrada.id} divider>
