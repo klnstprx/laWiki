@@ -5,11 +5,10 @@ import {
   deleteComment,
 } from "../api/CommentApi.js";
 import { getEntry } from "../api/EntryApi.js";
-import { getVersion } from "../api/VersionApi.js";
-import { useSearchParams } from "react-router-dom";
+import { getVersion, searchVersions } from "../api/VersionApi.js";
+import { useParams, Link } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
 import Version from "../components/Version.jsx";
-import MainLayout from "../layout/MainLayout.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
 import { useToast } from "../context/ToastContext.1.jsx";
 import {
@@ -20,14 +19,15 @@ import {
   Alert,
   List,
   ListItem,
-  Input,
-  Grid2,
+  TextField,
+  Grid,
 } from "@mui/material";
 
 function EntradaPage() {
-  const [entrada, setEntrada] = useState({}); //Si pones estos 2 a null en vez de {} cuando creas una nueva versionn se bugea y no carga hasta que recargues la pagina, lo mismo me ocurre en la pagina de editar entrada.
-  const [version, setVersion] = useState({});
-  const [comentarios, setComentarios] = useState([]);
+  const { entryId, versionId } = useParams();
+  const [entry, setEntry] = useState(null);
+  const [version, setVersion] = useState(null);
+  const [comments, setComments] = useState([]);
   const [entryError, setEntryError] = useState(null);
   const [commentsError, setCommentsError] = useState(null);
   const [versionError, setVersionError] = useState(null);
@@ -37,26 +37,23 @@ function EntradaPage() {
   const { showToast } = useToast();
   const formRef = useRef(null);
 
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
-  const versionID = searchParams.get("versionID");
+  const [actualVersionId, setActualVersionId] = useState(versionId || null);
 
+  // Handler to close the confirmation modal
   const handleClose = () => {
     setShowModal(false);
     setPendingComment(null);
     showToast("El comentario no se ha creado", "danger");
   };
 
+  // Handler to confirm and post the comment
   const handleConfirm = async () => {
     setShowModal(false);
     try {
       const result = await postComment(pendingComment);
-
-      setComentarios((prevComentarios) => [...prevComentarios, result]);
-
+      setComments((prevComments) => [...prevComments, result]);
       formRef.current.reset();
       setPendingComment(null);
-
       showToast("El comentario se ha creado correctamente!", "success");
     } catch (error) {
       console.error("Error al enviar:", error);
@@ -64,12 +61,12 @@ function EntradaPage() {
     }
   };
 
+  // Handler to delete a comment
   const handleDeleteComment = async (commentId) => {
     try {
       await deleteComment(commentId);
-      // Actualizar el estado para eliminar el comentario borrado
-      setComentarios((prevComentarios) =>
-        prevComentarios.filter((comment) => comment.id !== commentId),
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment.id !== commentId),
       );
       showToast("Comentario eliminado correctamente", "success");
     } catch (error) {
@@ -78,13 +75,13 @@ function EntradaPage() {
     }
   };
 
-  // Obtener la entrada
+  // Fetch the entry details
   useEffect(() => {
-    if (id) {
-      getEntry(id)
+    if (entryId) {
+      getEntry(entryId)
         .then((data) => {
           if (data && Object.keys(data).length > 0) {
-            setEntrada(data);
+            setEntry(data);
           } else {
             setEntryError("No se encontró la entrada solicitada.");
           }
@@ -95,12 +92,40 @@ function EntradaPage() {
     } else {
       setEntryError("No se proporcionó un ID de entrada válido.");
     }
-  }, [id]);
+  }, [entryId]);
 
-  // Obtener la versión
+  // Fetch the version details
   useEffect(() => {
-    if (versionID) {
-      getVersion(versionID)
+    if (versionId) {
+      // If versionId is provided in the URL, fetch that specific version
+      setActualVersionId(versionId);
+    } else if (entryId) {
+      // If no versionId is provided, fetch the latest version for the entry
+      searchVersions({ entryID: entryId })
+        .then((versions) => {
+          if (versions && versions.length > 0) {
+            // Sort the versions by createdAt descending to get the latest
+            versions.sort(
+              (a, b) => new Date(b.created_at) - new Date(a.created_at),
+            );
+            const latestVersion = versions[0];
+            setActualVersionId(latestVersion.id);
+          } else {
+            setVersionError(
+              "No se encontró ninguna versión para esta entrada.",
+            );
+          }
+        })
+        .catch(() =>
+          setVersionError("Se produjo un error al obtener las versiones."),
+        );
+    }
+  }, [entryId, versionId]);
+
+  // Fetch the version data when actualVersionId changes
+  useEffect(() => {
+    if (actualVersionId) {
+      getVersion(actualVersionId)
         .then((data) => {
           if (data && Object.keys(data).length > 0) {
             setVersion(data);
@@ -111,19 +136,14 @@ function EntradaPage() {
         .catch(() =>
           setVersionError("Se produjo un error al obtener la versión."),
         );
-    } else {
-      setVersionError("No se proporcionó un ID de versión válido.");
-    }
-  }, [versionID]);
 
-  // Obtener los comentarios
-  useEffect(() => {
-    if (versionID) {
-      searchComments({ versionID: versionID })
+      // Fetch comments for the actual version
+      searchComments({ versionID: actualVersionId })
         .then((data) => {
-          if (data) {
-            setComentarios(data);
+          if (data && data.length > 0) {
+            setComments(data);
           } else {
+            setComments([]);
             setCommentsError(
               "No se encontraron comentarios para esta versión.",
             );
@@ -132,21 +152,16 @@ function EntradaPage() {
         .catch(() =>
           setCommentsError("Se produjo un error al obtener los comentarios."),
         );
-    } else {
-      setCommentsError("No se proporcionó un ID de versión válido.");
     }
-  }, [versionID]);
+  }, [actualVersionId]);
 
-  // Handler para enviar el comentario
+  // Handler to submit a new comment
   async function subirComentario(event) {
     event.preventDefault();
-
     const formData = new FormData(event.target);
     const jsonData = Object.fromEntries(formData.entries());
-
-    jsonData["version_id"] = versionID;
+    jsonData["version_id"] = actualVersionId;
     jsonData["rating"] = parseInt(jsonData["rating"], 10);
-
     setPendingComment(jsonData);
     setShowModal(true);
   }
@@ -154,145 +169,130 @@ function EntradaPage() {
 {/* http://localhost:5173/entrada?id=67311bf03399f3b49ccb8072&versionID=674b3ebf2d1dd23dd8164cea */}
 
   return (
-    <MainLayout>
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        {/* Detalles de la Entrada */}
-        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            Datos de la Entrada
-          </Typography>
-          {entryError && <Alert severity="error">{entryError}</Alert>}
-          {!entryError && entrada && (
-            <>
-              <Typography variant="h6">Título: {entrada.title}</Typography>
-              <Typography variant="h6">Autor: {entrada.author}</Typography>
-              <Typography variant="h6">
-                Fecha de creación:{" "}
-                {new Date(entrada.created_at).toLocaleDateString()}
-              </Typography>
-              <Typography variant="h6">
-                <a
-                  href={`http://localhost:5173/versiones?entry_id=${entrada.id}`}
-                >
-                  Ver historial
-                </a>
-                <br></br>
-                <a
-                  href={`http://localhost:5173/editarEntrada?versionID=${version.id}&entradaID=${entrada.id}`} //Edita la entrada que se esta viendo actualmente, se podría hacer que editase la ultima entrada
-                >
-                  Editar Contenido
-                </a>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {/* Entry Details */}
+      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Datos de la Entrada
+        </Typography>
+        {entryError && <Alert severity="error">{entryError}</Alert>}
+        {!entryError && entry && (
+          <>
+            <Typography variant="h6">Título: {entry.title}</Typography>
+            <Typography variant="h6">Autor: {entry.author}</Typography>
+            <Typography variant="h6">
+              Fecha de creación:{" "}
+              {new Date(entry.created_at).toLocaleDateString()}
+            </Typography>
+            <Typography variant="h6">
+              <Link to={`/versiones/${entry.id}`}>Ver historial</Link>
+            </Typography>
+          </>
+        )}
+      </Paper>
 
-              </Typography>
-            </>
-          )}
-        </Paper>
+      {/* Version Content */}
+      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Contenido de la Versión
+        </Typography>
+        {versionError && <Alert severity="error">{versionError}</Alert>}
+        {!versionError && version && (
+          <Version
+            content={version.content}
+            editor={version.editor}
+            created_at={version.created_at}
+            entry_id={version.entry_id}
+          />
+        )}
+      </Paper>
 
-        {/* Contenido de la Versión */}
-        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            Contenido de la Versión
-          </Typography>
-          {versionError && <Alert severity="error">{versionError}</Alert>}
-          {!versionError && version && (
-            <Version
-              content={version.content}
-              editor={version.editor}
-              created_at={version.created_at}
-              entry_id={version.entry_id}
-            />
-          )}
-        </Paper>
-
-        {/* Comentarios */}
-        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            Comentarios
-          </Typography>
-          {commentsError && <Alert severity="error">{commentsError}</Alert>}
-          {!commentsError && comentarios.length > 0 ? (
-            <List>
-              {comentarios.map((comentario) => (
-                <ListItem key={comentario.id}>
-                  <Comentario
-                    id={comentario.id}
-                    content={comentario.content}
-                    rating={comentario.rating}
-                    created_at={comentario.created_at}
-                    author={comentario.author}
-                    onDelete={handleDeleteComment}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            !commentsError && (
-              <Alert severity="info">No se encontraron comentarios.</Alert>
-            )
-          )}
-        </Paper>
-
-        {/* Formulario para añadir comentario */}
-        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            Añadir comentario
-          </Typography>
-          <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
-            <Grid2 container spacing={2}>
-              <Grid2 item xs={12}>
-                <Input
-                  id="content"
-                  name="content"
-                  label="Contenido"
-                  multiline
-                  required
-                  fullWidth
+      {/* Comments */}
+      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Comentarios
+        </Typography>
+        {commentsError && <Alert severity="error">{commentsError}</Alert>}
+        {!commentsError && comments.length > 0 ? (
+          <List>
+            {comments.map((comment) => (
+              <ListItem key={comment.id}>
+                <Comentario
+                  id={comment.id}
+                  content={comment.content}
+                  rating={comment.rating}
+                  created_at={comment.created_at}
+                  author={comment.author}
+                  onDelete={handleDeleteComment}
                 />
-              </Grid2>
-              <Grid2 item xs={12} sm={6} md={4}>
-                <Input
-                  id="rating"
-                  name="rating"
-                  label="Calificación"
-                  type="number"
-                  inputProps={{ min: 1, max: 5 }}
-                  required
-                  fullWidth
-                />
-              </Grid2>
-              <Grid2 item xs={12} sm={6} md={4}>
-                <Input
-                  id="author"
-                  name="author"
-                  label="Autor"
-                  required
-                  fullWidth
-                />
-              </Grid2>
-              <Grid2 item xs={12} md={4}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  sx={{ height: "100%" }}
-                >
-                  Enviar
-                </Button>
-              </Grid2>
-            </Grid2>
-          </form>
-        </Paper>
-      </Container>
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          !commentsError && (
+            <Alert severity="info">No se encontraron comentarios.</Alert>
+          )
+        )}
+      </Paper>
 
-      {/* Modal de Confirmación */}
+      {/* Form to Add Comment */}
+      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Añadir comentario
+        </Typography>
+        <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                id="content"
+                name="content"
+                label="Contenido"
+                multiline
+                required
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                id="rating"
+                name="rating"
+                label="Calificación"
+                type="number"
+                inputProps={{ min: 1, max: 5 }}
+                required
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                id="author"
+                name="author"
+                label="Autor"
+                required
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+                sx={{ height: "100%" }}
+              >
+                Enviar
+              </Button>
+            </Grid>
+          </Grid>
+        </form>
+      </Paper>
       <ConfirmationModal
         message="¿Estás seguro de que quieres crear este comentario?"
         show={showModal}
         handleClose={handleClose}
         handleConfirm={handleConfirm}
       />
-    </MainLayout>
+    </Container>
   );
 }
 
