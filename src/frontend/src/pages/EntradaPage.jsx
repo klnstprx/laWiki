@@ -9,7 +9,7 @@ import { getEntry } from "../api/EntryApi.js";
 import { getVersion } from "../api/VersionApi.js";
 import { postComment } from "../api/CommentApi.js";
 import { deleteComment } from "../api/CommentApi.js";
-import { useSearchParams } from "react-router-dom";
+import { json, useSearchParams } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
 import Version from "../components/Version.jsx";
 import MainLayout from "../layout/MainLayout.jsx";
@@ -99,7 +99,20 @@ function EntradaPage() {
 
     // Store the comment data and show the modal
     setPendingComment(jsonData);
-    setShowModal(true);
+    //setShowModal(true);
+    try {
+      const result = await postComment(jsonData);
+
+      setComentarios((prevComentarios) => [...prevComentarios, result]);
+
+      formRef.current.reset();
+      setPendingComment(null);
+
+      showToast("El comentario se ha creado correctamente!", "bg-success");
+    } catch (error) {
+      console.error("Error al enviar:", error);
+      showToast("Error al enviar el comentario", "bg-danger");
+    }
   }
 
   {
@@ -388,12 +401,14 @@ function EntradaPage() {
         </section>
       </div>
 
+      {/*
       <ConfirmationModal
         message="¿Estás seguro de que quieres crear este comentario?"
         show={showModal}
         handleClose={handleClose}
         handleConfirm={handleConfirm}
       />
+      */}
     </MainLayout>
   );
 }
