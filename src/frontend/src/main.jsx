@@ -7,18 +7,18 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { BrowserRouter } from "react-router-dom";
-import { ToastProvider } from "./context/ToastContext";
+import { ToastProvider } from "./context/ToastProvider";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./styles/theme";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
-      <ToastProvider>
-        <ThemeProvider theme={theme}>
+    <ThemeProvider theme={theme}>
+      <BrowserRouter>
+        <ToastProvider>
           <App />
-        </ThemeProvider>
-      </ToastProvider>
-    </BrowserRouter>
+        </ToastProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   </StrictMode>,
 );

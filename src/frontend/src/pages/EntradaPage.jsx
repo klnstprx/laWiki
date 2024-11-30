@@ -10,7 +10,7 @@ import { useParams, Link } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
 import Version from "../components/Version.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
-import { useToast } from "../context/ToastContext.1.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 import {
   Stack,
   Container,

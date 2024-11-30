@@ -10,7 +10,7 @@ import {
   Grid2,
 } from "@mui/material";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { useToast } from "../context/ToastContext.1.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 
 function PostEntradaPage() {
   const [error, setError] = useState(null);
