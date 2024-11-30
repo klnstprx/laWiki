@@ -1,4 +1,4 @@
-import { Link, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage.jsx";
 import EntradaPage from "./pages/EntradaPage.jsx";
 import WikiPage from "./pages/WikiPage.jsx";
@@ -8,9 +8,6 @@ import PostEntradaPage from "./pages/PostEntradaPage.jsx";
 function App() {
   return (
     <div>
-      <nav>
-        <Link to="/">Home</Link>
-      </nav>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/entrada" element={<EntradaPage />} />
