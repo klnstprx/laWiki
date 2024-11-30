@@ -1,16 +1,7 @@
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Menu,
-  MenuItem,
-  InputBase,
-} from "@mui/material";
-import { Menu as MenuIcon, Search as SearchIcon } from "@mui/icons-material";
+import { AppBar, Toolbar, Typography, InputBase } from "@mui/material";
+import { Search as SearchIcon } from "@mui/icons-material";
 import { alpha, styled } from "@mui/material/styles";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -19,16 +10,17 @@ const Search = styled("div")(({ theme }) => ({
   "&:hover": {
     backgroundColor: alpha(theme.palette.common.white, 0.25),
   },
-  marginLeft: 0,
+  marginLeft: theme.spacing(2),
+  marginRight: theme.spacing(2),
   width: "100%",
   [theme.breakpoints.up("sm")]: {
-    marginLeft: theme.spacing(1),
+    marginLeft: theme.spacing(2),
     width: "auto",
   },
 }));
 
 const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
+  padding: theme.spacing(0, 1),
   height: "100%",
   position: "absolute",
   pointerEvents: "none",
@@ -39,12 +31,12 @@ const SearchIconWrapper = styled("div")(({ theme }) => ({
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: "inherit",
+  width: "100%",
   "& .MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create("width"),
-    width: "100%",
+    width: "12ch",
     [theme.breakpoints.up("md")]: {
       width: "20ch",
     },
@@ -52,28 +44,30 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 const Header = () => {
-  const [anchorEl, setAnchorEl] = useState(null);
-
   const onSearch = (value) => {
     console.log(value);
-  };
-
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
   };
 
   return (
     <AppBar position="static">
       <Toolbar>
-        <Link to="/" style={{ color: "inherit", textDecoration: "none" }}>
-          <Typography variant="h6" noWrap component="div">
-            Home
-          </Typography>
-        </Link>
+        {/* Title */}
+        <Typography
+          variant="h6"
+          noWrap
+          component={RouterLink}
+          to="/"
+          sx={{
+            display: { xs: "none", sm: "block" },
+            color: "inherit",
+            textDecoration: "none",
+            flexGrow: 1,
+          }}
+        >
+          Home
+        </Typography>
+
+        {/* Search Bar */}
         <Search>
           <SearchIconWrapper>
             <SearchIcon />
@@ -84,29 +78,6 @@ const Header = () => {
             onChange={(e) => onSearch(e.target.value)}
           />
         </Search>
-        <div style={{ flexGrow: 1 }} />
-        <IconButton
-          size="large"
-          edge="end"
-          aria-label="menu"
-          aria-controls="menu-appbar"
-          aria-haspopup="true"
-          onClick={handleMenu}
-          color="inherit"
-        >
-          <MenuIcon />
-        </IconButton>
-        <Menu
-          id="menu-appbar"
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-        >
-          <MenuItem onClick={handleClose}>Option 1</MenuItem>
-          <MenuItem onClick={handleClose}>Option 2</MenuItem>
-          <MenuItem onClick={handleClose}>Option 3</MenuItem>
-          <MenuItem onClick={handleClose}>Option 4</MenuItem>
-        </Menu>
       </Toolbar>
     </AppBar>
   );

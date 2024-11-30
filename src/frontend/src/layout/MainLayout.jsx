@@ -1,3 +1,4 @@
+import { Box, CssBaseline } from "@mui/material";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ToastMessage from "../components/ToastMessage";
@@ -6,14 +7,15 @@ import { Outlet } from "react-router-dom";
 
 function MainLayout() {
   return (
-    <div className="d-flex flex-column vh-100">
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <CssBaseline />
       <Header />
-      <div className="flex-grow-1 pb-5">
+      <Box sx={{ flexGrow: 1, pb: 5 }}>
         <Outlet />
         <ToastMessagesLayout />
-      </div>
+      </Box>
       <Footer />
-    </div>
+    </Box>
   );
 }
 

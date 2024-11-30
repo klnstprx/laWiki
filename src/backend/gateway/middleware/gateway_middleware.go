@@ -46,7 +46,7 @@ func LoggerMiddleware(logger *zerolog.Logger) func(next http.Handler) http.Handl
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			log := logger.With().Logger()
 			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
-			start := time.Now()
+			start := time.Now().UTC()
 			defer func() {
 				if rec := recover(); rec != nil {
 					log.Error().Timestamp().Interface("recover", rec).Bytes("stack", debug.Stack()).Msg("panic")
