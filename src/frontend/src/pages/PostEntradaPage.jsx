@@ -2,7 +2,7 @@ import { useState } from "react";
 import { postEntry } from "../api/EntryApi.js";
 import Button from "@mui/material/Button";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { useToast } from "../context/ToastContext.jsx";
+import { useToast } from "../context/ToastContext.1.jsx";
 import MainLayout from "../layout/MainLayout.jsx";
 
 function PostEntradaPage() {
@@ -30,7 +30,7 @@ function PostEntradaPage() {
       const result = await postEntry(jsonData);
       console.log("Respuesta del servidor:", result);
 
-      showToast("Entrada creada correctamente", "bg-success");
+      showToast("Entrada creada correctamente", "success");
       navigate(`/wiki?id=${id}`);
     } catch (error) {
       setError("Error al crear la entrada");
@@ -51,7 +51,14 @@ function PostEntradaPage() {
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <h2 style={{ fontSize: "28px", marginBottom: "20px", textAlign: "center", color: "black" }}>
+        <h2
+          style={{
+            fontSize: "28px",
+            marginBottom: "20px",
+            textAlign: "center",
+            color: "black",
+          }}
+        >
           Crear Nueva Entrada
         </h2>
 
