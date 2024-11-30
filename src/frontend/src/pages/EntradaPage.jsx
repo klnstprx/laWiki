@@ -19,12 +19,13 @@ import {
   Button,
   Alert,
   TextField,
-  Grid2,
+  Grid,
+  Divider,
 } from "@mui/material";
 
 function EntradaPage() {
   const { entryId, versionId } = useParams();
-  const [entry, setEntry] = useState({}); // si se pone null cuanndo se crea una version nueva no carga a la primera
+  const [entry, setEntry] = useState({});
   const [version, setVersion] = useState({});
   const [comments, setComments] = useState([]);
   const [entryError, setEntryError] = useState(null);
@@ -39,14 +40,16 @@ function EntradaPage() {
 
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
 
-  const fixedAdress = "bulevar louis pasteur";
+  const fixedAddress = "bulevar louis pasteur";
   const fetchCoordinatesNominatim = async (address) => {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&addressdetails=1&limit=1`;
-  
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+      address,
+    )}&format=json&addressdetails=1&limit=1`;
+
     try {
       const response = await fetch(url);
       const data = await response.json();
-  
+
       if (data.length > 0) {
         const { lat, lon } = data[0];
         console.log("Coordenadas:", lat, lon);
@@ -59,7 +62,6 @@ function EntradaPage() {
       return null;
     }
   };
-
 
   // Handler to close the confirmation modal
   const handleClose = () => {
@@ -151,10 +153,13 @@ function EntradaPage() {
         .then(async (data) => {
           if (data && Object.keys(data).length > 0) {
             setVersion(data);
-            //if (data.address) {
-              const coords = await fetchCoordinatesNominatim(fixedAdress);   // Hay que descomentar el if y poner data.address en la función
-              setCoordinates(coords);
-            //}
+            // Uncomment the following lines when using real address data
+            // if (data.address) {
+            //   const coords = await fetchCoordinatesNominatim(data.address);
+            //   setCoordinates(coords);
+            // }
+            const coords = await fetchCoordinatesNominatim(fixedAddress); // Remove this line when using real address data
+            setCoordinates(coords); // Remove this line when using real address data
           } else {
             setVersionError("No se encontró la versión solicitada.");
           }
@@ -192,30 +197,45 @@ function EntradaPage() {
     setShowModal(true);
   }
 
-  {
-    /* http://localhost:5173/entrada/67311bf03399f3b49ccb8072/67311bfb43d96ecd81728a93 */
-  }
-
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {/* Entry Title */}
+      {entryError && <Alert severity="error">{entryError}</Alert>}
+      {!entryError && entry && (
+        <Typography variant="h3" gutterBottom>
+          {entry.title}
+        </Typography>
+      )}
+
+      {/* Version Content */}
+      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        {versionError && <Alert severity="error">{versionError}</Alert>}
+        {!versionError && version && (
+          <Version
+            content={version.content}
+            editor={version.editor}
+            created_at={version.created_at}
+            entry_id={version.entry_id}
+            address={fixedAddress} // Replace with version.address
+            coordinates={coordinates}
+          />
+        )}
+      </Paper>
+
+      {/* Divider */}
+      <Divider sx={{ my: 4 }} />
+
       {/* Entry Details */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Datos de la Entrada
-        </Typography>
-        {entryError && <Alert severity="error">{entryError}</Alert>}
         {!entryError && entry && (
           <>
-            <Typography variant="h6">Título: {entry.title}</Typography>
-            <Typography variant="h6">Autor: {entry.author}</Typography>
-            <Typography variant="h6">
-              Fecha de creación:{" "}
+            <Typography variant="subtitle1" gutterBottom>
+              Autor: {entry.author} | Fecha de creación:{" "}
               {new Date(entry.created_at).toLocaleDateString()}
             </Typography>
-            <Typography variant="h6">
+            <Typography variant="subtitle1" gutterBottom>
               <Link to={`/versiones/${entry.id}/`}>Ver historial</Link>
-            </Typography>
-            <Typography variant="h6">
+              {" | "}
               <Link to={`/editarEntrada/${entry.id}/${actualVersionId}`}>
                 Editar contenido
               </Link>
@@ -223,24 +243,6 @@ function EntradaPage() {
           </>
         )}
       </Paper>
-
-        {/* Contenido de la Versión */}
-        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            Contenido de la Versión
-          </Typography>
-          {versionError && <Alert severity="error">{versionError}</Alert>}
-          {!versionError && version && (
-            <Version
-              content={version.content}
-              editor={version.editor}
-              created_at={version.created_at}
-              entry_id={version.entry_id}
-              address={fixedAdress}   // Hay que poner version.address
-              coordinates={coordinates}
-            />
-          )}
-        </Paper>
 
       {/* Comments */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
@@ -275,8 +277,8 @@ function EntradaPage() {
           Añadir comentario
         </Typography>
         <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
-          <Grid2 container spacing={2}>
-            <Grid2 item xs={12}>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
               <TextField
                 id="content"
                 name="content"
@@ -285,8 +287,8 @@ function EntradaPage() {
                 required
                 fullWidth
               />
-            </Grid2>
-            <Grid2 item xs={12} sm={6} md={4}>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
               <TextField
                 id="rating"
                 name="rating"
@@ -296,8 +298,8 @@ function EntradaPage() {
                 required
                 fullWidth
               />
-            </Grid2>
-            <Grid2 item xs={12} sm={6} md={4}>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
               <TextField
                 id="author"
                 name="author"
@@ -305,8 +307,8 @@ function EntradaPage() {
                 required
                 fullWidth
               />
-            </Grid2>
-            <Grid2 item xs={12} md={4}>
+            </Grid>
+            <Grid item xs={12} md={4}>
               <Button
                 type="submit"
                 variant="contained"
@@ -316,10 +318,11 @@ function EntradaPage() {
               >
                 Enviar
               </Button>
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </form>
       </Paper>
+
       <ConfirmationModal
         message="¿Estás seguro de que quieres crear este comentario?"
         show={showModal}
