@@ -4,12 +4,12 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
-import {
-  getCommentsByVersionId,
-  getEntry,
-  getVersion,
-} from "../api.js";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { searchComments } from "../api/CommentApi.js";
+import { getEntry } from "../api/EntryApi.js";
+import { getVersion } from "../api/VersionApi.js";
+import { postComment } from "../api/CommentApi.js";
+import { deleteComment } from "../api/CommentApi.js";
+import { useSearchParams } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
 import Version from "../components/Version.jsx";
 import MainLayout from "../layout/MainLayout.jsx";
@@ -20,92 +20,91 @@ function EntradaPage() {
   const [entrada, setEntrada] = useState({});
   const [version, setVersion] = useState({});
   const [comentarios, setComentarios] = useState([]);
-  const [error, setError] = useState(null);
+  const [entryError, setEntryError] = useState(null);
+  const [commentsError, setCommentsError] = useState(null);
+  const [versionError, setVersionError] = useState(null);
 
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const versionID = searchParams.get("versionID");
 
   const [showModal, setShowModal] = useState(false);
-  const navigate = useNavigate();
+  const [pendingComment, setPendingComment] = useState(null);
   const { showToast } = useToast();
   const formRef = useRef(null);
 
   const handleClose = () => {
     setShowModal(false);
+    setPendingComment(null);
     showToast("El comentario no se ha creado", "bg-danger");
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setShowModal(false);
-    showToast("El comentario se ha creado correctamente!", "bg-success");
-    navigate(`/version/${versionID}`);
+    try {
+      const result = await postComment(pendingComment);
+
+      setComentarios((prevComentarios) => [...prevComentarios, result]);
+
+      formRef.current.reset();
+      setPendingComment(null);
+
+      showToast("El comentario se ha creado correctamente!", "bg-success");
+    } catch (error) {
+      console.error("Error al enviar:", error);
+      showToast("Error al enviar el comentario", "bg-danger");
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await deleteComment(commentId);
+      // Update state to remove the deleted comment
+      setComentarios((prevComentarios) =>
+        prevComentarios.filter((comment) => comment.id !== commentId),
+      );
+      showToast("Comentario eliminado correctamente", "bg-success");
+    } catch (error) {
+      console.error("Error al eliminar el comentario:", error);
+      showToast("Error al eliminar el comentario", "bg-danger");
+    }
   };
 
   useEffect(() => {
     getEntry(id)
       .then(setEntrada)
-      .catch((err) => setError(err.message));
+      .catch((err) => setEntryError(err.message));
   }, [id]);
 
   useEffect(() => {
-    getCommentsByVersionId(versionID)
+    searchComments({ versionID: versionID })
       .then(setComentarios)
-      .catch((err) => setError(err.message));
+      .catch((err) => setCommentsError(err.message));
   }, [versionID]);
 
   useEffect(() => {
     getVersion(versionID)
       .then(setVersion)
-      .catch((err) => setError(err.message));
+      .catch((err) => setVersionError(err.message));
   }, [versionID]);
 
   async function subirComentario(event) {
-    console.log("Enviando formulario...");
-    // Prevenir el envío normal del formulario
     event.preventDefault();
 
-    // Obtener los datos del formulario
-    const form = event.target; // El formulario
-    const formData = new FormData(form); // Recoge todos los campos
-
-    // Convertir FormData a un objeto JSON
-    const jsonData = {};
-    formData.forEach((value, key) => {
-      jsonData[key] = key === "rating" ? parseInt(value, 10) : value;
-    });
+    const formData = new FormData(event.target);
+    const jsonData = Object.fromEntries(formData.entries());
 
     jsonData["version_id"] = version.id;
-    // Hacer la solicitud POST
-    try {
-      const response = await fetch("http://localhost:8000/api/comments/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(jsonData),
-      });
+    jsonData["rating"] = parseInt(jsonData["rating"], 10);
 
-      // Manejar la respuesta
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Respuesta del servidor:", result);
-
-        setComentarios(prevComentarios => [
-          ...prevComentarios,
-          result  // Suponiendo que 'result' contiene el comentario recién creado
-        ]);
-
-        formRef.current.reset(); // esto es para limpiar el formulario
-      } else {
-        console.error("Error en la respuesta:", response.status);
-      }
-    } catch (error) {
-      console.error("Error al enviar:", error);
-    }
+    // Store the comment data and show the modal
+    setPendingComment(jsonData);
+    setShowModal(true);
   }
 
-  {/*La URL es de este tipo http://localhost:5173/entrada?id=67311bf03399f3b49ccb8072&versionID=67311c0143d96ecd81728a94 */ }
+  {
+    /*La URL es de este tipo http://localhost:5173/entrada?id=67311bf03399f3b49ccb8072&versionID=67311c0143d96ecd81728a94 */
+  }
 
   return (
     <MainLayout>
@@ -119,7 +118,7 @@ function EntradaPage() {
           borderRadius: "8px",
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Sombra más suave para el contenedor
           color: "black",
-          width: "94vw"
+          width: "94vw",
         }}
       >
         {/* Cabecera de la página */}
@@ -133,7 +132,7 @@ function EntradaPage() {
           }}
         >
           <h1 style={{ fontSize: "36px", margin: "0" }}>Datos de la Wiki</h1>
-          {error && (
+          {entryError && (
             <div
               style={{
                 backgroundColor: "#e57373",
@@ -142,7 +141,7 @@ function EntradaPage() {
                 borderRadius: "4px",
               }}
             >
-              <p>{error}</p>
+              <p>Error al cargar la entrada: {entryError}</p>
             </div>
           )}
         </header>
@@ -156,29 +155,45 @@ function EntradaPage() {
             borderRadius: "8px",
           }}
         >
-          <Typography
-            variant="h6"
-            style={{ fontWeight: "bold", marginBottom: "10px" }}
-          >
-            Título:{" "}
-            <span style={{ fontWeight: "normal" }}>{entrada.title}</span>
-          </Typography>
-
-          <Typography
-            variant="h6"
-            style={{ fontWeight: "bold", marginBottom: "10px" }}
-          >
-            Autor:{" "}
-            <span style={{ fontWeight: "normal" }}>{entrada.author}</span>
-          </Typography>
-
-          <Typography
-            variant="h6"
-            style={{ fontWeight: "bold", marginBottom: "10px" }}
-          >
-            Fecha de creación:{" "}
-            <span style={{ fontWeight: "normal" }}>{entrada.created_at}</span>
-          </Typography>
+          {versionError && (
+            <div
+              style={{
+                backgroundColor: "#e57373",
+                padding: "15px",
+                marginBottom: "15px",
+                borderRadius: "4px",
+              }}
+            >
+              <p>Error al cargar la versión: {versionError}</p>
+            </div>
+          )}
+          {!entryError && (
+            <>
+              <Typography
+                variant="h6"
+                style={{ fontWeight: "bold", marginBottom: "10px" }}
+              >
+                Título:{" "}
+                <span style={{ fontWeight: "normal" }}>{entrada.title}</span>
+              </Typography>
+              <Typography
+                variant="h6"
+                style={{ fontWeight: "bold", marginBottom: "10px" }}
+              >
+                Autor:{" "}
+                <span style={{ fontWeight: "normal" }}>{entrada.author}</span>
+              </Typography>
+              <Typography
+                variant="h6"
+                style={{ fontWeight: "bold", marginBottom: "10px" }}
+              >
+                Fecha de creación:{" "}
+                <span style={{ fontWeight: "normal" }}>
+                  {entrada.created_at}
+                </span>
+              </Typography>
+            </>
+          )}
         </section>
 
         {/* Contenido de la versión */}
@@ -200,12 +215,14 @@ function EntradaPage() {
           >
             Contenido de la versión
           </h2>
-          <Version
-            content={version.content}
-            editor={version.editor}
-            created_at={version.created_at}
-            entry_id={version.entry_id}
-          />
+          {!versionError && (
+            <Version
+              content={version.content}
+              editor={version.editor}
+              created_at={version.created_at}
+              entry_id={version.entry_id}
+            />
+          )}
         </section>
 
         {/* Comentarios */}
@@ -227,29 +244,42 @@ function EntradaPage() {
           >
             Comentarios
           </h2>
-          {comentarios.length > 0
-            ? (
-              <List>
-                {comentarios.map((comentario) => (
-                  <ListItem
-                    key={comentarios.id}
-                    style={{
-                      borderBottom: "1px solid #ddd",
-                      padding: "15px 0",
-                    }}
-                  >
-                    <Comentario
-                      id={comentario.id}
-                      content={comentario.content}
-                      rating={comentario.rating}
-                      created_at={comentario.created_at}
-                      author={comentario.author}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            )
-            : <Alert>No comments found.</Alert>}
+          {commentsError && (
+            <div
+              style={{
+                backgroundColor: "#e57373",
+                padding: "15px",
+                marginBottom: "15px",
+                borderRadius: "4px",
+              }}
+            >
+              <p>Error al cargar los comentarios: {commentsError}</p>
+            </div>
+          )}
+          {!commentsError && comentarios.length > 0 ? (
+            <List>
+              {comentarios.map((comentario) => (
+                <ListItem
+                  key={comentario.id}
+                  style={{
+                    borderBottom: "1px solid #ddd",
+                    padding: "15px 0",
+                  }}
+                >
+                  <Comentario
+                    id={comentario.id}
+                    content={comentario.content}
+                    rating={comentario.rating}
+                    created_at={comentario.created_at}
+                    author={comentario.author}
+                    onDelete={handleDeleteComment}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Alert>No comments found.</Alert>
+          )}
         </section>
 
         {/* Formulario para añadir comentarios */}
@@ -266,13 +296,14 @@ function EntradaPage() {
             Añadir comentario
           </h2>
 
-          <form id="miFormulario" onSubmit={subirComentario}>
+          <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
             <div style={{ marginBottom: "20px" }}>
               <label
                 htmlFor="content"
                 style={{ fontWeight: "bold", fontSize: "18px" }}
               >
-                Contenido:<br/>
+                Contenido:
+                <br />
               </label>
               <textarea
                 //type="text"
@@ -361,8 +392,7 @@ function EntradaPage() {
         show={showModal}
         handleClose={handleClose}
         handleConfirm={handleConfirm}
-      >
-      </ConfirmationModal>
+      />
     </MainLayout>
   );
 }

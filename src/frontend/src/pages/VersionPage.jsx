@@ -1,28 +1,16 @@
 import { useEffect, useState } from "react";
-import {
-  getCommentsByVersionId,
-  getEntry,
-  getVersion,
-} from "../api.js";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import MainLayout from "../layout/MainLayout.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 
-
-
-
 function VersionPage() {
-
   const [version, setVersion] = useState({});
   const [error, setError] = useState(null);
 
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
-
-
   return (
-    
     <MainLayout>
       <div
         style={{
@@ -70,18 +58,10 @@ function VersionPage() {
             borderRadius: "8px",
           }}
         >
-          
           {/* aqui van las versiones */}
-
-
-
-
-
         </section>
       </div>
-
     </MainLayout>
-    
   );
 }
 
