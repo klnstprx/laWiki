@@ -7,7 +7,9 @@ import {
   Typography,
   Alert,
   Grid2,
+  CardActionArea,
 } from "@mui/material";
+import { Link } from "react-router-dom";
 import { getAllWikis } from "../api/WikiApi.js";
 
 function HomePage() {
@@ -35,22 +37,24 @@ function HomePage() {
       {!error && wikis.length > 0 ? (
         <Grid2 container spacing={4}>
           {wikis.map((wiki) => (
-            <Grid2 item key={wiki.id} xs={12} sm={6} md={4}>
+            <Grid2 key={wiki.id} xs={12} sm={6} md={4}>
               <Card>
-                <CardMedia
-                  component="img"
-                  height="140"
-                  image="https://via.placeholder.com/350x140"
-                  alt="Imagen de la Wiki"
-                />
-                <CardContent>
-                  <Typography gutterBottom variant="h5" component="div">
-                    {wiki.title}
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    {wiki.description}
-                  </Typography>
-                </CardContent>
+                <CardActionArea component={Link} to={`/wiki/${wiki.id}`}>
+                  <CardMedia
+                    component="img"
+                    height="140"
+                    image="https://via.placeholder.com/350x140"
+                    alt="Imagen de la Wiki"
+                  />
+                  <CardContent>
+                    <Typography gutterBottom variant="h5" component="div">
+                      {wiki.title}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      {wiki.description}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
               </Card>
             </Grid2>
           ))}

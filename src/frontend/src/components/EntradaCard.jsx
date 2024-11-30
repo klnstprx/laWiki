@@ -19,7 +19,7 @@ const EntradaCard = ({ id, title, author, createdAt, onEntradaClick }) => {
     <Card sx={{ mb: 2 }}>
       <CardActionArea
         component={Link}
-        to={`/entrada?id=${id}`}
+        to={`/entrada/${id}`}
         onClick={handleClick}
       >
         <CardContent>
@@ -27,13 +27,13 @@ const EntradaCard = ({ id, title, author, createdAt, onEntradaClick }) => {
             {title}
           </Typography>
           <Grid2 container spacing={2} sx={{ mt: 1 }}>
-            <Grid2 item xs={6}>
+            <Grid2 xs={6}>
               <Typography variant="subtitle1" color="textSecondary">
                 Author
               </Typography>
               <Typography variant="body2">{author}</Typography>
             </Grid2>
-            <Grid2 item xs={6}>
+            <Grid2 xs={6}>
               <Typography variant="subtitle1" color="textSecondary">
                 Created At
               </Typography>

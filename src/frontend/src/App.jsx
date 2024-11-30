@@ -11,9 +11,9 @@ function App() {
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/entrada" element={<EntradaPage />} />
-        <Route path="/wiki" element={<WikiPage />} />
-        <Route path="/versiones" element={<VersionPage />} />
+        <Route path="/entrada/:entryId/:versionId?" element={<EntradaPage />} />
+        <Route path="/wiki/:id" element={<WikiPage />} />
+        <Route path="/versiones/:entryId" element={<VersionPage />} />
         <Route path="/crear-entrada" element={<PostEntradaPage />} />
         {/* <Route path="/about" element={<About />} /> */}
         {/* <Route path="/articles/:id" element={<Article />} /> */}

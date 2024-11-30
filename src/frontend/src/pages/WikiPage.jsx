@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import {
   Container,
   Paper,
@@ -18,8 +18,7 @@ function WikiPage() {
   const [entradas, setEntradas] = useState([]);
   const [error, setError] = useState(null);
 
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
+  const { id } = useParams();
 
   useEffect(() => {
     getWiki(id)
@@ -102,7 +101,7 @@ function WikiPage() {
           {/* Button to create new entry */}
           <Button
             component={Link}
-            to={`/crear-entrada?id=${id}`}
+            to={`/crear-entrada/${id}`}
             variant="contained"
             color="primary"
             sx={{ mt: 2 }}
