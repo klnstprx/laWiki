@@ -2,13 +2,13 @@ import { useState } from "react";
 import { postEntry } from "../api/EntryApi.js";
 import Button from "@mui/material/Button";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { useToast } from "../context/ToastContext.jsx";
+//import { useToast } from "../context/ToastContext.jsx";
 import MainLayout from "../layout/MainLayout.jsx";
 
 function PostEntradaPage() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { showToast } = useToast();
+  //const { showToast } = useToast();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
@@ -30,7 +30,7 @@ function PostEntradaPage() {
       const result = await postEntry(jsonData);
       console.log("Respuesta del servidor:", result);
 
-      showToast("Entrada creada correctamente", "bg-success");
+      //showToast("Entrada creada correctamente", "bg-success");
       navigate(`/wiki?id=${id}`);
     } catch (error) {
       setError("Error al crear la entrada");

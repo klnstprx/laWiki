@@ -14,7 +14,7 @@ import Comentario from "../components/Comentario.jsx";
 import Version from "../components/Version.jsx";
 import MainLayout from "../layout/MainLayout.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
-import { useToast } from "../context/ToastContext.jsx";
+//import { useToast } from "../context/ToastContext.jsx";
 
 function EntradaPage() {
   const [entrada, setEntrada] = useState({});
@@ -30,13 +30,13 @@ function EntradaPage() {
 
   const [showModal, setShowModal] = useState(false);
   const [pendingComment, setPendingComment] = useState(null);
-  const { showToast } = useToast();
+  //const { showToast } = useToast();
   const formRef = useRef(null);
 
   const handleClose = () => {
     setShowModal(false);
     setPendingComment(null);
-    showToast("El comentario no se ha creado", "bg-danger");
+    //showToast("El comentario no se ha creado", "bg-danger");
   };
 
   const handleConfirm = async () => {
@@ -49,10 +49,10 @@ function EntradaPage() {
       formRef.current.reset();
       setPendingComment(null);
 
-      showToast("El comentario se ha creado correctamente!", "bg-success");
+      //showToast("El comentario se ha creado correctamente!", "bg-success");
     } catch (error) {
       console.error("Error al enviar:", error);
-      showToast("Error al enviar el comentario", "bg-danger");
+      //showToast("Error al enviar el comentario", "bg-danger");
     }
   };
 
@@ -63,10 +63,10 @@ function EntradaPage() {
       setComentarios((prevComentarios) =>
         prevComentarios.filter((comment) => comment.id !== commentId),
       );
-      showToast("Comentario eliminado correctamente", "bg-success");
+      //showToast("Comentario eliminado correctamente", "bg-success");
     } catch (error) {
       console.error("Error al eliminar el comentario:", error);
-      showToast("Error al eliminar el comentario", "bg-danger");
+      //showToast("Error al eliminar el comentario", "bg-danger");
     }
   };
 
