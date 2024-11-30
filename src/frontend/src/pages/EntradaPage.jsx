@@ -186,15 +186,11 @@ function EntradaPage() {
               {new Date(entry.created_at).toLocaleDateString()}
             </Typography>
             <Typography variant="h6">
-              <Link to={`/versiones/${entry.id}`}>Ver historial</Link>
-              <br></br>
-              <Link to={`/editarEntrada/${entry.id}/${version.id}`}>
-                Editar contenido
-              </Link>
+              <Link to={`/versiones/${entry.id}/`}>Ver historial</Link>
             </Typography>
             <Typography variant="h6">
               <Link to={`/editarEntrada/${entry.id}/${actualVersionId}`}>
-                Editar entrada
+                Editar contenido
               </Link>
             </Typography>
           </>
