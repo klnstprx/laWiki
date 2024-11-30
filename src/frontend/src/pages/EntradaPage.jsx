@@ -40,27 +40,45 @@ function EntradaPage() {
 
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
 
-  const fixedAddress = "bulevar louis pasteur";
+  const geoCache = JSON.parse(sessionStorage.getItem("geoCache")) || {}; // cache de geocoding
+
+  const saveCacheToSessionStorage = () => {
+    sessionStorage.setItem("geoCache", JSON.stringify(geoCache));
+  };
+
+  const fixedAddress = "hospital clinico, malaga";
   const fetchCoordinatesNominatim = async (address) => {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-      address,
-    )}&format=json&addressdetails=1&limit=1`;
+    // Comprueba si la dirección ya está en el cache
+  if (geoCache[address]) {
+    console.log("Obteniendo coordenadas desde el cache en memoria:", geoCache[address]);
+    return geoCache[address]; // Retorna las coordenadas almacenadas
+  }
 
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
+  // Si no está en el cache, realiza la solicitud a la API
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+    address,
+  )}&format=json&addressdetails=1&limit=1`;
 
-      if (data.length > 0) {
-        const { lat, lon } = data[0];
-        console.log("Coordenadas:", lat, lon);
-        return { lat: parseFloat(lat), lon: parseFloat(lon) };
-      } else {
-        throw new Error("No se encontraron coordenadas para la dirección.");
-      }
-    } catch (error) {
-      console.error("Error al realizar la geocodificación:", error);
-      return null;
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.length > 0) {
+      const { lat, lon } = data[0];
+      const coordinates = { lat: parseFloat(lat), lon: parseFloat(lon) };
+      console.log("Coordenadas obtenidas de la API:", coordinates);
+
+      // Almacena las coordenadas en el cache y en sessionStorage antes de retornarlas
+      geoCache[address] = coordinates;
+      saveCacheToSessionStorage(); // Actualiza sessionStorage
+      return coordinates;
+    } else {
+      throw new Error("No se encontraron coordenadas para la dirección.");
     }
+  } catch (error) {
+    console.error("Error al realizar la geocodificación:", error);
+    return null;
+  }
   };
 
   // Handler to close the confirmation modal
