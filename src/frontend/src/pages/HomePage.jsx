@@ -35,7 +35,15 @@ function HomePage() {
       </Typography>
       {error && <Alert severity="error">{error}</Alert>}
       {!error && wikis.length > 0 ? (
-        <Grid2 container spacing={4}>
+        <Grid2
+          container
+          spacing={4}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           {wikis.map((wiki) => (
             <Grid2 key={wiki.id} xs={12} sm={6} md={4}>
               <Card>

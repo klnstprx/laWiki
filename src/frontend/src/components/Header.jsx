@@ -1,5 +1,11 @@
-import { AppBar, Toolbar, Typography, InputBase } from "@mui/material";
-import { Search as SearchIcon } from "@mui/icons-material";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  InputBase,
+  IconButton,
+} from "@mui/material";
+import { Search as SearchIcon, Home as HomeIcon } from "@mui/icons-material";
 import { alpha, styled } from "@mui/material/styles";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -51,7 +57,21 @@ const Header = () => {
   return (
     <AppBar position="static">
       <Toolbar>
-        {/* Title */}
+        {/* Home Icon for small screens */}
+        <IconButton
+          component={RouterLink}
+          to="/"
+          sx={{
+            display: { xs: "block", sm: "none" },
+            color: "inherit",
+            textDecoration: "none",
+            mr: 2,
+          }}
+        >
+          <HomeIcon />
+        </IconButton>
+
+        {/* Home Text for larger screens */}
         <Typography
           variant="h6"
           noWrap
