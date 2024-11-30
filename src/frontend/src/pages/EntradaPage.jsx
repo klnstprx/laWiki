@@ -149,7 +149,7 @@ function EntradaPage() {
   useEffect(() => {
     if (actualVersionId) {
       getVersion(actualVersionId)
-        .then((data) => {
+        .then(async (data) => {
           if (data && Object.keys(data).length > 0) {
             setVersion(data);
             //if (data.address) {
