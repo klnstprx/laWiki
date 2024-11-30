@@ -9,11 +9,11 @@ import { getEntry } from "../api/EntryApi.js";
 import { getVersion } from "../api/VersionApi.js";
 import { postComment } from "../api/CommentApi.js";
 import { deleteComment } from "../api/CommentApi.js";
-import { json, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
 import Version from "../components/Version.jsx";
 import MainLayout from "../layout/MainLayout.jsx";
-import ConfirmationModal from "../components/ConfirmationModal.jsx";
+//import ConfirmationModal from "../components/ConfirmationModal.jsx";
 //import { useToast } from "../context/ToastContext.jsx";
 
 function EntradaPage() {
@@ -28,12 +28,12 @@ function EntradaPage() {
   const id = searchParams.get("id");
   const versionID = searchParams.get("versionID");
 
-  const [showModal, setShowModal] = useState(false);
-  const [pendingComment, setPendingComment] = useState(null);
+  //const [showModal, setShowModal] = useState(false);
+  //const [pendingComment, setPendingComment] = useState(null);
   //const { showToast } = useToast();
   const formRef = useRef(null);
 
-  const handleClose = () => {
+  /*const handleClose = () => {
     setShowModal(false);
     setPendingComment(null);
     //showToast("El comentario no se ha creado", "bg-danger");
@@ -54,7 +54,7 @@ function EntradaPage() {
       console.error("Error al enviar:", error);
       //showToast("Error al enviar el comentario", "bg-danger");
     }
-  };
+  };*/
 
   const handleDeleteComment = async (commentId) => {
     try {
@@ -98,7 +98,7 @@ function EntradaPage() {
     jsonData["rating"] = parseInt(jsonData["rating"], 10);
 
     // Store the comment data and show the modal
-    setPendingComment(jsonData);
+    //setPendingComment(jsonData);
     //setShowModal(true);
     try {
       const result = await postComment(jsonData);
@@ -106,12 +106,12 @@ function EntradaPage() {
       setComentarios((prevComentarios) => [...prevComentarios, result]);
 
       formRef.current.reset();
-      setPendingComment(null);
+      //setPendingComment(null);
 
-      showToast("El comentario se ha creado correctamente!", "bg-success");
+      //showToast("El comentario se ha creado correctamente!", "bg-success");
     } catch (error) {
       console.error("Error al enviar:", error);
-      showToast("Error al enviar el comentario", "bg-danger");
+      //showToast("Error al enviar el comentario", "bg-danger");
     }
   }
 
