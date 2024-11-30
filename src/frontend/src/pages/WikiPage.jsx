@@ -2,15 +2,13 @@ import { useEffect, useState } from "react";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { searchEntries } from "../api/EntryApi.js";
 import { getWiki } from "../api/WikiApi.js";
-import { postEntry } from "../api/EntryApi.js";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import EntradaCard from "../components/EntradaCard.jsx";
-import { useToast } from "../context/ToastContext.jsx";
 import MainLayout from "../layout/MainLayout.jsx";
-import ConfirmationModal from "../components/ConfirmationModal.jsx";
 
 function WikiPage() {
   const [wiki, setWiki] = useState({});
@@ -19,22 +17,6 @@ function WikiPage() {
 
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
-  const wikiId = searchParams.get("wikiID");
-
-  const [showModal, setShowModal] = useState(false);
-  const navigate = useNavigate();
-  const { showToast } = useToast();
-
-  const handleClose = () => {
-    setShowModal(false);
-    showToast("La entrada no se ha creado", "bg-danger");
-  };
-
-  const handleConfirm = () => {
-    setShowModal(false);
-    showToast("La entrada se ha creado correctamente!", "bg-success");
-    navigate(`/wiki/${wikiId}`);
-  };
 
   useEffect(() => {
     getWiki(id)
@@ -43,40 +25,10 @@ function WikiPage() {
   }, [id]);
 
   useEffect(() => {
-    searchEntries({ wikiID: wikiId })
+    searchEntries({ wikiID: id })
       .then(setEntradas)
       .catch((err) => setError(err.message));
-  }, [wikiId]);
-
-  async function enviarJSON(event) {
-    event.preventDefault();
-
-    const form = event.target;
-    const formData = new FormData(form);
-
-    const jsonData = {};
-    formData.forEach((value, key) => {
-      jsonData[key] = value;
-    });
-
-    jsonData["wikiID"] = wikiId;
-
-    try {
-      const result = await postEntry(jsonData);
-      console.log("Respuesta del servidor:", result);
-
-      // You may want to update the state to include the new entry
-      setEntradas((prevEntradas) => [...prevEntradas, result]);
-
-      form.reset();
-    } catch (error) {
-      console.error("Error al enviar:", error);
-    }
-  }
-
-  {
-    /*La URL es de este tipo http://localhost:5173/wiki?id=67311bf03399f3b49ccb8072&wikiId=67311c0143d96ecd81728a94 */
-  }
+  }, [id]);
 
   return (
     <MainLayout>
@@ -193,94 +145,18 @@ function WikiPage() {
             <Alert>No entries found.</Alert>
           )}
         </section>
-
-        {/* Formulario para añadir entradas */}
-        <section
-          style={{
-            padding: "30px",
-            backgroundColor: "white",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <h2 style={{ fontSize: "28px", marginBottom: "20px" }}>
-            Añadir Entrada
-          </h2>
-
-          <form id="miFormulario" onSubmit={enviarJSON}>
-            <div style={{ marginBottom: "20px" }}>
-              <label
-                htmlFor="author"
-                style={{ fontWeight: "bold", fontSize: "18px" }}
-              >
-                Título:
-              </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                required
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  marginTop: "10px",
-                  border: "1px solid #ddd",
-                  borderRadius: "6px",
-                  fontSize: "16px",
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: "20px" }}>
-              <label
-                htmlFor="author"
-                style={{ fontWeight: "bold", fontSize: "18px" }}
-              >
-                Autor:
-              </label>
-              <input
-                type="text"
-                id="author"
-                name="author"
-                required
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  marginTop: "10px",
-                  border: "1px solid #ddd",
-                  borderRadius: "6px",
-                  fontSize: "16px",
-                }}
-              />
-            </div>
-
-            <button
-              type="submit"
-              style={{
-                width: "100%",
-                padding: "15px",
-                fontSize: "18px",
-                backgroundColor: "#3c4f76",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
-                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-              }}
+            
+        {/* Botón para crear nueva entrada */}
+        <Link to={`/crear-entrada?id=${id}`} style={{ textDecoration: "none" }}>
+            <Button
+                variant="contained"
+                color="primary"
+                style={{ marginTop: "20px" }}
             >
-              Enviar
-            </button>
-          </form>
-        </section>
+                Crear Nueva Entrada
+            </Button>
+        </Link>
       </div>
-
-      <ConfirmationModal
-        message="¿Estás seguro de que quieres crear esta entrada?"
-        show={showModal}
-        handleClose={handleClose}
-        handleConfirm={handleConfirm}
-      ></ConfirmationModal>
     </MainLayout>
   );
 }
