@@ -213,7 +213,7 @@ func SearchComments(w http.ResponseWriter, r *http.Request) {
 
 	if len(comments) == 0 {
 		config.App.Logger.Info().Msg("No comments found")
-		http.Error(w, "No comments found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -327,7 +327,7 @@ func PutComment(w http.ResponseWriter, r *http.Request) {
 	}
 	if result.MatchedCount == 0 {
 		config.App.Logger.Warn().Str("id", id).Msg("Comment not found for update")
-		http.Error(w, "Comment not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -379,7 +379,7 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 
 	if result.DeletedCount == 0 {
 		config.App.Logger.Error().Msg("Comment not found")
-		http.Error(w, "Comment not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 

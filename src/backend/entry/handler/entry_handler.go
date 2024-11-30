@@ -208,7 +208,7 @@ func SearchEntries(w http.ResponseWriter, r *http.Request) {
 
 	if len(entries) == 0 {
 		config.App.Logger.Info().Msg("No entries found")
-		http.Error(w, "No entries found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -321,7 +321,7 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 	}
 	if result.MatchedCount == 0 {
 		config.App.Logger.Warn().Str("id", id).Msg("Entry not found for update")
-		http.Error(w, "Entry not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -408,7 +408,7 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 	}
 	if result.DeletedCount == 0 {
 		config.App.Logger.Info().Msg("Entry not found")
-		http.Error(w, "Entry not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -456,6 +456,7 @@ func DeleteEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 
 	if len(entries) == 0 {
 		config.App.Logger.Info().Str("wikiID", wikiID).Msg("No entries found")
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 

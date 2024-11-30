@@ -68,7 +68,7 @@ func GetVersions(w http.ResponseWriter, r *http.Request) {
 
 	if len(versions) == 0 {
 		config.App.Logger.Info().Msg("No versions found")
-		http.Error(w, "No versions found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -203,7 +203,7 @@ func SearchVersions(w http.ResponseWriter, r *http.Request) {
 
 	if len(versions) == 0 {
 		config.App.Logger.Info().Msg("No versions found")
-		http.Error(w, "No versions found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -315,7 +315,7 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 	}
 	if result.MatchedCount == 0 {
 		config.App.Logger.Warn().Str("id", id).Msg("Version not found for update")
-		http.Error(w, "Version not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -402,7 +402,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	}
 	if result.DeletedCount == 0 {
 		config.App.Logger.Info().Msg("Version not found")
-		http.Error(w, "Version not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -450,6 +450,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 
 	if len(versions) == 0 {
 		config.App.Logger.Info().Str("entryID", entryID).Msg("No versions found for the given entryID")
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -507,7 +508,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 
 	if deleteResult.DeletedCount == 0 {
 		config.App.Logger.Info().Str("entryID", entryID).Msg("No versions found to delete for the given entryID")
-		http.Error(w, "No versions found to delete for the given entryID", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 

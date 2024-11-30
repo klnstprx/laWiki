@@ -103,7 +103,7 @@ func GetWikiByID(w http.ResponseWriter, r *http.Request) {
 	err = database.WikiCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&wiki)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Wiki not found")
-		http.Error(w, "Wiki not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -177,7 +177,7 @@ func SearchWikis(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(wikis) == 0 {
 		config.App.Logger.Info().Str("title", title).Str("exact_title", exactTitle).Str("description", description).Str("category", category).Msg("No wikis found")
-		http.Error(w, "No wikis found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -288,7 +288,7 @@ func PutWiki(w http.ResponseWriter, r *http.Request) {
 	}
 	if result.MatchedCount == 0 {
 		config.App.Logger.Warn().Str("id", id).Msg("Wiki not found for update")
-		http.Error(w, "Wiki not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -375,7 +375,7 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 	}
 	if result.DeletedCount == 0 {
 		config.App.Logger.Info().Msg("Wiki not found")
-		http.Error(w, "Wiki not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
