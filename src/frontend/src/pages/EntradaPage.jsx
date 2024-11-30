@@ -107,9 +107,25 @@ function EntradaPage() {
     jsonData["version_id"] = version.id;
     jsonData["rating"] = parseInt(jsonData["rating"], 10);
 
-    // Store the comment data and show the modal
     setPendingComment(jsonData);
     setShowModal(true);
+    try {
+      const result = await postComment(jsonData);
+
+      setComentarios((prevComentarios) => [...(prevComentarios || []), result]);
+
+      formRef.current.reset();
+      //setPendingComment(null);
+
+      //showToast("El comentario se ha creado correctamente!", "bg-success");
+    } catch (error) {
+      console.error("Error al enviar:", error);
+      //showToast("Error al enviar el comentario", "bg-danger");
+    }
+  }
+
+  {
+    /*La URL es de este tipo http://localhost:5173/entrada?id=67311bf03399f3b49ccb8072&versionID=67311c0143d96ecd81728a94 */
   }
 
   return (
