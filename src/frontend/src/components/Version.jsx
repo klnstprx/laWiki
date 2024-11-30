@@ -1,39 +1,39 @@
 import Paper from "@mui/material/Paper";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import PropTypes from "prop-types";
-import { Typography, Box } from "@mui/material";
+import { Typography, Box, Divider } from "@mui/material";
 import DOMPurify from "dompurify";
 import "leaflet/dist/leaflet.css";
 
 const Version = ({ content, editor, created_at, address, coordinates }) => {
   return (
     <div>
-      <Typography variant="h6" gutterBottom>
-        Editor: {editor}
-      </Typography>
-      <Typography variant="h6" gutterBottom>
-        Fecha de creación: {created_at}
-      </Typography>
-      <Typography variant="h6" gutterBottom>
-        Contenido:
-      </Typography>
+      {/* Content Section */}
       <Box
         sx={{ mt: 2 }}
         dangerouslySetInnerHTML={{
           __html: DOMPurify.sanitize(content),
         }}
       ></Box>
-      <Box variant="h6" gutterBottom>
-        Ubicación: {address || "No especificada"}
-      </Box>
 
+      <Divider sx={{ my: 4 }} />
+
+      {/* Details Section */}
+      <Typography variant="subtitle1" gutterBottom>
+        Editor: {editor}
+      </Typography>
+      <Typography variant="subtitle1" gutterBottom>
+        Fecha de creación: {created_at}
+      </Typography>
+      <Typography variant="subtitle1" gutterBottom>
+        Ubicación: {address || "No especificada"}
+      </Typography>
+
+      {/* Map Section */}
       {coordinates && (
         <Paper elevation={3} sx={{ mt: 3 }}>
-          <Typography variant="body2">
+          <Typography variant="body2" sx={{ p: 2 }}>
             Coordenadas: Lat: {coordinates.lat}, Lon: {coordinates.lon}
-          </Typography>
-          <Typography variant="h6" gutterBottom>
-            Ubicación
           </Typography>
           <MapContainer
             center={[coordinates.lat, coordinates.lon]}
@@ -42,7 +42,7 @@ const Version = ({ content, editor, created_at, address, coordinates }) => {
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              attribution="&copy; OpenStreetMap contributors"
             />
             <Marker position={[coordinates.lat, coordinates.lon]}>
               <Popup>Ubicación asociada a esta versión</Popup>
@@ -59,6 +59,7 @@ const Version = ({ content, editor, created_at, address, coordinates }) => {
     </div>
   );
 };
+
 Version.propTypes = {
   content: PropTypes.string.isRequired,
   editor: PropTypes.string.isRequired,
