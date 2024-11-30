@@ -55,7 +55,9 @@ function WikiPage() {
             textAlign: "center",
           }}
         >
-          <h1 style={{ fontSize: "36px", margin: "0" }}>Datos de la Wiki</h1>
+          <h1 style={{ fontSize: "36px", margin: "0", color: "black" }}>
+            {wiki.title}
+          </h1>
           {error && (
             <div
               style={{
@@ -65,7 +67,7 @@ function WikiPage() {
                 borderRadius: "4px",
               }}
             >
-              <p>{error}</p>
+                {error}
             </div>
           )}
         </header>
@@ -81,14 +83,14 @@ function WikiPage() {
         >
           <Typography
             variant="h6"
-            style={{ fontWeight: "bold", marginBottom: "10px" }}
+            style={{ fontWeight: "bold", marginBottom: "10px", color: "black" }}
           >
             Título: <span style={{ fontWeight: "normal" }}>{wiki.title}</span>
           </Typography>
 
           <Typography
             variant="h6"
-            style={{ fontWeight: "bold", marginBottom: "10px" }}
+            style={{ fontWeight: "bold", marginBottom: "10px", color: "black" }}
           >
             Descripción:{" "}
             <span style={{ fontWeight: "normal" }}>{wiki.description}</span>
@@ -96,7 +98,7 @@ function WikiPage() {
 
           <Typography
             variant="h6"
-            style={{ fontWeight: "bold", marginBottom: "10px" }}
+            style={{ fontWeight: "bold", marginBottom: "10px", color: "black" }}
           >
             Categoría:{" "}
             <span style={{ fontWeight: "normal" }}>{wiki.category}</span>
