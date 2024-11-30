@@ -14,7 +14,7 @@ function App() {
         <Route path="/entrada/:entryId/:versionId?" element={<EntradaPage />} />
         <Route path="/wiki/:id" element={<WikiPage />} />
         <Route path="/versiones/:entryId" element={<VersionPage />} />
-        <Route path="/crear-entrada" element={<PostEntradaPage />} />
+        <Route path="/crear-entrada/:id" element={<PostEntradaPage />} />
         {/* <Route path="/about" element={<About />} /> */}
         {/* <Route path="/articles/:id" element={<Article />} /> */}
       </Route>

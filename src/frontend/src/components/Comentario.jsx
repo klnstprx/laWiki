@@ -1,4 +1,13 @@
-import { Avatar, Typography, IconButton, Box } from "@mui/material";
+import {
+  Avatar,
+  Typography,
+  IconButton,
+  Box,
+  Card,
+  CardContent,
+  Stack,
+  Rating,
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PropTypes from "prop-types";
 
@@ -8,34 +17,52 @@ const Comentario = ({ id, content, rating, created_at, author, onDelete }) => {
   };
 
   return (
-    <Box display="flex" mb={2}>
-      <Avatar
-        src={`https://ui-avatars.com/api/?name=${author}&background=random`}
-        alt={author}
-        sx={{ mr: 2 }}
-      />
-      <Box flexGrow={1}>
-        <Box display="flex" justifyContent="space-between">
-          <Typography variant="subtitle1">{author}</Typography>
-          <Typography variant="caption" color="textSecondary">
-            {new Date(created_at).toLocaleDateString()}
-          </Typography>
-        </Box>
-        <Typography variant="body1" color="textPrimary" gutterBottom>
-          {content}
-        </Typography>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="body2" color="textSecondary">
-            Rating: {rating}/5
-          </Typography>
-          <IconButton color="error" onClick={handleDelete}>
-            <DeleteIcon />
-          </IconButton>
-        </Box>
-      </Box>
-    </Box>
+    <Card sx={{ width: "100%" }}>
+      <CardContent>
+        <Stack direction="row" spacing={2}>
+          <Avatar
+            src={`https://ui-avatars.com/api/?name=${author}&background=random`}
+            alt={author}
+            sx={{ width: 56, height: 56 }}
+          />
+          <Box sx={{ flexGrow: 1 }}>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography variant="subtitle1" fontWeight="bold">
+                {author}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {new Date(created_at).toLocaleDateString()}
+              </Typography>
+            </Stack>
+            <Typography
+              variant="body1"
+              color="text.primary"
+              gutterBottom
+              sx={{ mt: 1 }}
+            >
+              {content}
+            </Typography>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Rating name="read-only" value={rating} readOnly size="small" />
+              <IconButton color="error" onClick={handleDelete}>
+                <DeleteIcon />
+              </IconButton>
+            </Stack>
+          </Box>
+        </Stack>
+      </CardContent>
+    </Card>
   );
 };
+
 Comentario.propTypes = {
   id: PropTypes.string.isRequired,
   content: PropTypes.string.isRequired,
