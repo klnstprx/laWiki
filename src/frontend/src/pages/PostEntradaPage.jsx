@@ -7,17 +7,16 @@ import {
   Button,
   TextField,
   Alert,
-  Grid,
+  Grid2,
 } from "@mui/material";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useToast } from "../context/ToastContext.1.jsx";
 
 function PostEntradaPage() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
+  const { id } = useParams();
 
   async function enviarJSON(event) {
     event.preventDefault();
@@ -38,7 +37,7 @@ function PostEntradaPage() {
       console.log("Respuesta del servidor:", result);
 
       showToast("Entrada creada correctamente", "success");
-      navigate(`/wiki?id=${id}`);
+      navigate(`/wiki/${id}`);
     } catch (error) {
       setError("Error al crear la entrada");
       console.error("Error al enviar:", error);
@@ -59,16 +58,16 @@ function PostEntradaPage() {
         )}
 
         <form onSubmit={enviarJSON}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
+          <Grid2 container spacing={2}>
+            <Grid2 xs={12}>
               <TextField label="Título" name="title" required fullWidth />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12}>
+            <Grid2 xs={12}>
               <TextField label="Autor" name="author" required fullWidth />
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12}>
+            <Grid2 xs={12}>
               <Button
                 type="submit"
                 variant="contained"
@@ -77,19 +76,19 @@ function PostEntradaPage() {
               >
                 Crear Entrada
               </Button>
-            </Grid>
-            <Grid item xs={12}>
+            </Grid2>
+            <Grid2 xs={12}>
               <Button
                 component={Link}
-                to={`/wiki?id=${id}`}
+                to={`/wiki/${id}`}
                 variant="outlined"
                 color="primary"
                 fullWidth
               >
                 Cancelar
               </Button>
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
         </form>
       </Paper>
     </Container>

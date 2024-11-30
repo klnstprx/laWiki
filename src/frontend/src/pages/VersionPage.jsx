@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   Container,
   Paper,
@@ -15,12 +15,11 @@ function VersionPage() {
   const [versiones, setVersiones] = useState([]);
   const [error, setError] = useState(null);
 
-  const [searchParams] = useSearchParams();
-  const entryID = searchParams.get("entry_id");
+  const { entryId } = useParams();
 
   useEffect(() => {
-    if (entryID) {
-      searchVersions({ entryID: entryID })
+    if (entryId) {
+      searchVersions({ entryID: entryId })
         .then((data) => {
           if (data && data.length > 0) {
             setVersiones(data);
@@ -34,7 +33,7 @@ function VersionPage() {
     } else {
       setError("No se proporcionó un ID de entrada válido.");
     }
-  }, [entryID]);
+  }, [entryId]);
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -55,7 +54,7 @@ function VersionPage() {
             {versiones.map((version) => (
               <ListItem key={version.id} divider>
                 <VersionCard
-                  entradaID={entryID}
+                  entradaId={entryId}
                   versionId={version.id}
                   editor={version.editor}
                   created_at={version.created_at}
