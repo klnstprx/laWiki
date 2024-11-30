@@ -10,6 +10,8 @@ const Footer = () => {
       bgcolor="primary.main"
       color="white"
       textAlign="center"
+      sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
+      elevation={3}
     >
       <Typography variant="body2">
         &copy; {currentYear} LaWiki. Todos los derechos reservados.{" "}

@@ -1,34 +1,24 @@
 import { useEffect, useState, useRef } from "react";
-import {
-  postVersion,
-  getVersion
-} from "../api/VersionApi.js";
-import { getEntry } from "../api/EntryApi.js";
-import { useSearchParams, useParams } from "react-router-dom";
-import Comentario from "../components/Comentario.jsx";
-import Version from "../components/Version.jsx";
-import MainLayout from "../layout/MainLayout.jsx";
-import ConfirmationModal from "../components/ConfirmationModal.jsx";
-import { useToast } from "../context/ToastContext.1.jsx";
+import { postVersion, getVersion } from "../api/VersionApi.js";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Container,
   Paper,
   Typography,
   Button,
-  Alert,
-  List,
-  ListItem,
-  Input,
+  TextField,
   Grid2,
 } from "@mui/material";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 function EditarEntradaPage() {
   const { entryId, versionId } = useParams();
   const [entrada, setEntrada] = useState({});
   const [version, setVersion] = useState({});
   const [versionError, setVersionError] = useState(null);
-
   const formRef = useRef(null);
+  const navigate = useNavigate();
 
   // Obtener la versión
   useEffect(() => {
@@ -49,6 +39,15 @@ function EditarEntradaPage() {
     }
   }, [versionId]);
 
+  // Handler for ReactQuill editor change
+  const handleEditorChange = (content, delta, source, editor) => {
+    setVersion((prevVersion) => ({
+      ...prevVersion,
+      content: content,
+    }));
+  };
+
+  // Handler for TextField change
   const handleChange = (event) => {
     const { name, value } = event.target;
     setVersion((prevVersion) => ({
@@ -57,68 +56,75 @@ function EditarEntradaPage() {
     }));
   };
 
-  // Handler para enviar el comentario
+  // Handler to submit the version
   async function subirVersion(event) {
     event.preventDefault();
 
-    const formData = new FormData(event.target);
-    const jsonData = Object.fromEntries(formData.entries());
+    const jsonData = {
+      content: version.content,
+      editor: version.editor,
+      entry_id: entryId,
+    };
 
-    jsonData["entry_id"] = entryId;
+    console.log("Submitting version:", jsonData); // Debugging
 
-    postVersion(jsonData);
-
-    window.location.href = `http://localhost:5173/entrada/${entryId}/${versionId}`; 
-    //deberia redireccionar con el versionID de la ultima version, todavia no lo he hecho
+    try {
+      const newVersion = await postVersion(jsonData);
+      navigate(`/entrada/${entryId}`);
+    } catch (error) {
+      console.error("Error posting version:", error);
+    }
   }
 
   return (
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-    
-        {/* Formulario para editar Entrada */}
-        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            Editar entrada
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {/* Form to edit Entry */}
+      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Editar entrada
+        </Typography>
+        {versionError && (
+          <Typography variant="body1" color="error" gutterBottom>
+            {versionError}
           </Typography>
-          <form id="miFormulario" ref={formRef} onSubmit={subirVersion}>
-            <Grid2 container spacing={2}>
-              Contenido: 
-              <Grid2 item xs={12}>
-                <Input
-                  id="content"
-                  name="content"
-                  label="Contenido"
-                  value={version.content}
-                  onChange={handleChange}
-                  multiline
-                  fullWidth
-                />
-              </Grid2>
-              Editor:
-              <Grid2 item xs={12} sm={6} md={4}>
-                <Input
-                  id="editor"
-                  name="editor"
-                  label="Editor"
-                  multiline
-                  fullWidth
-                />
-              </Grid2>
-              <Grid2 item xs={12} md={4}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  sx={{ height: "100%" }}
-                >
-                  Enviar
-                </Button>
-              </Grid2>
+        )}
+        <form id="miFormulario" ref={formRef} onSubmit={subirVersion}>
+          <Grid2 container spacing={2}>
+            <Grid2 item xs={12}>
+              <Typography variant="subtitle1">Contenido:</Typography>
+              <ReactQuill
+                theme="snow"
+                value={version.content || ""}
+                onChange={handleEditorChange}
+                style={{ height: "300px", marginBottom: "50px" }}
+              />
             </Grid2>
-          </form>
-        </Paper>
-      </Container>
+            <Grid2 item xs={12} sm={6} md={4}>
+              <TextField
+                id="editor"
+                name="editor"
+                label="Editor"
+                value={version.editor || ""}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid2>
+            <Grid2 item xs={12} md={4}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+                sx={{ height: "100%" }}
+              >
+                Enviar
+              </Button>
+            </Grid2>
+          </Grid2>
+        </form>
+      </Paper>
+    </Container>
   );
 }
 

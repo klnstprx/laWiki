@@ -12,15 +12,14 @@ import Version from "../components/Version.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
 import { useToast } from "../context/ToastContext.1.jsx";
 import {
+  Stack,
   Container,
   Paper,
   Typography,
   Button,
   Alert,
-  List,
-  ListItem,
   TextField,
-  Grid,
+  Grid2,
 } from "@mui/material";
 
 function EntradaPage() {
@@ -193,7 +192,9 @@ function EntradaPage() {
     setShowModal(true);
   }
 
-{/* http://localhost:5173/entrada/67311bf03399f3b49ccb8072/67311bfb43d96ecd81728a93 */}
+  {
+    /* http://localhost:5173/entrada/67311bf03399f3b49ccb8072/67311bfb43d96ecd81728a93 */
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -212,9 +213,12 @@ function EntradaPage() {
               {new Date(entry.created_at).toLocaleDateString()}
             </Typography>
             <Typography variant="h6">
-              <Link to={`/versiones/${entry.id}`}>Ver historial</Link>
-              <br></br>
-              <Link to={`/editarEntrada/${entry.id}/${version.id}`}>Editar contenido</Link>
+              <Link to={`/versiones/${entry.id}/`}>Ver historial</Link>
+            </Typography>
+            <Typography variant="h6">
+              <Link to={`/editarEntrada/${entry.id}/${actualVersionId}`}>
+                Editar contenido
+              </Link>
             </Typography>
           </>
         )}
@@ -245,20 +249,19 @@ function EntradaPage() {
         </Typography>
         {commentsError && <Alert severity="error">{commentsError}</Alert>}
         {!commentsError && comments.length > 0 ? (
-          <List>
+          <Stack spacing={2} sx={{ mb: 2 }}>
             {comments.map((comment) => (
-              <ListItem key={comment.id}>
-                <Comentario
-                  id={comment.id}
-                  content={comment.content}
-                  rating={comment.rating}
-                  created_at={comment.created_at}
-                  author={comment.author}
-                  onDelete={handleDeleteComment}
-                />
-              </ListItem>
+              <Comentario
+                key={comment.id}
+                id={comment.id}
+                content={comment.content}
+                rating={comment.rating}
+                created_at={comment.created_at}
+                author={comment.author}
+                onDelete={handleDeleteComment}
+              />
             ))}
-          </List>
+          </Stack>
         ) : (
           !commentsError && (
             <Alert severity="info">No se encontraron comentarios.</Alert>
@@ -272,8 +275,8 @@ function EntradaPage() {
           Añadir comentario
         </Typography>
         <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
+          <Grid2 container spacing={2}>
+            <Grid2 item xs={12}>
               <TextField
                 id="content"
                 name="content"
@@ -282,8 +285,8 @@ function EntradaPage() {
                 required
                 fullWidth
               />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            </Grid2>
+            <Grid2 item xs={12} sm={6} md={4}>
               <TextField
                 id="rating"
                 name="rating"
@@ -293,8 +296,8 @@ function EntradaPage() {
                 required
                 fullWidth
               />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            </Grid2>
+            <Grid2 item xs={12} sm={6} md={4}>
               <TextField
                 id="author"
                 name="author"
@@ -302,8 +305,8 @@ function EntradaPage() {
                 required
                 fullWidth
               />
-            </Grid>
-            <Grid item xs={12} md={4}>
+            </Grid2>
+            <Grid2 item xs={12} md={4}>
               <Button
                 type="submit"
                 variant="contained"
@@ -313,8 +316,8 @@ function EntradaPage() {
               >
                 Enviar
               </Button>
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
         </form>
       </Paper>
       <ConfirmationModal

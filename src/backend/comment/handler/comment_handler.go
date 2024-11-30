@@ -245,7 +245,7 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	comment.CreatedAt = time.Now()
+	comment.CreatedAt = time.Now().UTC()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -307,6 +307,8 @@ func PutComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	comment.UpdatedAt = time.Now().UTC()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -314,8 +316,8 @@ func PutComment(w http.ResponseWriter, r *http.Request) {
 		"$set": bson.M{
 			"content":    comment.Content,
 			"rating":     comment.Rating,
-			"created_at": comment.CreatedAt,
 			"author":     comment.Author,
+			"updated_at": comment.UpdatedAt,
 		},
 	}
 
