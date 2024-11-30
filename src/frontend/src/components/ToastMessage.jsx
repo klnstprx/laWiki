@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Toast } from "react-bootstrap";
 import PropTypes from "prop-types";
 
@@ -9,15 +8,6 @@ function ToastMessage({
   delay = 3000,
   color = "bg-info",
 }) {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onClose();
-    }, delay);
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [show, onClose, delay]);
-
   return (
     <Toast
       show={show}
@@ -35,8 +25,9 @@ function ToastMessage({
       <Toast.Header>
         <strong className="m-auto">Notificacion</strong>
       </Toast.Header>
-      <Toast.Body style={{ color: "black" }}>{message}</Toast.Body></Toast>
-    );
+      <Toast.Body style={{ color: "black" }}>{message}</Toast.Body>
+    </Toast>
+  );
 }
 
 ToastMessage.propTypes = {

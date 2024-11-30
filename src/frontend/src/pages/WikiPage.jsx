@@ -3,7 +3,9 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
-import { getEntriesByWikiId, getWiki } from "../api.js";
+import { searchEntries } from "../api/EntryApi.js";
+import { getWiki } from "../api/WikiApi.js";
+import { postEntry } from "../api/EntryApi.js";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import EntradaCard from "../components/EntradaCard.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -41,49 +43,40 @@ function WikiPage() {
   }, [id]);
 
   useEffect(() => {
-    getEntriesByWikiId(wikiId)
+    searchEntries({ wikiID: wikiId })
       .then(setEntradas)
       .catch((err) => setError(err.message));
   }, [wikiId]);
 
   async function enviarJSON(event) {
-    console.log("Enviando formulario...");
-    // Prevenir el envío normal del formulario
     event.preventDefault();
 
-    // Obtener los datos del formulario
-    const form = event.target; // El formulario
-    const formData = new FormData(form); // Recoge todos los campos
+    const form = event.target;
+    const formData = new FormData(form);
 
-    // Convertir FormData de wiki a un objeto JSON
     const jsonData = {};
     formData.forEach((value, key) => {
       jsonData[key] = value;
     });
 
-    // Hacer la solicitud POST
-    try {
-      const response = await fetch("http://localhost:8000/api/entries/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(jsonData),
-      });
+    jsonData["wikiID"] = wikiId;
 
-      // Manejar la respuesta
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Respuesta del servidor:", result);
-      } else {
-        console.error("Error en la respuesta:", response.status);
-      }
+    try {
+      const result = await postEntry(jsonData);
+      console.log("Respuesta del servidor:", result);
+
+      // You may want to update the state to include the new entry
+      setEntradas((prevEntradas) => [...prevEntradas, result]);
+
+      form.reset();
     } catch (error) {
       console.error("Error al enviar:", error);
     }
   }
 
-  {/*La URL es de este tipo http://localhost:5173/wiki?id=67311bf03399f3b49ccb8072&wikiId=67311c0143d96ecd81728a94 */ }
+  {
+    /*La URL es de este tipo http://localhost:5173/wiki?id=67311bf03399f3b49ccb8072&wikiId=67311c0143d96ecd81728a94 */
+  }
 
   return (
     <MainLayout>
@@ -97,7 +90,7 @@ function WikiPage() {
           borderRadius: "8px",
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Sombra más suave para el contenedor
           color: "black",
-          width: "100vw"
+          width: "100vw",
         }}
       >
         {/* Cabecera de la página */}
@@ -177,27 +170,28 @@ function WikiPage() {
           >
             Entradas
           </h2>
-          {entradas.length > 0
-            ? (
-              <List>
-                {entradas.map((comentario) => (
-                  <ListItem
-                    key={entradas.id}
-                    style={{
-                      borderBottom: "1px solid #ddd",
-                      padding: "15px 0",
-                    }}
-                  >
-                    <EntradaCard
-                      title={comentario.title}
-                      author={comentario.author}
-                      created_at={comentario.created_at}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            )
-            : <Alert>No entries found.</Alert>}
+          {entradas.length > 0 ? (
+            <List>
+              {entradas.map((entrada) => (
+                <ListItem
+                  key={entrada.id}
+                  style={{
+                    borderBottom: "1px solid #ddd",
+                    padding: "15px 0",
+                  }}
+                >
+                  <EntradaCard
+                    id={entrada.id}
+                    title={entrada.title}
+                    author={entrada.author}
+                    createdAt={entrada.created_at}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Alert>No entries found.</Alert>
+          )}
         </section>
 
         {/* Formulario para añadir entradas */}
@@ -286,8 +280,7 @@ function WikiPage() {
         show={showModal}
         handleClose={handleClose}
         handleConfirm={handleConfirm}
-      >
-      </ConfirmationModal>
+      ></ConfirmationModal>
     </MainLayout>
   );
 }
