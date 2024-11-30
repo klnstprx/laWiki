@@ -25,8 +25,8 @@ import {
 
 function EntradaPage() {
   const { entryId, versionId } = useParams();
-  const [entry, setEntry] = useState(null);
-  const [version, setVersion] = useState(null);
+  const [entry, setEntry] = useState({}); // si se pone null cuanndo se crea una version nueva no carga a la primera
+  const [version, setVersion] = useState({});
   const [comments, setComments] = useState([]);
   const [entryError, setEntryError] = useState(null);
   const [commentsError, setCommentsError] = useState(null);
@@ -166,7 +166,7 @@ function EntradaPage() {
     setShowModal(true);
   }
 
-{/* http://localhost:5173/entrada?id=67311bf03399f3b49ccb8072&versionID=674b3ebf2d1dd23dd8164cea */}
+{/* http://localhost:5173/entrada/67311bf03399f3b49ccb8072/67311bfb43d96ecd81728a93 */}
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -186,6 +186,8 @@ function EntradaPage() {
             </Typography>
             <Typography variant="h6">
               <Link to={`/versiones/${entry.id}`}>Ver historial</Link>
+              <br></br>
+              <Link to={`/editarEntrada/${entry.id}/${version.id}`}>Editar contenido</Link>
             </Typography>
           </>
         )}
