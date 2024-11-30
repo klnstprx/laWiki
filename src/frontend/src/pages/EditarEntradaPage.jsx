@@ -4,7 +4,7 @@ import {
   getVersion
 } from "../api/VersionApi.js";
 import { getEntry } from "../api/EntryApi.js";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useParams } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
 import Version from "../components/Version.jsx";
 import MainLayout from "../layout/MainLayout.jsx";
@@ -23,21 +23,17 @@ import {
 } from "@mui/material";
 
 function EditarEntradaPage() {
+  const { entryId, versionId } = useParams();
   const [entrada, setEntrada] = useState({});
   const [version, setVersion] = useState({});
-  const [versionError, setVersionError] = useState({});
+  const [versionError, setVersionError] = useState(null);
 
   const formRef = useRef(null);
 
-  const [searchParams] = useSearchParams();
-  const entradaID = searchParams.get("entradaID");
-  const versionID = searchParams.get("versionID");
-
-
   // Obtener la versión
   useEffect(() => {
-    if (versionID) {
-      getVersion(versionID)
+    if (versionId) {
+      getVersion(versionId)
         .then((data) => {
           if (data && Object.keys(data).length > 0) {
             setVersion(data);
@@ -51,7 +47,7 @@ function EditarEntradaPage() {
     } else {
       setVersionError("No se proporcionó un ID de versión válido.");
     }
-  }, [versionID]);
+  }, [versionId]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -68,16 +64,15 @@ function EditarEntradaPage() {
     const formData = new FormData(event.target);
     const jsonData = Object.fromEntries(formData.entries());
 
-    jsonData["entry_id"] = entradaID;
+    jsonData["entry_id"] = entryId;
 
     postVersion(jsonData);
 
-    window.location.href = `http://localhost:5173/entrada?id=${entradaID}&versionID=${versionID}`; 
+    window.location.href = `http://localhost:5173/entrada/${entryId}/${versionId}`; 
     //deberia redireccionar con el versionID de la ultima version, todavia no lo he hecho
   }
 
   return (
-    <MainLayout>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
     
         {/* Formulario para editar Entrada */}
@@ -124,7 +119,6 @@ function EditarEntradaPage() {
           </form>
         </Paper>
       </Container>
-    </MainLayout>
   );
 }
 
