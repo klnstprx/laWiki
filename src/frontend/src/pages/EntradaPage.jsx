@@ -131,7 +131,7 @@ function EntradaPage() {
             textAlign: "center",
           }}
         >
-          <h1 style={{ fontSize: "36px", margin: "0" }}>Datos de la Wiki</h1>
+          <h1 style={{ fontSize: "36px", margin: "0" }}>Datos de la Entrada</h1>
           {entryError && (
             <div
               style={{
@@ -192,6 +192,7 @@ function EntradaPage() {
                   {entrada.created_at}
                 </span>
               </Typography>
+              <span><a href={`http://localhost:5173/versiones?entryID=${entrada.id}`}>Ver historial</a></span>
             </>
           )}
         </section>
