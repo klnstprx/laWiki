@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import {
   Container,
-  Grid2,
   Card,
   CardMedia,
   CardContent,
   Typography,
   Alert,
+  Grid,
 } from "@mui/material";
 import { getAllWikis } from "../api/WikiApi.js";
 import MainLayout from "../layout/MainLayout.jsx";
@@ -17,8 +17,14 @@ function HomePage() {
 
   useEffect(() => {
     getAllWikis()
-      .then(setWikis)
-      .catch((err) => setError(err.message));
+      .then((data) => {
+        if (data && data.length > 0) {
+          setWikis(data);
+        } else {
+          setError("No se encontraron wikis.");
+        }
+      })
+      .catch(() => setError("Se produjo un error al obtener las wikis."));
   }, []);
 
   return (
@@ -28,28 +34,30 @@ function HomePage() {
           Wikis
         </Typography>
         {error && <Alert severity="error">{error}</Alert>}
-        <Grid2 container spacing={4}>
-          {wikis.map((wiki) => (
-            <Grid2 item key={wiki.id} xs={12} sm={6} md={4}>
-              <Card>
-                <CardMedia
-                  component="img"
-                  height="140"
-                  image="https://via.placeholder.com/350x140"
-                  alt="Wiki Image"
-                />
-                <CardContent>
-                  <Typography gutterBottom variant="h5" component="div">
-                    {wiki.title}
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    {wiki.description}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid2>
-          ))}
-        </Grid2>
+        {!error && wikis.length > 0 ? (
+          <Grid container spacing={4}>
+            {wikis.map((wiki) => (
+              <Grid item key={wiki.id} xs={12} sm={6} md={4}>
+                <Card>
+                  <CardMedia
+                    component="img"
+                    height="140"
+                    image="https://via.placeholder.com/350x140"
+                    alt="Imagen de la Wiki"
+                  />
+                  <CardContent>
+                    <Typography gutterBottom variant="h5" component="div">
+                      {wiki.title}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      {wiki.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ) : null}
       </Container>
     </MainLayout>
   );
