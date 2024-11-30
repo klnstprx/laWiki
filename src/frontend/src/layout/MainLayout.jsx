@@ -2,7 +2,7 @@ import { Box, CssBaseline } from "@mui/material";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ToastMessage from "../components/ToastMessage";
-import { useToast } from "../context/ToastContext.1";
+import { useToast } from "../context/ToastContext";
 import { Outlet } from "react-router-dom";
 
 function MainLayout() {
