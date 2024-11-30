@@ -8,19 +8,19 @@ import {
   Button,
   TextField,
   Grid2,
+  Box,
 } from "@mui/material";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
 function EditarEntradaPage() {
   const { entryId, versionId } = useParams();
-  const [entrada, setEntrada] = useState({});
   const [version, setVersion] = useState({});
   const [versionError, setVersionError] = useState(null);
   const formRef = useRef(null);
   const navigate = useNavigate();
 
-  // Obtener la versión
+  // Fetch the version details
   useEffect(() => {
     if (versionId) {
       getVersion(versionId)
@@ -78,50 +78,47 @@ function EditarEntradaPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      {/* Form to edit Entry */}
-      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Editar entrada
-        </Typography>
-        {versionError && (
-          <Typography variant="body1" color="error" gutterBottom>
-            {versionError}
-          </Typography>
-        )}
+      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4 }}>
         <form id="miFormulario" ref={formRef} onSubmit={subirVersion}>
-          <Grid2 container spacing={2}>
-            <Grid2 item xs={12}>
-              <Typography variant="subtitle1">Contenido:</Typography>
-              <ReactQuill
-                theme="snow"
-                value={version.content || ""}
-                onChange={handleEditorChange}
-                style={{ height: "300px", marginBottom: "50px" }}
-              />
+          {/* Title and Editor input */}
+          <Grid2 container spacing={2} alignItems="center">
+            <Grid2 item xs={12} sm={8}>
+              <Typography variant="h4">Editar entrada</Typography>
             </Grid2>
-            <Grid2 item xs={12} sm={6} md={4}>
+            <Grid2 item xs={12} sm={4}>
               <TextField
                 id="editor"
                 name="editor"
                 label="Editor"
                 value={version.editor || ""}
                 onChange={handleChange}
-                fullWidth
                 variant="outlined"
+                fullWidth
+                required
               />
             </Grid2>
-            <Grid2 item xs={12} md={4}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                sx={{ height: "100%" }}
-              >
-                Enviar
-              </Button>
-            </Grid2>
           </Grid2>
+          {versionError && (
+            <Typography variant="body1" color="error" gutterBottom>
+              {versionError}
+            </Typography>
+          )}
+          <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
+            Contenido:
+          </Typography>
+          <Box sx={{ height: "400px", mb: 2 }}>
+            <ReactQuill
+              theme="snow"
+              value={version.content || ""}
+              onChange={handleEditorChange}
+              style={{ height: "100%" }}
+            />
+          </Box>
+          <Box sx={{ mt: 5, pt: 1 }} display="flex" justifyContent="flex-end">
+            <Button type="submit" variant="contained" color="primary">
+              Enviar
+            </Button>
+          </Box>
         </form>
       </Paper>
     </Container>
