@@ -9,7 +9,6 @@ import { getVersion } from "../api/VersionApi.js";
 import { useSearchParams } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
 import Version from "../components/Version.jsx";
-import MainLayout from "../layout/MainLayout.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
 import { useToast } from "../context/ToastContext.1.jsx";
 import {
@@ -152,138 +151,134 @@ function EntradaPage() {
   }
 
   return (
-    <MainLayout>
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        {/* Detalles de la Entrada */}
-        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            Datos de la Entrada
-          </Typography>
-          {entryError && <Alert severity="error">{entryError}</Alert>}
-          {!entryError && entrada && (
-            <>
-              <Typography variant="h6">Título: {entrada.title}</Typography>
-              <Typography variant="h6">Autor: {entrada.author}</Typography>
-              <Typography variant="h6">
-                Fecha de creación:{" "}
-                {new Date(entrada.created_at).toLocaleDateString()}
-              </Typography>
-              <Typography variant="h6">
-                <a
-                  href={`http://localhost:5173/versiones?entry_id=${entrada.id}`}
-                >
-                  Ver historial
-                </a>
-              </Typography>
-            </>
-          )}
-        </Paper>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {/* Detalles de la Entrada */}
+      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Datos de la Entrada
+        </Typography>
+        {entryError && <Alert severity="error">{entryError}</Alert>}
+        {!entryError && entrada && (
+          <>
+            <Typography variant="h6">Título: {entrada.title}</Typography>
+            <Typography variant="h6">Autor: {entrada.author}</Typography>
+            <Typography variant="h6">
+              Fecha de creación:{" "}
+              {new Date(entrada.created_at).toLocaleDateString()}
+            </Typography>
+            <Typography variant="h6">
+              <a
+                href={`http://localhost:5173/versiones?entry_id=${entrada.id}`}
+              >
+                Ver historial
+              </a>
+            </Typography>
+          </>
+        )}
+      </Paper>
 
-        {/* Contenido de la Versión */}
-        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            Contenido de la Versión
-          </Typography>
-          {versionError && <Alert severity="error">{versionError}</Alert>}
-          {!versionError && version && (
-            <Version
-              content={version.content}
-              editor={version.editor}
-              created_at={version.created_at}
-              entry_id={version.entry_id}
-            />
-          )}
-        </Paper>
+      {/* Contenido de la Versión */}
+      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Contenido de la Versión
+        </Typography>
+        {versionError && <Alert severity="error">{versionError}</Alert>}
+        {!versionError && version && (
+          <Version
+            content={version.content}
+            editor={version.editor}
+            created_at={version.created_at}
+            entry_id={version.entry_id}
+          />
+        )}
+      </Paper>
 
-        {/* Comentarios */}
-        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            Comentarios
-          </Typography>
-          {commentsError && <Alert severity="error">{commentsError}</Alert>}
-          {!commentsError && comentarios.length > 0 ? (
-            <List>
-              {comentarios.map((comentario) => (
-                <ListItem key={comentario.id}>
-                  <Comentario
-                    id={comentario.id}
-                    content={comentario.content}
-                    rating={comentario.rating}
-                    created_at={comentario.created_at}
-                    author={comentario.author}
-                    onDelete={handleDeleteComment}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            !commentsError && (
-              <Alert severity="info">No se encontraron comentarios.</Alert>
-            )
-          )}
-        </Paper>
+      {/* Comentarios */}
+      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Comentarios
+        </Typography>
+        {commentsError && <Alert severity="error">{commentsError}</Alert>}
+        {!commentsError && comentarios.length > 0 ? (
+          <List>
+            {comentarios.map((comentario) => (
+              <ListItem key={comentario.id}>
+                <Comentario
+                  id={comentario.id}
+                  content={comentario.content}
+                  rating={comentario.rating}
+                  created_at={comentario.created_at}
+                  author={comentario.author}
+                  onDelete={handleDeleteComment}
+                />
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          !commentsError && (
+            <Alert severity="info">No se encontraron comentarios.</Alert>
+          )
+        )}
+      </Paper>
 
-        {/* Formulario para añadir comentario */}
-        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            Añadir comentario
-          </Typography>
-          <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
-            <Grid2 container spacing={2}>
-              <Grid2 item xs={12}>
-                <Input
-                  id="content"
-                  name="content"
-                  label="Contenido"
-                  multiline
-                  required
-                  fullWidth
-                />
-              </Grid2>
-              <Grid2 item xs={12} sm={6} md={4}>
-                <Input
-                  id="rating"
-                  name="rating"
-                  label="Calificación"
-                  type="number"
-                  inputProps={{ min: 1, max: 5 }}
-                  required
-                  fullWidth
-                />
-              </Grid2>
-              <Grid2 item xs={12} sm={6} md={4}>
-                <Input
-                  id="author"
-                  name="author"
-                  label="Autor"
-                  required
-                  fullWidth
-                />
-              </Grid2>
-              <Grid2 item xs={12} md={4}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  sx={{ height: "100%" }}
-                >
-                  Enviar
-                </Button>
-              </Grid2>
+      {/* Formulario para añadir comentario */}
+      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Añadir comentario
+        </Typography>
+        <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
+          <Grid2 container spacing={2}>
+            <Grid2 item xs={12}>
+              <Input
+                id="content"
+                name="content"
+                label="Contenido"
+                multiline
+                required
+                fullWidth
+              />
             </Grid2>
-          </form>
-        </Paper>
-      </Container>
-
-      {/* Modal de Confirmación */}
+            <Grid2 item xs={12} sm={6} md={4}>
+              <Input
+                id="rating"
+                name="rating"
+                label="Calificación"
+                type="number"
+                inputProps={{ min: 1, max: 5 }}
+                required
+                fullWidth
+              />
+            </Grid2>
+            <Grid2 item xs={12} sm={6} md={4}>
+              <Input
+                id="author"
+                name="author"
+                label="Autor"
+                required
+                fullWidth
+              />
+            </Grid2>
+            <Grid2 item xs={12} md={4}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+                sx={{ height: "100%" }}
+              >
+                Enviar
+              </Button>
+            </Grid2>
+          </Grid2>
+        </form>
+      </Paper>
       <ConfirmationModal
         message="¿Estás seguro de que quieres crear este comentario?"
         show={showModal}
         handleClose={handleClose}
         handleConfirm={handleConfirm}
       />
-    </MainLayout>
+    </Container>
   );
 }
 

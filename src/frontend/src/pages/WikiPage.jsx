@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Alert from "@mui/material/Alert";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
+import { useSearchParams, Link } from "react-router-dom";
+import {
+  Container,
+  Paper,
+  Typography,
+  Button,
+  Alert,
+  List,
+  ListItem,
+} from "@mui/material";
 import { searchEntries } from "../api/EntryApi.js";
 import { getWiki } from "../api/WikiApi.js";
-import { useSearchParams, Link } from "react-router-dom";
 import EntradaCard from "../components/EntradaCard.jsx";
-import MainLayout from "../layout/MainLayout.jsx";
 
 function WikiPage() {
   const [wiki, setWiki] = useState({});
@@ -37,149 +40,78 @@ function WikiPage() {
   }, [id]);
 
   return (
-    <MainLayout>
-      <div
-        style={{
-          fontFamily: "'Arial', sans-serif",
-          backgroundColor: "#f5f5f5",
-          padding: "40px",
-          margin: "0 auto",
-          border: "1px solid #ddd",
-          borderRadius: "8px",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-          color: "black",
-          width: "100vw",
-        }}
-      >
-        {error && (
-          <Alert severity="error" style={{ marginBottom: "20px" }}>
-            {error}
-          </Alert>
-        )}
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
-        {!error && wiki && Object.keys(wiki).length > 0 && (
-          <>
-            {/* Page Header */}
-            <header
-              style={{
-                backgroundColor: "#3c4f76",
-                color: "white",
-                padding: "20px",
-                borderRadius: "8px 8px 0 0",
-                textAlign: "center",
-              }}
+      {!error && wiki && Object.keys(wiki).length > 0 && (
+        <>
+          {/* Page Header */}
+          <Paper
+            elevation={3}
+            sx={{ p: 2, textAlign: "center", borderRadius: 1 }}
+          >
+            <Typography variant="h3" component="h1" sx={{ m: 0 }}>
+              {wiki.title}
+            </Typography>
+          </Paper>
+
+          {/* Wiki Information */}
+          <Paper elevation={3} sx={{ p: 3, my: 4, borderRadius: 1 }}>
+            <Typography variant="h6" gutterBottom>
+              <strong>Título:</strong> {wiki.title}
+            </Typography>
+            <Typography variant="h6" gutterBottom>
+              <strong>Descripción:</strong> {wiki.description}
+            </Typography>
+            <Typography variant="h6" gutterBottom>
+              <strong>Categoría:</strong> {wiki.category}
+            </Typography>
+          </Paper>
+
+          {/* Entradas */}
+          <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 1 }}>
+            <Typography
+              variant="h4"
+              component="h2"
+              sx={{ borderBottom: "1px solid", pb: 1, mb: 2 }}
             >
-              <h1 style={{ fontSize: "36px", margin: "0", color: "black" }}>
-                {wiki.title}
-              </h1>
-            </header>
+              Entradas
+            </Typography>
+            {entradas.length > 0 ? (
+              <List>
+                {entradas.map((entrada) => (
+                  <ListItem key={entrada.id} divider>
+                    <EntradaCard
+                      id={entrada.id}
+                      title={entrada.title}
+                      author={entrada.author}
+                      createdAt={entrada.created_at}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Alert severity="info">No entries found.</Alert>
+            )}
+          </Paper>
 
-            {/* Wiki Information */}
-            <section
-              style={{
-                padding: "30px",
-                backgroundColor: "white",
-                margin: "20px 0",
-                borderRadius: "8px",
-              }}
-            >
-              <Typography
-                variant="h6"
-                style={{
-                  fontWeight: "bold",
-                  marginBottom: "10px",
-                  color: "black",
-                }}
-              >
-                Título:{" "}
-                <span style={{ fontWeight: "normal" }}>{wiki.title}</span>
-              </Typography>
-
-              <Typography
-                variant="h6"
-                style={{
-                  fontWeight: "bold",
-                  marginBottom: "10px",
-                  color: "black",
-                }}
-              >
-                Descripción:{" "}
-                <span style={{ fontWeight: "normal" }}>{wiki.description}</span>
-              </Typography>
-
-              <Typography
-                variant="h6"
-                style={{
-                  fontWeight: "bold",
-                  marginBottom: "10px",
-                  color: "black",
-                }}
-              >
-                Categoría:{" "}
-                <span style={{ fontWeight: "normal" }}>{wiki.category}</span>
-              </Typography>
-            </section>
-
-            {/* Entradas */}
-            <section
-              style={{
-                padding: "30px",
-                backgroundColor: "white",
-                marginBottom: "20px",
-                borderRadius: "8px",
-              }}
-            >
-              <h2
-                style={{
-                  fontSize: "28px",
-                  borderBottom: "2px solid #ddd",
-                  paddingBottom: "10px",
-                  marginBottom: "20px",
-                }}
-              >
-                Entradas
-              </h2>
-              {entradas.length > 0 ? (
-                <List>
-                  {entradas.map((entrada) => (
-                    <ListItem
-                      key={entrada.id}
-                      style={{
-                        borderBottom: "1px solid #ddd",
-                        padding: "15px 0",
-                      }}
-                    >
-                      <EntradaCard
-                        id={entrada.id}
-                        title={entrada.title}
-                        author={entrada.author}
-                        createdAt={entrada.created_at}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              ) : (
-                <Alert severity="info">No entries found.</Alert>
-              )}
-            </section>
-
-            {/* Button to create new entry */}
-            <Link
-              to={`/crear-entrada?id=${id}`}
-              style={{ textDecoration: "none" }}
-            >
-              <Button
-                variant="contained"
-                color="primary"
-                style={{ marginTop: "20px" }}
-              >
-                Crear Nueva Entrada
-              </Button>
-            </Link>
-          </>
-        )}
-      </div>
-    </MainLayout>
+          {/* Button to create new entry */}
+          <Button
+            component={Link}
+            to={`/crear-entrada?id=${id}`}
+            variant="contained"
+            color="primary"
+            sx={{ mt: 2 }}
+          >
+            Crear Nueva Entrada
+          </Button>
+        </>
+      )}
+    </Container>
   );
 }
 
