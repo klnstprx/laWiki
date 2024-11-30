@@ -240,7 +240,7 @@ func PostEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	entry.CreatedAt = time.Now()
+	entry.CreatedAt = time.Now().UTC()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -302,6 +302,8 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	entry.UpdatedAt = time.Now().UTC()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -309,7 +311,7 @@ func PutEntry(w http.ResponseWriter, r *http.Request) {
 		"$set": bson.M{
 			"title":      entry.Title,
 			"author":     entry.Author,
-			"created_at": entry.CreatedAt,
+			"updated_at": entry.UpdatedAt,
 		},
 	}
 

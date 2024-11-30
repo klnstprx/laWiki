@@ -30,7 +30,7 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 
 // generateStateOauthCookie generates a random state string and sets it as a cookie
 func generateStateOauthCookie(w http.ResponseWriter) string {
-	expiration := time.Now().Add(1 * time.Hour)
+	expiration := time.Now().UTC().Add(1 * time.Hour)
 
 	b := make([]byte, 16)
 	rand.Read(b)
@@ -97,7 +97,7 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt_token",
 		Value:    jwtToken,
-		Expires:  time.Now().Add(24 * time.Hour),
+		Expires:  time.Now().UTC().Add(24 * time.Hour),
 		HttpOnly: true,
 		Secure:   true,
 	})
@@ -144,7 +144,7 @@ func createJWTToken(data []byte) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["email"] = user.Email
 	claims["name"] = user.Name
-	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+	claims["exp"] = time.Now().UTC().Add(time.Hour * 72).Unix()
 
 	// Create the token using the claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

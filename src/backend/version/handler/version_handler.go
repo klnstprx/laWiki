@@ -235,6 +235,8 @@ func PostVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	version.CreatedAt = time.Now().UTC()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -296,6 +298,8 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	version.UpdatedAt = time.Now().UTC()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -303,7 +307,7 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 		"$set": bson.M{
 			"content":    version.Content,
 			"editor":     version.Editor,
-			"created_at": version.CreatedAt,
+			"updated_at": version.UpdatedAt,
 		},
 	}
 

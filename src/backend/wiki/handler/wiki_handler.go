@@ -208,6 +208,8 @@ func PostWiki(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	wiki.CreatedAt = time.Now().UTC()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -269,6 +271,8 @@ func PutWiki(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	wiki.UpdatedAt = time.Now().UTC()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -277,6 +281,7 @@ func PutWiki(w http.ResponseWriter, r *http.Request) {
 			"title":       wiki.Title,
 			"description": wiki.Description,
 			"category":    wiki.Category,
+			"updated_at":  wiki.UpdatedAt,
 		},
 	}
 
