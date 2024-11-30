@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import MainLayout from "../layout/MainLayout.jsx";
-// import { useToast } from "../context/ToastContext.1.jsx";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Alert from "@mui/material/Alert";
@@ -13,17 +12,25 @@ function VersionPage() {
   const [error, setError] = useState(null);
 
   const [searchParams] = useSearchParams();
-  const entryID = searchParams.get("entryID");
+  const entryID = searchParams.get("entry_id");
 
   useEffect(() => {
-    searchVersions({ entryID: entryID })
-      .then(setVersiones)
-      .catch((err) => setError(err.message));
+    if (entryID) {
+      searchVersions({ entryID: entryID })
+        .then((data) => {
+          if (data && data.length > 0) {
+            setVersiones(data);
+          } else {
+            setError("No se encontraron versiones para esta entrada.");
+          }
+        })
+        .catch(() =>
+          setError("Se ha producido un error al obtener las versiones."),
+        );
+    } else {
+      setError("No se proporcionó un ID de entrada válido.");
+    }
   }, [entryID]);
-
-  {
-    /* http://localhost:5173/versiones?entryID=67311bf03399f3b49ccb8072 */
-  }
 
   return (
     <MainLayout>
@@ -35,7 +42,7 @@ function VersionPage() {
           margin: "0 auto",
           border: "1px solid #ddd",
           borderRadius: "8px",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Sombra más suave para el contenedor
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
           color: "black",
           width: "94vw",
           height: "80vh",
@@ -51,7 +58,9 @@ function VersionPage() {
             textAlign: "center",
           }}
         >
-          <h1 style={{ fontSize: "36px", margin: "0" }}>Versiones Entrada</h1>
+          <h1 style={{ fontSize: "36px", margin: "0" }}>
+            Versiones de la Entrada
+          </h1>
           {error && (
             <div
               style={{
@@ -59,6 +68,7 @@ function VersionPage() {
                 padding: "15px",
                 marginTop: "15px",
                 borderRadius: "4px",
+                color: "white",
               }}
             >
               <p>{error}</p>
@@ -93,10 +103,15 @@ function VersionPage() {
                 </ListItem>
               ))}
             </List>
-          ) : (
-            <Alert>No versions found.</Alert>
-          )}
+          ) : null}
         </section>
+
+        {/* Mostrar mensaje cuando no hay versiones y no hay error */}
+        {!error && versiones.length === 0 && (
+          <Alert severity="info" style={{ marginTop: "20px" }}>
+            No se encontraron versiones para esta entrada.
+          </Alert>
+        )}
       </div>
     </MainLayout>
   );

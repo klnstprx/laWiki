@@ -25,8 +25,8 @@ import {
 } from "@mui/material";
 
 function EntradaPage() {
-  const [entrada, setEntrada] = useState({});
-  const [version, setVersion] = useState({});
+  const [entrada, setEntrada] = useState(null);
+  const [version, setVersion] = useState(null);
   const [comentarios, setComentarios] = useState([]);
   const [entryError, setEntryError] = useState(null);
   const [commentsError, setCommentsError] = useState(null);
@@ -67,7 +67,7 @@ function EntradaPage() {
   const handleDeleteComment = async (commentId) => {
     try {
       await deleteComment(commentId);
-      // Update state to remove the deleted comment
+      // Actualizar el estado para eliminar el comentario borrado
       setComentarios((prevComentarios) =>
         prevComentarios.filter((comment) => comment.id !== commentId),
       );
@@ -78,66 +78,89 @@ function EntradaPage() {
     }
   };
 
-  // Fetch data on mount
+  // Obtener la entrada
   useEffect(() => {
-    getEntry(id)
-      .then(setEntrada)
-      .catch((err) => setEntryError(err.message));
+    if (id) {
+      getEntry(id)
+        .then((data) => {
+          if (data && Object.keys(data).length > 0) {
+            setEntrada(data);
+          } else {
+            setEntryError("No se encontró la entrada solicitada.");
+          }
+        })
+        .catch(() =>
+          setEntryError("Se produjo un error al obtener la entrada."),
+        );
+    } else {
+      setEntryError("No se proporcionó un ID de entrada válido.");
+    }
   }, [id]);
 
+  // Obtener la versión
   useEffect(() => {
-    searchComments({ versionID: versionID })
-      .then(setComentarios)
-      .catch((err) => setCommentsError(err.message));
+    if (versionID) {
+      getVersion(versionID)
+        .then((data) => {
+          if (data && Object.keys(data).length > 0) {
+            setVersion(data);
+          } else {
+            setVersionError("No se encontró la versión solicitada.");
+          }
+        })
+        .catch(() =>
+          setVersionError("Se produjo un error al obtener la versión."),
+        );
+    } else {
+      setVersionError("No se proporcionó un ID de versión válido.");
+    }
   }, [versionID]);
 
+  // Obtener los comentarios
   useEffect(() => {
-    getVersion(versionID)
-      .then(setVersion)
-      .catch((err) => setVersionError(err.message));
+    if (versionID) {
+      searchComments({ versionID: versionID })
+        .then((data) => {
+          if (data) {
+            setComentarios(data);
+          } else {
+            setCommentsError(
+              "No se encontraron comentarios para esta versión.",
+            );
+          }
+        })
+        .catch(() =>
+          setCommentsError("Se produjo un error al obtener los comentarios."),
+        );
+    } else {
+      setCommentsError("No se proporcionó un ID de versión válido.");
+    }
   }, [versionID]);
 
-  // Form submission handler
+  // Handler para enviar el comentario
   async function subirComentario(event) {
     event.preventDefault();
 
     const formData = new FormData(event.target);
     const jsonData = Object.fromEntries(formData.entries());
 
-    jsonData["version_id"] = version.id;
+    jsonData["version_id"] = versionID;
     jsonData["rating"] = parseInt(jsonData["rating"], 10);
 
     setPendingComment(jsonData);
     setShowModal(true);
-    try {
-      const result = await postComment(jsonData);
-
-      setComentarios((prevComentarios) => [...(prevComentarios || []), result]);
-
-      formRef.current.reset();
-      //setPendingComment(null);
-
-      //showToast("El comentario se ha creado correctamente!", "bg-success");
-    } catch (error) {
-      console.error("Error al enviar:", error);
-      //showToast("Error al enviar el comentario", "bg-danger");
-    }
-  }
-
-  {
-    /*La URL es de este tipo http://localhost:5173/entrada?id=67311bf03399f3b49ccb8072&versionID=67311c0143d96ecd81728a94 */
   }
 
   return (
     <MainLayout>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        {/* Entry Details */}
+        {/* Detalles de la Entrada */}
         <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
           <Typography variant="h4" gutterBottom>
-            Datos de la Wiki
+            Datos de la Entrada
           </Typography>
           {entryError && <Alert severity="error">{entryError}</Alert>}
-          {!entryError && (
+          {!entryError && entrada && (
             <>
               <Typography variant="h6">Título: {entrada.title}</Typography>
               <Typography variant="h6">Autor: {entrada.author}</Typography>
@@ -147,7 +170,7 @@ function EntradaPage() {
               </Typography>
               <Typography variant="h6">
                 <a
-                  href={`http://localhost:5173/versiones?entryID=${entrada.id}`}
+                  href={`http://localhost:5173/versiones?entry_id=${entrada.id}`}
                 >
                   Ver historial
                 </a>
@@ -156,13 +179,13 @@ function EntradaPage() {
           )}
         </Paper>
 
-        {/* Version Content */}
+        {/* Contenido de la Versión */}
         <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
           <Typography variant="h5" gutterBottom>
-            Contenido de la versión
+            Contenido de la Versión
           </Typography>
           {versionError && <Alert severity="error">{versionError}</Alert>}
-          {!versionError && (
+          {!versionError && version && (
             <Version
               content={version.content}
               editor={version.editor}
@@ -172,7 +195,7 @@ function EntradaPage() {
           )}
         </Paper>
 
-        {/* Comments */}
+        {/* Comentarios */}
         <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
           <Typography variant="h5" gutterBottom>
             Comentarios
@@ -194,11 +217,13 @@ function EntradaPage() {
               ))}
             </List>
           ) : (
-            <Alert severity="info">No se encontraron comentarios.</Alert>
+            !commentsError && (
+              <Alert severity="info">No se encontraron comentarios.</Alert>
+            )
           )}
         </Paper>
 
-        {/* Add Comment Form */}
+        {/* Formulario para añadir comentario */}
         <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
           <Typography variant="h5" gutterBottom>
             Añadir comentario
@@ -219,7 +244,7 @@ function EntradaPage() {
                 <Input
                   id="rating"
                   name="rating"
-                  label="Rating"
+                  label="Calificación"
                   type="number"
                   inputProps={{ min: 1, max: 5 }}
                   required
@@ -251,7 +276,7 @@ function EntradaPage() {
         </Paper>
       </Container>
 
-      {/* Confirmation Modal */}
+      {/* Modal de Confirmación */}
       <ConfirmationModal
         message="¿Estás seguro de que quieres crear este comentario?"
         show={showModal}
