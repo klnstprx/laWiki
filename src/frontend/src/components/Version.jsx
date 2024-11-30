@@ -1,5 +1,4 @@
 import React from "react";
-import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -54,13 +53,7 @@ const Version = ({ content, editor, created_at, address, coordinates }) => {
       )}
     </div>
   );
-      <Box
-        sx={{ mt: 2 }}
-        dangerouslySetInnerHTML={{
-          __html: DOMPurify.sanitize(content),
-        }}
-      />
-    </Box>
+};      
 Version.propTypes = {
   content: PropTypes.string.isRequired,
   editor: PropTypes.string.isRequired,
