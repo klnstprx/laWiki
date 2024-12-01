@@ -7,7 +7,7 @@ export async function getAllMedia() {
 export async function postMedia(data) {
   return apiRequest("/media", {
     method: "POST",
-    body: JSON.stringify(data),
+    body: data,
   });
 }
 
@@ -18,7 +18,7 @@ export async function getMedia(id) {
 export async function putMedia(id, data) {
   return apiRequest(`/media/${encodeURIComponent(id)}`, {
     method: "PUT",
-    body: JSON.stringify(data),
+    body: data,
   });
 }
 
