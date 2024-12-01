@@ -54,7 +54,14 @@ function HomePage() {
           }}
         >
           {wikis.map((wiki) => (
-            <Grid2 key={wiki.id} xs={12} sm={6} md={4}>
+            <Grid2
+              key={wiki.id}
+              xs={12}
+              sm={6}
+              md={4}
+              lg={4}
+              sx={{ flexBasis: '30%', maxWidth: '30%' }}
+            >
               <WikiCard wiki={wiki} />
             </Grid2>
           ))}
