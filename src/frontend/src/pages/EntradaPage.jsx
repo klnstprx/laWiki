@@ -5,6 +5,7 @@ import {
   deleteComment,
 } from "../api/CommentApi.js";
 import { getEntry } from "../api/EntryApi.js";
+import { getMedia } from "../api/MediaApi.js";
 import { getVersion, searchVersions } from "../api/VersionApi.js";
 import { useParams, Link } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
@@ -28,6 +29,8 @@ function EntradaPage() {
   const [entry, setEntry] = useState({});
   const [version, setVersion] = useState({});
   const [comments, setComments] = useState([]);
+  const [mediaList, setMediaList] = useState([]);
+  const [mediaError, setMediaError] = useState(null);
   const [entryError, setEntryError] = useState(null);
   const [commentsError, setCommentsError] = useState(null);
   const [versionError, setVersionError] = useState(null);
@@ -126,6 +129,7 @@ function EntradaPage() {
         .then((data) => {
           if (data && Object.keys(data).length > 0) {
             setEntry(data);
+            fetchMedia(data.media_ids);
           } else {
             setEntryError("No se encontró la entrada solicitada.");
           }
@@ -137,6 +141,21 @@ function EntradaPage() {
       setEntryError("No se proporcionó un ID de entrada válido.");
     }
   }, [entryId]);
+
+  //fetch media
+  const fetchMedia = async (mediaIdsArray) => {
+    if (!Array.isArray(mediaIdsArray) || mediaIdsArray.length === 0) {
+      console.log("No media IDs found or mediaIdsArray is not an array.");
+      return;
+    }    try {
+      const mediaPromises = mediaIdsArray.map((id) => getMedia(id));
+      const mediaResults = await Promise.all(mediaPromises);
+      setMediaList(mediaResults);
+    } catch (error) {
+      console.error("Error fetching media:", error);
+      setMediaError("Failed to fetch media");
+    }
+  };
 
   // Fetch the version details
   useEffect(() => {
@@ -268,6 +287,19 @@ function EntradaPage() {
           </>
         )}
       </Paper>
+
+      {/* Media */}
+      <Container>
+        {entryError && <Alert severity="error">{entryError}</Alert>}
+        {mediaError && <Alert severity="error">{mediaError}</Alert>}
+        <Stack spacing={2}>
+          {mediaList.map((media, index) => (
+            <Paper key={index}>
+              <img src={media.uploadUrl} alt={media.publicId} style={{ maxWidth: "40%" }} />
+            </Paper>
+          ))}
+        </Stack>
+      </Container>
 
       {/* Comments */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
