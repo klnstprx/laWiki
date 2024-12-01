@@ -16,6 +16,8 @@ import { alpha, styled } from "@mui/material/styles";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { searchWikis } from "../api/WikiApi";
 import { searchEntries } from "../api/EntryApi";
+import { searchComments } from "../api/CommentApi";
+import { searchVersions } from "../api/VersionApi";
 import SearchResultsList from "./SearchResultsList";
 
 const Search = styled("div")(({ theme }) => ({
@@ -96,20 +98,28 @@ const Header = () => {
   const performSearch = async (query) => {
     setLoading(true);
     try {
-      const [wikis, entries] = await Promise.all([
+      const [wikis, entries, comments, versions] = await Promise.all([
         searchWikis({ title: query }),
         searchEntries({ title: query }),
+        searchComments({ content: query }),
+        searchVersions({ content: query }),
       ]);
 
-      // Ensure wikis and entries are arrays
       setSearchResults({
         wikis: Array.isArray(wikis) ? wikis : [],
         entries: Array.isArray(entries) ? entries : [],
+        comments: Array.isArray(comments) ? comments : [],
+        versions: Array.isArray(versions) ? versions : [],
       });
       setOpen(true);
     } catch (error) {
       console.error("Error during search:", error);
-      setSearchResults({ wikis: [], entries: [] });
+      setSearchResults({
+        wikis: [],
+        entries: [],
+        comments: [],
+        versions: [],
+      });
       setOpen(false);
     } finally {
       setLoading(false);

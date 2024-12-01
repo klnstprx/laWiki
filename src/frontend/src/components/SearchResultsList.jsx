@@ -9,12 +9,14 @@ import {
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 
-const SearchResultsList = ({
-  results = { wikis: [], entries: [] },
-  onItemClick,
-}) => {
-  const wikis = Array.isArray(results.wikis) ? results.wikis : [];
-  const entries = Array.isArray(results.entries) ? results.entries : [];
+const SearchResultsList = ({ results = {}, onItemClick }) => {
+  const {
+    wikis = [],
+    entries = [],
+    comments = [],
+    versions = [],
+    media = [],
+  } = results;
 
   return (
     <>
@@ -42,6 +44,7 @@ const SearchResultsList = ({
           <Divider />
         </>
       )}
+
       {entries.length > 0 && (
         <>
           <Typography variant="subtitle1" sx={{ pl: 2, pt: 1 }}>
@@ -63,13 +66,94 @@ const SearchResultsList = ({
               </ListItem>
             ))}
           </List>
+          <Divider />
         </>
       )}
-      {wikis.length === 0 && entries.length === 0 && (
-        <Typography variant="body2" sx={{ pl: 2, pt: 1 }}>
-          No se encontraron resultados.
-        </Typography>
+
+      {comments.length > 0 && (
+        <>
+          <Typography variant="subtitle1" sx={{ pl: 2, pt: 1 }}>
+            Comentarios
+          </Typography>
+          <List>
+            {comments.map((comment) => (
+              <ListItem key={comment.id} disablePadding>
+                <ListItemButton
+                  component={RouterLink}
+                  to={`/entrada/${comment.version_id}`}
+                  onClick={onItemClick}
+                >
+                  <ListItemText
+                    primary={`Autor: ${comment.author}`}
+                    secondary={comment.content}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+          <Divider />
+        </>
       )}
+
+      {versions.length > 0 && (
+        <>
+          <Typography variant="subtitle1" sx={{ pl: 2, pt: 1 }}>
+            Versiones
+          </Typography>
+          <List>
+            {versions.map((version) => (
+              <ListItem key={version.id} disablePadding>
+                <ListItemButton
+                  component={RouterLink}
+                  to={`/entrada/${version.entry_id}/${version.id}`}
+                  onClick={onItemClick}
+                >
+                  <ListItemText
+                    primary={`Editor: ${version.editor}`}
+                    secondary={`Fecha: ${new Date(version.created_at).toLocaleDateString()}`}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+          <Divider />
+        </>
+      )}
+
+      {media.length > 0 && (
+        <>
+          <Typography variant="subtitle1" sx={{ pl: 2, pt: 1 }}>
+            Media
+          </Typography>
+          <List>
+            {media.map((item) => (
+              <ListItem key={item.id} disablePadding>
+                <ListItemButton
+                  component={RouterLink}
+                  to={`/media/${item.id}`}
+                  onClick={onItemClick}
+                >
+                  <ListItemText
+                    primary={item.title || `Media ID: ${item.id}`}
+                    secondary={`Tipo: ${item.type}`}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+          <Divider />
+        </>
+      )}
+
+      {wikis.length === 0 &&
+        entries.length === 0 &&
+        comments.length === 0 &&
+        versions.length === 0 &&
+        media.length === 0 && (
+          <Typography variant="body2" sx={{ pl: 2, pt: 1 }}>
+            No se encontraron resultados.
+          </Typography>
+        )}
     </>
   );
 };
@@ -78,6 +162,9 @@ SearchResultsList.propTypes = {
   results: PropTypes.shape({
     wikis: PropTypes.array,
     entries: PropTypes.array,
+    comments: PropTypes.array,
+    versions: PropTypes.array,
+    media: PropTypes.array,
   }),
   onItemClick: PropTypes.func,
 };
