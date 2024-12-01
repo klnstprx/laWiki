@@ -86,7 +86,7 @@ function HomePage() {
               count={Math.ceil(wikis.length / itemsPerPage)}
               page={currentPage}
               onChange={handlePageChange}
-              sx={{ mt: 4 }} /></>
+              sx={{ mt: 4, display: "flex", justifyContent: "center"}} /></>
         ) : null}
       </Container>
   );
