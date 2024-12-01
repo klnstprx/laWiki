@@ -21,16 +21,18 @@ import {
   Alert,
   TextField,
   Divider,
+  Breadcrumbs,
   Rating,
   Tooltip,
   IconButton,
 } from "@mui/material";
-import InfoIcon from "@mui/icons-material/Info";
+import { Carousel } from 'react-responsive-carousel';
+import 'react-responsive-carousel/lib/styles/carousel.min.css'; // Import the carousel styles
+import { getWiki } from "../api/WikiApi.js";
 import HistoryIcon from "@mui/icons-material/History";
 import EditIcon from "@mui/icons-material/Edit";
 import PersonIcon from "@mui/icons-material/Person";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import the carousel styles
 
 import Grid from "@mui/joy/Grid";
@@ -38,6 +40,7 @@ import Grid from "@mui/joy/Grid";
 function EntradaPage() {
   const { entryId, versionId } = useParams();
   const [entry, setEntry] = useState({});
+  const [wiki, setWiki] = useState({});
   const [version, setVersion] = useState({});
   const [comments, setComments] = useState([]);
   const [mediaList, setMediaList] = useState([]);
@@ -158,6 +161,23 @@ function EntradaPage() {
     }
   }, [entryId]);
 
+  // Fetch the wiki details
+  useEffect(() => {
+    if (entry && entry.wiki_id) {
+      getWiki(entry.wiki_id)
+        .then((data) => {
+          if (data && Object.keys(data).length > 0) {
+            setWiki(data);
+          } else {
+            setEntryError("No se encontró la wiki asociada a esta entrada.");
+          }
+        })
+        .catch(() =>
+          setEntryError("Se produjo un error al obtener la wiki asociada."),
+        );
+    }
+  }, [entry, entryId]);
+
   //fetch media
   const fetchMedia = async (mediaIdsArray) => {
     if (!Array.isArray(mediaIdsArray) || mediaIdsArray.length === 0) {
@@ -256,6 +276,17 @@ function EntradaPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+
+      <Breadcrumbs sx={{ mb: 2 }}>
+        <Typography color="textPrimary" component={Link} to="/">
+          Inicio
+        </Typography>
+        <Typography color="textPrimary" component={Link} to={`/wiki/${wiki.id}`}>
+          {wiki.title}
+        </Typography>
+        <Typography color="textPrimary">{entry.title}</Typography>
+      </Breadcrumbs>
+
       {/* Entry Title */}
       {!entryError && entry && (
         <Typography variant="h3" gutterBottom>

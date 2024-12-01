@@ -7,10 +7,11 @@ import {
   Button,
   Alert,
   Box,
+  Grid,
+  Breadcrumbs,
   Pagination,
 } from "@mui/material";
 
-import Grid from "@mui/joy/Grid";
 import { deleteEntry, searchEntries } from "../api/EntryApi.js";
 import { getWiki, deleteWiki } from "../api/WikiApi.js";
 import EntradaCard from "../components/EntradaCard.jsx";
@@ -90,6 +91,13 @@ function WikiPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Breadcrumbs sx={{ mb: 2 }}>
+        <Typography color="textPrimary" component={Link} to="/">
+          Inicio
+        </Typography>
+        <Typography color="textPrimary">{wiki.title}</Typography>
+      </Breadcrumbs>
+
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
@@ -136,9 +144,9 @@ function WikiPage() {
             >
               Entradas
             </Typography>
-            {entradas && entradas.length > 0 ? (
+            {selectedEntradas && selectedEntradas.length > 0 ? (
               <Grid container spacing={2}>
-                {entradas.map((entrada) => (
+                {selectedEntradas.map((entrada) => (
                   <Grid item xs={12} sm={6} md={4} key={entrada.id}>
                     <EntradaCard
                       id={entrada.id}
