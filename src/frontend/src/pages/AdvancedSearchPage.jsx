@@ -11,6 +11,8 @@ import {
 import SearchResultsList from "../components/SearchResultsList";
 import { searchWikis } from "../api/WikiApi";
 import { searchEntries } from "../api/EntryApi";
+import { searchComments } from "../api/CommentApi";
+import { searchVersions } from "../api/VersionApi";
 
 const AdvancedSearchPage = () => {
   const [params, setParams] = useState({
@@ -18,14 +20,21 @@ const AdvancedSearchPage = () => {
     wikiCategory: "",
     entryTitle: "",
     entryAuthor: "",
+    commentContent: "",
+    commentAuthor: "",
+    versionContent: "",
+    versionEditor: "",
   });
 
   const [searchResults, setSearchResults] = useState({
     wikis: [],
     entries: [],
+    comments: [],
+    versions: [],
   });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -34,12 +43,12 @@ const AdvancedSearchPage = () => {
       [name]: value,
     }));
   };
-  const [error, setError] = useState("");
+
   const handleSearch = async () => {
     setLoading(true);
     setError("");
     try {
-      // Build wiki search parameters
+      // Build search parameters for each entity
       const wikiSearchParams = {};
       if (params.wikiTitle.trim() !== "") {
         wikiSearchParams.title = params.wikiTitle.trim();
@@ -48,7 +57,6 @@ const AdvancedSearchPage = () => {
         wikiSearchParams.category = params.wikiCategory.trim();
       }
 
-      // Build entry search parameters
       const entriesSearchParams = {};
       if (params.entryTitle.trim() !== "") {
         entriesSearchParams.title = params.entryTitle.trim();
@@ -57,7 +65,22 @@ const AdvancedSearchPage = () => {
         entriesSearchParams.author = params.entryAuthor.trim();
       }
 
-      // Only call the API if there are parameters to search
+      const commentsSearchParams = {};
+      if (params.commentContent.trim() !== "") {
+        commentsSearchParams.content = params.commentContent.trim();
+      }
+      if (params.commentAuthor.trim() !== "") {
+        commentsSearchParams.author = params.commentAuthor.trim();
+      }
+
+      const versionsSearchParams = {};
+      if (params.versionContent.trim() !== "") {
+        versionsSearchParams.content = params.versionContent.trim();
+      }
+      if (params.versionEditor.trim() !== "") {
+        versionsSearchParams.editor = params.versionEditor.trim();
+      }
+
       const wikisPromise =
         Object.keys(wikiSearchParams).length > 0
           ? searchWikis(wikiSearchParams)
@@ -68,21 +91,37 @@ const AdvancedSearchPage = () => {
           ? searchEntries(entriesSearchParams)
           : Promise.resolve([]);
 
-      const [wikis, entries] = await Promise.all([
+      const commentsPromise =
+        Object.keys(commentsSearchParams).length > 0
+          ? searchComments(commentsSearchParams)
+          : Promise.resolve([]);
+
+      const versionsPromise =
+        Object.keys(versionsSearchParams).length > 0
+          ? searchVersions(versionsSearchParams)
+          : Promise.resolve([]);
+
+      const [wikis, entries, comments, versions] = await Promise.all([
         wikisPromise,
         entriesPromise,
+        commentsPromise,
+        versionsPromise,
       ]);
-
-      console.log("Received wikis:", wikis);
-      console.log("Received entries:", entries);
 
       setSearchResults({
         wikis: Array.isArray(wikis) ? wikis : [],
         entries: Array.isArray(entries) ? entries : [],
+        comments: Array.isArray(comments) ? comments : [],
+        versions: Array.isArray(versions) ? versions : [],
       });
     } catch (error) {
       console.error("Error during advanced search:", error);
-      setSearchResults({ wikis: [], entries: [] });
+      setSearchResults({
+        wikis: [],
+        entries: [],
+        comments: [],
+        versions: [],
+      });
       setError(
         "Ocurrió un error durante la búsqueda. Por favor, inténtelo de nuevo.",
       );
@@ -95,7 +134,11 @@ const AdvancedSearchPage = () => {
     !params.wikiTitle &&
     !params.wikiCategory &&
     !params.entryTitle &&
-    !params.entryAuthor;
+    !params.entryAuthor &&
+    !params.commentContent &&
+    !params.commentAuthor &&
+    !params.versionContent &&
+    !params.versionEditor;
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
@@ -140,6 +183,48 @@ const AdvancedSearchPage = () => {
               label="Autor de la Entrada"
               name="entryAuthor"
               value={params.entryAuthor}
+              onChange={handleInputChange}
+              fullWidth
+              margin="normal"
+            />
+          </Grid2>
+
+          {/* Comment Search Fields */}
+          <Grid2 xs={12} sm={6}>
+            <Typography variant="h6">Comentario</Typography>
+            <TextField
+              label="Contenido del Comentario"
+              name="commentContent"
+              value={params.commentContent}
+              onChange={handleInputChange}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Autor del Comentario"
+              name="commentAuthor"
+              value={params.commentAuthor}
+              onChange={handleInputChange}
+              fullWidth
+              margin="normal"
+            />
+          </Grid2>
+
+          {/* Version Search Fields */}
+          <Grid2 xs={12} sm={6}>
+            <Typography variant="h6">Versión</Typography>
+            <TextField
+              label="Contenido de la Versión"
+              name="versionContent"
+              value={params.versionContent}
+              onChange={handleInputChange}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Editor de la Versión"
+              name="versionEditor"
+              value={params.versionEditor}
               onChange={handleInputChange}
               fullWidth
               margin="normal"
