@@ -1,15 +1,26 @@
-import { useState } from 'react';
-import { Container, Typography, TextField, Button, Box, IconButton } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
-import { postEntry } from '../api/EntryApi';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { useState } from "react";
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Box,
+  IconButton,
+  Alert,
+} from "@mui/material";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { postEntry } from "../api/EntryApi";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useToast } from "../context/ToastContext.jsx";
 
 function FormEntradaPage() {
   const { id: wikiId } = useParams();
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const [error, setError] = useState(null);
 
   const handleImageChange = (event) => {
     setImage(event.target.files[0]);
@@ -17,21 +28,22 @@ function FormEntradaPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const author = "Guest";
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('description', description);
-    formData.append('author', author);
-    formData.append('wiki_id', wikiId);
-    if (image) {
-      formData.append('image', image);
-    }
+    const form = event.target;
+    const formData = new FormData(form);
+    const jsonData = {};
+    formData.forEach((value, key) => {
+      jsonData[key] = value;
+    });
+
+    jsonData["wiki_id"] = wikiId;
 
     try {
-      await postEntry(formData);
+      await postEntry(jsonData);
       navigate(`/wiki/${wikiId}`);
+      showToast("Entrada creada correctamente", "success");
     } catch (error) {
-      console.error('Error al crear la entrada:', error);
+      setError("Error al crear la entrada");
+      console.error("Error al crear la entrada:", error);
     }
   };
 
@@ -40,6 +52,11 @@ function FormEntradaPage() {
       <Typography variant="h4" gutterBottom>
         Crear Nueva Entrada
       </Typography>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
       <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
         <TextField
           margin="normal"
@@ -64,11 +81,7 @@ function FormEntradaPage() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
-        <Button
-          variant="contained"
-          component="label"
-          sx={{ mt: 2 }}
-        >
+        <Button variant="contained" component="label" sx={{ mt: 2 }}>
           Añadir Imagen
           <input
             id="image-input"
@@ -79,23 +92,24 @@ function FormEntradaPage() {
           />
         </Button>
         {image && (
-          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-            <Typography variant="body2">
-              {image.name}
-            </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
+            <Typography variant="body2">{image.name}</Typography>
             <IconButton onClick={() => setImage(null)} sx={{ ml: 1 }}>
               <DeleteIcon />
             </IconButton>
           </Box>
         )}
-        <Button
-          type="submit"
-          fullWidth
-          variant="contained"
-          color="primary"
-          sx={{ mt: 3, mb: 2 }}
-        >
+        <Button type="submit" variant="contained" color="primary" fullWidth>
           Crear Entrada
+        </Button>
+        <Button
+          component={Link}
+          to={`/wiki/${wikiId}`}
+          variant="outlined"
+          color="primary"
+          fullWidth
+        >
+          Cancelar
         </Button>
       </Box>
     </Container>
