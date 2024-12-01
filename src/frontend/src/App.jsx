@@ -3,11 +3,12 @@ import HomePage from "./pages/HomePage.jsx";
 import EntradaPage from "./pages/EntradaPage.jsx";
 import WikiPage from "./pages/WikiPage.jsx";
 import VersionPage from "./pages/VersionPage.jsx";
-import PostEntradaPage from "./pages/PostEntradaPage.jsx";
+import FormEntradaPage from "./pages/FormEntradaPage.jsx";
 import MainLayout from "./layout/MainLayout.jsx";
 import EditarEntradaPage from "./pages/EditarEntradaPage.jsx";
 import SearchResultsPage from "./pages/SearchResultsPage.jsx";
 import AdvancedSearchPage from "./pages/AdvancedSearchPage.jsx";
+import FormWikiPage from "./pages/FormWikiPage.jsx";
 
 function App() {
   return (
@@ -16,8 +17,10 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/entrada/:entryId/:versionId?" element={<EntradaPage />} />
         <Route path="/wiki/:id" element={<WikiPage />} />
+        <Route path="/wiki/form" element={<FormWikiPage />} />
+        <Route path="/wiki/form/:wikiId" element={<FormWikiPage />} />
         <Route path="/versiones/:entryId" element={<VersionPage />} />
-        <Route path="/crear-entrada/:id" element={<PostEntradaPage />} />
+        <Route path="/crear-entrada/:id" element={<FormEntradaPage />} />
         <Route
           path="/editarEntrada/:entryId/:versionId?"
           element={<EditarEntradaPage />}

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Container, Typography, TextField, Button, Box, IconButton } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { postEntry } from '../api/EntryApi';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-function PostEntradaPage() {
+function FormEntradaPage() {
+  const { id: wikiId } = useParams();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState(null);
@@ -14,25 +15,23 @@ function PostEntradaPage() {
     setImage(event.target.files[0]);
   };
 
-  const handleRemoveImage = () => {
-    setImage(null);
-    document.getElementById('image-input').value = '';
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const author = "Guest";
     const formData = new FormData();
     formData.append('title', title);
     formData.append('description', description);
+    formData.append('author', author);
+    formData.append('wiki_id', wikiId);
     if (image) {
       formData.append('image', image);
     }
 
     try {
-      await postEntrada(formData);
-      navigate('/');
+      await postEntry(formData);
+      navigate(`/wiki/${wikiId}`);
     } catch (error) {
-      console.error('Error posting entrada:', error);
+      console.error('Error al crear la entrada:', error);
     }
   };
 
@@ -84,7 +83,7 @@ function PostEntradaPage() {
             <Typography variant="body2">
               {image.name}
             </Typography>
-            <IconButton onClick={handleRemoveImage} sx={{ ml: 1 }}>
+            <IconButton onClick={() => setImage(null)} sx={{ ml: 1 }}>
               <DeleteIcon />
             </IconButton>
           </Box>
@@ -103,4 +102,4 @@ function PostEntradaPage() {
   );
 }
 
-export default PostEntradaPage;
+export default FormEntradaPage;
