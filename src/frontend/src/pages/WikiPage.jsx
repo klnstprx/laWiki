@@ -109,23 +109,10 @@ function WikiPage() {
           {/* Page Header */}
           <Paper
             elevation={3}
-            sx={{ p: 2, textAlign: "center", borderRadius: 1 }}
+            sx={{ p: 2,  mb: 4, textAlign: "center", borderRadius: 1 }}
           >
             <Typography variant="h3" component="h1" sx={{ m: 0 }}>
               {wiki.title}
-            </Typography>
-            <Typography variant="h6" gutterBottom>
-              <strong>Descripción:</strong> {wiki.description}
-            </Typography>
-            <Typography variant="h6" gutterBottom>
-              <strong>Categoría:</strong> {wiki.category}
-            </Typography>
-          </Paper>
-
-          {/* Wiki Information */}
-          <Paper elevation={3} sx={{ p: 3, my: 4, borderRadius: 1 }}>
-            <Typography variant="h6" gutterBottom>
-              <strong>Título:</strong> {wiki.title}
             </Typography>
             <Typography variant="h6" gutterBottom>
               <strong>Descripción:</strong> {wiki.description}

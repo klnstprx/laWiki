@@ -6,6 +6,7 @@ import {
   Button,
   Breadcrumbs,
   Pagination,
+  Paper,
 } from "@mui/material";
 
 import Grid from "@mui/joy/Grid";
@@ -44,19 +45,20 @@ function HomePage() {
           <Typography className="breadcrumb-active">Inicio</Typography>
         </Breadcrumbs>
 
-        <Typography variant="h2" gutterBottom>
-          Wikis
-        </Typography>
-
-        <Button
-          variant="contained"
-          color="primary"
-          component={Link}
-          to="/wiki/form"
-          sx={{ mb: 2 }}
-        >
-          Crear Wiki
-        </Button>
+        <Paper sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}>
+          <Typography variant="h2" gutterBottom>
+            Wikis
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            component={Link}
+            to="/wiki/form"
+            sx={{ mb: 2 }}
+          >
+            Crear Wiki
+          </Button>
+        </Paper>
 
         {error && <Alert severity="error">{error}</Alert>}
         {!error && wikis.length > 0 ? (
