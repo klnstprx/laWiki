@@ -10,4 +10,5 @@ type Version struct {
 	UpdatedAt time.Time `bson:"updated_at,omitempty" json:"updated_at,omitempty"`
 	EntryID   string    `json:"entry_id" bson:"entry_id"`
 	Address   string    `json:"address" bson:"address"`
+	MediaIDs  []string  `json:"media_ids,omitempty" bson:"media_ids,omitempty"`
 }
