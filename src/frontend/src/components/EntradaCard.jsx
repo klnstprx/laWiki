@@ -6,14 +6,20 @@ import {
   CardContent,
   Typography,
   Grid2,
+  IconButton
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const EntradaCard = ({ id, title, author, createdAt, onEntradaClick }) => {
+const EntradaCard = ({ id, title, author, createdAt, onEntradaClick, onDelete }) => {
   const handleClick = () => {
     if (onEntradaClick) {
       onEntradaClick(id);
     }
   };
+
+  const handleDelete = () => {
+    onDelete(id);
+  }; 
 
   return (
     <Card sx={{ mb: 2 }}>
@@ -39,6 +45,11 @@ const EntradaCard = ({ id, title, author, createdAt, onEntradaClick }) => {
               </Typography>
               <Typography variant="body2">{createdAt}</Typography>
             </Grid2>
+            <Grid2>
+              <IconButton color="error" onClick={handleDelete}>
+                  <DeleteIcon />
+              </IconButton>
+            </Grid2>
           </Grid2>
         </CardContent>
       </CardActionArea>
@@ -52,6 +63,7 @@ EntradaCard.propTypes = {
   author: PropTypes.string.isRequired,
   createdAt: PropTypes.string.isRequired,
   onEntradaClick: PropTypes.func,
+  onDelete: PropTypes.func.isRequired,
 };
 
 export default EntradaCard;
