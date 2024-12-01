@@ -74,7 +74,7 @@ const SearchResultsList = ({ results = {}, onItemClick }) => {
               <ListItem key={comment.id} disablePadding>
                 <ListItemButton
                   component={RouterLink}
-                  to={`/version/${comment.entry_id}/${comment.version_id}`}
+                  to={`/entrada/${comment.entry_id}/${comment.version_id}`}
                   onClick={onItemClick}
                 >
                   <ListItemText
