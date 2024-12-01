@@ -7,11 +7,11 @@ import {
   Button,
   Alert,
   Box,
-  Grid,
   Breadcrumbs,
   Pagination,
 } from "@mui/material";
 
+import Grid from "@mui/joy/Grid";
 import { deleteEntry, searchEntries } from "../api/EntryApi.js";
 import { getWiki, deleteWiki } from "../api/WikiApi.js";
 import EntradaCard from "../components/EntradaCard.jsx";

@@ -24,6 +24,10 @@ function FormVersionPage() {
   const [wiki, setWiki] = useState({});
   const [version, setVersion] = useState({});
   const [versionError, setVersionError] = useState(null);
+  const [formErrors, setFormErrors] = useState({
+    editor: "",
+    content: "",
+  });
   const formRef = useRef(null);
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false); // add state
@@ -100,12 +104,21 @@ function FormVersionPage() {
 
   // Validation function
   const validate = () => {
+    let isValid = true;
+    const errors = {
+      editor: "",
+      content: "",
+    };
     if (!version.editor) {
-      setVersionError("El campo Editor es obligatorio.");
-      return false;
+      errors.editor = "El editor es obligatorio.";
+      isValid = false;
     }
-    setVersionError(null);
-    return true;
+    if (!version.content || version.content.replace(/<[^>]+>/g, "").trim().length === 0) {
+      errors.content = "El contenido no puede estar vacío.";
+      isValid = false;
+    }
+    setFormErrors(errors);
+    return isValid;
   };
 
   // Handler to submit the version
@@ -161,12 +174,13 @@ function FormVersionPage() {
               <TextField
                 id="editor"
                 name="editor"
-                label="Editor"
+                label="Editor *"
                 value={version.editor || ""}
                 onChange={handleChange}
                 variant="outlined"
+                error={!!formErrors.editor}
+                helperText={formErrors.editor}
                 fullWidth
-                required
               />
             </Grid>
             <Grid xs={12} sm={4}>
@@ -190,12 +204,21 @@ function FormVersionPage() {
             Contenido:
           </Typography>
           <Box sx={{ height: "400px", mb: 2 }}>
-            <ReactQuill
+          <ReactQuill
               theme="snow"
               value={version.content || ""}
               onChange={handleEditorChange}
-              style={{ height: "100%" }}
+              style={{
+                height: "100%",
+                border: formErrors.content ? "2px solid red" : "1px solid #ccc",
+                borderRadius: "4px",
+              }}
             />
+            {formErrors.content && (
+              <Typography variant="body2" color="error">
+                {formErrors.content}
+              </Typography>
+            )}
           </Box>
           <Box sx={{ mt: 5, pt: 1 }} display="flex" justifyContent="flex-end">
             <Button type="submit" variant="contained" color="primary">
