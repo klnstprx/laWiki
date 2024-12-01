@@ -13,7 +13,7 @@ import {
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-function EditarEntradaPage() {
+function FormVersionPage() {
   const { entryId, versionId } = useParams();
   const [version, setVersion] = useState({});
   const [versionError, setVersionError] = useState(null);
@@ -38,7 +38,7 @@ function EditarEntradaPage() {
   }, [versionId]);
 
   // Handler for ReactQuill editor change
-  const handleEditorChange = (content, delta, source, editor) => {
+  const handleEditorChange = (content) => {
     setVersion((prevVersion) => ({
       ...prevVersion,
       content: content,
@@ -68,7 +68,7 @@ function EditarEntradaPage() {
     console.log("Submitting version:", jsonData); // Debugging
 
     try {
-      const newVersion = await postVersion(jsonData);
+      await postVersion(jsonData);
       navigate(`/entrada/${entryId}`);
     } catch (error) {
       console.error("Error posting version:", error);
@@ -135,4 +135,4 @@ function EditarEntradaPage() {
   );
 }
 
-export default EditarEntradaPage;
+export default FormVersionPage;
