@@ -1,96 +1,104 @@
-import { useState } from "react";
-import { postEntry } from "../api/EntryApi.js";
-import {
-  Container,
-  Paper,
-  Typography,
-  Button,
-  TextField,
-  Alert,
-  Grid2,
-} from "@mui/material";
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { useToast } from "../context/ToastContext.jsx";
+import React, { useState } from 'react';
+import { Container, Typography, TextField, Button, Box, IconButton } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { postEntry } from '../api/EntryApi';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function PostEntradaPage() {
-  const [error, setError] = useState(null);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [image, setImage] = useState(null);
   const navigate = useNavigate();
-  const { showToast } = useToast();
-  const { id } = useParams();
 
-  async function enviarJSON(event) {
+  const handleImageChange = (event) => {
+    setImage(event.target.files[0]);
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    document.getElementById('image-input').value = '';
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
-    const form = event.target;
-    const formData = new FormData(form);
-
-    const jsonData = {};
-    formData.forEach((value, key) => {
-      jsonData[key] = value;
-    });
-
-    // Añadir el wiki_id automáticamente
-    jsonData["wiki_id"] = id;
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('description', description);
+    if (image) {
+      formData.append('image', image);
+    }
 
     try {
-      const result = await postEntry(jsonData);
-      console.log("Respuesta del servidor:", result);
-
-      showToast("Entrada creada correctamente", "success");
-      navigate(`/wiki/${id}`);
+      await postEntrada(formData);
+      navigate('/');
     } catch (error) {
-      setError("Error al crear la entrada");
-      console.error("Error al enviar:", error);
+      console.error('Error posting entrada:', error);
     }
-  }
+  };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" component="h2" align="center" gutterBottom>
-          Crear Nueva Entrada
-        </Typography>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
+    <Container maxWidth="md">
+      <Typography variant="h4" gutterBottom>
+        Crear Nueva Entrada
+      </Typography>
+      <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          id="title"
+          label="Título"
+          name="title"
+          autoComplete="title"
+          autoFocus
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          id="description"
+          label="Descripción"
+          name="description"
+          autoComplete="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <Button
+          variant="contained"
+          component="label"
+          sx={{ mt: 2 }}
+        >
+          Añadir Imagen
+          <input
+            id="image-input"
+            type="file"
+            hidden
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+        </Button>
+        {image && (
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+            <Typography variant="body2">
+              {image.name}
+            </Typography>
+            <IconButton onClick={handleRemoveImage} sx={{ ml: 1 }}>
+              <DeleteIcon />
+            </IconButton>
+          </Box>
         )}
-
-        <form onSubmit={enviarJSON}>
-          <Grid2 container spacing={2}>
-            <Grid2 xs={12}>
-              <TextField label="Título" name="title" required fullWidth />
-            </Grid2>
-
-            <Grid2 xs={12}>
-              <TextField label="Autor" name="author" required fullWidth />
-            </Grid2>
-
-            <Grid2 xs={12}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-              >
-                Crear Entrada
-              </Button>
-            </Grid2>
-            <Grid2 xs={12}>
-              <Button
-                component={Link}
-                to={`/wiki/${id}`}
-                variant="outlined"
-                color="primary"
-                fullWidth
-              >
-                Cancelar
-              </Button>
-            </Grid2>
-          </Grid2>
-        </form>
-      </Paper>
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          color="primary"
+          sx={{ mt: 3, mb: 2 }}
+        >
+          Crear Entrada
+        </Button>
+      </Box>
     </Container>
   );
 }
