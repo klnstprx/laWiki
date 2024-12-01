@@ -11,5 +11,4 @@ type Entry struct {
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	UpdatedAt time.Time `bson:"updated_at,omitempty" json:"updated_at,omitempty"`
 	WikiID    string    `bson:"wiki_id" json:"wiki_id"`
-	MediaIDs  []string  `json:"media_ids,omitempty" bson:"media_ids,omitempty"`
 }
