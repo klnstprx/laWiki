@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -258,17 +259,51 @@ func PostEntry(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+
 	entry.ID = objID.Hex()
 
+	// Create an initial version for the entry
+	if err := createInitialVersion(entry.ID); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create initial version")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(entry); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+}
 
-	config.App.Logger.Info().Interface("entry", entry).Msg("Added new entry")
+func createInitialVersion(entryID string) error {
+	version := map[string]interface{}{
+		"content":    "Contenido inicial",
+		"editor":     "System", //TODO: Cambiar por el usuario que lo crea
+		"created_at": time.Now().UTC(),
+		"entry_id":   entryID,
+	}
+
+	versionJSON, err := json.Marshal(version)
+	if err != nil {
+		return err
+	}
+
+	postVersionServiceURL := fmt.Sprintf("%s/api/versions/", config.App.API_GATEWAY_URL)
+	resp, err := http.Post(postVersionServiceURL, "application/json", bytes.NewBuffer(versionJSON))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		return fmt.Errorf("failed to create initial version: %s", bodyString)
+	}
+
+	return nil
 }
 
 // PutEntry godoc
