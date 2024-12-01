@@ -144,9 +144,9 @@ function WikiPage() {
             >
               Entradas
             </Typography>
-            {entradas && entradas.length > 0 ? (
+            {selectedEntradas && selectedEntradas.length > 0 ? (
               <Grid container spacing={2}>
-                {entradas.map((entrada) => (
+                {selectedEntradas.map((entrada) => (
                   <Grid item xs={12} sm={6} md={4} key={entrada.id}>
                     <EntradaCard
                       id={entrada.id}
