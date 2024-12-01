@@ -5,15 +5,10 @@ import {
   Typography,
   InputBase,
   IconButton,
-  ListItemButton,
   Button,
   Popper,
   Paper,
   ClickAwayListener,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
   CircularProgress,
 } from "@mui/material";
 import { Search as SearchIcon, Home as HomeIcon } from "@mui/icons-material";
@@ -21,6 +16,7 @@ import { alpha, styled } from "@mui/material/styles";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { searchWikis } from "../api/WikiApi";
 import { searchEntries } from "../api/EntryApi";
+import SearchResultsList from "./SearchResultsList";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -187,12 +183,23 @@ const Header = () => {
                 }}
               >
                 {loading ? (
-                  <ListItem>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "10px",
+                    }}
+                  >
                     <CircularProgress size={24} />
-                    <ListItemText primary="Cargando..." />
-                  </ListItem>
+                    <Typography variant="body2" sx={{ ml: 2 }}>
+                      Cargando...
+                    </Typography>
+                  </div>
                 ) : (
-                  renderSearchResults(searchResults, handleClickAway)
+                  <SearchResultsList
+                    results={searchResults}
+                    onItemClick={handleClickAway}
+                  />
                 )}
               </Paper>
             </ClickAwayListener>
@@ -204,71 +211,6 @@ const Header = () => {
         </Button>
       </Toolbar>
     </AppBar>
-  );
-};
-
-const renderSearchResults = (
-  results = { wikis: [], entries: [] },
-  handleClose,
-) => {
-  const wikis = Array.isArray(results.wikis) ? results.wikis : [];
-  const entries = Array.isArray(results.entries) ? results.entries : [];
-
-  return (
-    <>
-      {wikis.length > 0 && (
-        <>
-          <Typography variant="subtitle1" sx={{ pl: 2, pt: 1 }}>
-            Wikis
-          </Typography>
-          <List>
-            {wikis.map((wiki) => (
-              <ListItem key={wiki.id} disablePadding>
-                <ListItemButton
-                  component={RouterLink}
-                  to={`/wiki/${wiki.id}`}
-                  onClick={handleClose}
-                >
-                  <ListItemText
-                    primary={wiki.title}
-                    secondary={wiki.description}
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-          <Divider />
-        </>
-      )}
-      {entries.length > 0 && (
-        <>
-          <Typography variant="subtitle1" sx={{ pl: 2, pt: 1 }}>
-            Entradas
-          </Typography>
-          <List>
-            {entries.map((entry) => (
-              <ListItem key={entry.id} disablePadding>
-                <ListItemButton
-                  component={RouterLink}
-                  to={`/entrada/${entry.id}`}
-                  onClick={handleClose}
-                >
-                  <ListItemText
-                    primary={entry.title}
-                    secondary={`Autor: ${entry.author}`}
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        </>
-      )}
-      {wikis.length === 0 && entries.length === 0 && (
-        <Typography variant="body2" sx={{ pl: 2, pt: 1 }}>
-          No se encontraron resultados.
-        </Typography>
-      )}
-    </>
   );
 };
 

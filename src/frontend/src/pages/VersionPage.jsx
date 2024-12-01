@@ -47,7 +47,7 @@ function VersionPage() {
       showToast("Version eliminada correctamente", "success");
     } catch (error) {
       console.error("Error al eliminar la version:", error);
-      showToast("Error al eliminar la version", "danger");
+      showToast("Error al eliminar la version", "error");
     }
   };
 
