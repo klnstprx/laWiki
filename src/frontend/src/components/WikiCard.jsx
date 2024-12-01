@@ -1,4 +1,4 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 import { Card, CardActionArea, CardMedia, CardContent, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 
@@ -23,6 +23,14 @@ const WikiCard = ({ wiki }) => {
       </CardActionArea>
     </Card>
   );
+};
+WikiCard.propTypes = {
+  wiki: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+    image: PropTypes.string,
+  }).isRequired,
 };
 
 export default WikiCard;

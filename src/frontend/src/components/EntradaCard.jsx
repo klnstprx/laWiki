@@ -35,15 +35,21 @@ const EntradaCard = ({ id, title, author, createdAt, onEntradaClick, onDelete })
           <Grid2 container spacing={2} sx={{ mt: 1 }}>
             <Grid2 xs={6}>
               <Typography variant="subtitle1" color="textSecondary">
-                Author
+                Autor
               </Typography>
               <Typography variant="body2">{author}</Typography>
             </Grid2>
             <Grid2 xs={6}>
               <Typography variant="subtitle1" color="textSecondary">
-                Created At
+                Creado
               </Typography>
-              <Typography variant="body2">{createdAt}</Typography>
+              <Typography variant="body2">{new Date(createdAt).toLocaleString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}</Typography>
             </Grid2>
           </Grid2>
         </CardContent>
