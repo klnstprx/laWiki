@@ -110,11 +110,11 @@ function FormVersionPage() {
       content: "",
     };
     if (!version.editor) {
-      errors.editor = "El editor es obligatorio.";
+      errors.editor = "Introduzca un editor";
       isValid = false;
     }
     if (!version.content || version.content.replace(/<[^>]+>/g, "").trim().length === 0) {
-      errors.content = "El contenido no puede estar vacío.";
+      errors.content = "Introduzca contenido";
       isValid = false;
     }
     setFormErrors(errors);
