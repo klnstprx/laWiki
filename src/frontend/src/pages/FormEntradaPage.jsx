@@ -13,9 +13,13 @@ import { postEntry } from "../api/EntryApi";
 import { postMedia } from "../api/MediaApi";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useToast } from "../context/ToastContext.jsx";
+import { Breadcrumbs } from "@mui/material";
+import { useEffect } from "react";
+import { getWiki } from "../api/WikiApi";
 
 function FormEntradaPage() {
   const { id: wikiId } = useParams();
+  const [wiki, setWiki] = useState({});
   const [title, setTitle] = useState("");
   const [uploads, setUploads] = useState([]);
   const navigate = useNavigate();
@@ -112,8 +116,34 @@ function FormEntradaPage() {
     }
   };
 
+  // Fetch the wiki details
+  useEffect(() => {
+    if (wikiId) {
+      getWiki(wikiId)
+        .then((data) => {
+          if (data && Object.keys(data).length > 0) {
+            setWiki(data);
+          } else {
+            setError("No se encontró la wiki asociada a esta entrada.");
+          }
+        })
+        .catch(() =>
+          setError("Se produjo un error al obtener la wiki asociada."),
+        );
+    }
+  }, [wikiId]);
+
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+        <Typography color="textPrimary" component={Link} to="/">
+          Inicio
+        </Typography>
+        <Typography color="textPrimary" component={Link} to={`/wiki/${wikiId}`}>
+          {wiki.title}
+        </Typography>
+      </Breadcrumbs>
+
       <Typography variant="h4" gutterBottom>
         Crear Nueva Entrada
       </Typography>

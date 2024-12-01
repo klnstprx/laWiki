@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { Container, Typography, TextField, Button, Box } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
-import { getWiki, postWiki, putWiki } from "../api/WikiApi";
-import ConfirmationModal from "../components/ConfirmationModal.jsx";
+import { useEffect, useState } from 'react';
+import { Container, Typography, TextField, Button, Box, Breadcrumbs } from '@mui/material';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { getWiki, postWiki, putWiki } from '../api/WikiApi';
+import ConfirmationModal from '../components/ConfirmationModal.jsx';
 
 function FormWikiPage() {
   const { wikiId } = useParams();
@@ -91,7 +91,16 @@ function FormWikiPage() {
   };
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+        <Typography color="textPrimary" component={Link} to="/">
+          Inicio
+        </Typography>
+        <Typography color="textPrimary" component={Link} to={`/wiki/${wikiId}`}>
+          {wiki.title}
+        </Typography>
+      </Breadcrumbs>
+
       <Typography variant="h4" gutterBottom>
         {wikiId ? "Editar Wiki" : "Crear Nueva Wiki"}
       </Typography>
