@@ -60,34 +60,7 @@ function HomePage() {
 
         {error && <Alert severity="error">{error}</Alert>}
         {!error && wikis.length > 0 ? (
-          <Grid2
-            container
-            spacing={4}
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            {wikis.map((wiki) => (
-              <Grid2
-                key={wiki.id}
-                xs={12}
-                sm={6}
-                md={4}
-                lg={4}
-                sx={{ flexBasis: '30%', maxWidth: '30%' }}
-              >
-                <WikiCard wiki={wiki} />
-              </Grid2>
-            ))}
-          </Grid2>
-        ) : null}
-      </Container>
-      {error && <Alert severity="error">{error}</Alert>}
-      {!error && wikis.length > 0 ? (
-        <>
-          <Grid
+          <><Grid
             container
             spacing={4}
             sx={{
@@ -103,21 +76,19 @@ function HomePage() {
                 sm={6}
                 md={4}
                 lg={4}
-                sx={{ flexBasis: "30%", maxWidth: "30%" }}
+                sx={{ flexBasis: '30%', maxWidth: '30%' }}
               >
                 <WikiCard wiki={wiki} />
               </Grid>
             ))}
           </Grid>
           <Pagination
-            count={Math.ceil(wikis.length / itemsPerPage)}
-            page={currentPage}
-            onChange={handlePageChange}
-            sx={{ mt: 4 }}
-          />
-        </>
-      ) : null}
-    </Container>
+              count={Math.ceil(wikis.length / itemsPerPage)}
+              page={currentPage}
+              onChange={handlePageChange}
+              sx={{ mt: 4 }} /></>
+        ) : null}
+      </Container>
   );
 }
 
