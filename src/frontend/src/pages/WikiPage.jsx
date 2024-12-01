@@ -9,14 +9,16 @@ import {
   List,
   ListItem,
 } from "@mui/material";
-import { searchEntries } from "../api/EntryApi.js";
+import { deleteEntry, searchEntries } from "../api/EntryApi.js";
 import { getWiki } from "../api/WikiApi.js";
 import EntradaCard from "../components/EntradaCard.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 
 function WikiPage() {
   const [wiki, setWiki] = useState({});
   const [entradas, setEntradas] = useState([]);
   const [error, setError] = useState(null);
+  const { showToast } = useToast();
 
   const { id } = useParams();
 
@@ -43,6 +45,20 @@ function WikiPage() {
       })
       .catch((err) => setError(err.message));
   }, [id]);
+
+    // Handler to delete a Entry
+    const handleDeleteEntry = async (entryID) => {
+      try {
+        await deleteEntry(entryID);
+        setEntradas((prevEntries) =>
+          prevEntries.filter((entry) => entry.id !== entryID),
+        );
+        showToast("Comentario eliminado correctamente", "success");
+      } catch (error) {
+        console.error("Error al eliminar el comentario:", error);
+        showToast("Error al eliminar el comentario", "danger");
+      }
+    };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -95,6 +111,7 @@ function WikiPage() {
                       title={entrada.title}
                       author={entrada.author}
                       createdAt={entrada.created_at}
+                      onDelete={handleDeleteEntry}
                     />
                   </ListItem>
                 ))}

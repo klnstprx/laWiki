@@ -44,7 +44,7 @@ VersionCard.propTypes = {
   versionId: PropTypes.string.isRequired,
   editor: PropTypes.string.isRequired,
   created_at: PropTypes.string.isRequired,
-  onDelete: PropTypes.func.isRequired
+  onDelete: PropTypes.func.isRequired,
 };
 
 export default VersionCard;
