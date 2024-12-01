@@ -278,30 +278,23 @@ function EntradaPage() {
       <Divider sx={{ my: 4 }} />
 
       {/* Media */}
-      <Container>
-        {entryError && <Alert severity="error">{entryError}</Alert>}
-        {mediaError && <Alert severity="error">{mediaError}</Alert>}
-        {mediaList.length > 0 && ( // Verifica si hay elementos en mediaList
-          <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-            <Carousel
-              showThumbs={false}
-              infiniteLoop
-              useKeyboardArrows
-              autoPlay
-            >
-              {mediaList.map((media, index) => (
-                <div key={index}>
-                  <img
-                    src={media.uploadUrl}
-                    alt={media.publicId}
-                    style={{ maxWidth: "33%" }}
-                  />
-                </div>
-              ))}
-            </Carousel>
-          </Paper>
-        )}
-      </Container>
+      {entryError && <Alert severity="error">{entryError}</Alert>}
+      {mediaError && <Alert severity="error">{mediaError}</Alert>}
+      {mediaList.length > 0 && ( // Verifica si hay elementos en mediaList
+        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+          <Carousel showThumbs={false} infiniteLoop useKeyboardArrows>
+            {mediaList.map((media, index) => (
+              <div key={index}>
+                <img
+                  src={media.uploadUrl}
+                  alt={media.publicId}
+                  style={{ maxWidth: "33%" }}
+                />
+              </div>
+            ))}
+          </Carousel>
+        </Paper>
+      )}
 
       {/* Entry Details */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
