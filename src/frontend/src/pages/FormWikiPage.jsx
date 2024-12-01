@@ -1,15 +1,8 @@
-import { useEffect, useState, useRef } from "react";
-import { getWiki, postWiki, putWiki } from "../api/WikiApi.js";
-import { useNavigate, useParams } from "react-router-dom";
-import {
-  Container,
-  Paper,
-  Typography,
-  Button,
-  TextField,
-  Grid2,
-  Box,
-} from "@mui/material";
+import { useEffect, useState } from 'react';
+import { Container, Typography, TextField, Button, Box } from '@mui/material';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getWiki, postWiki, putWiki } from '../api/WikiApi';
+import ConfirmationModal from '../components/ConfirmationModal.jsx';
 
 function FormWikiPage() {
   const { wikiId } = useParams();
@@ -19,10 +12,15 @@ function FormWikiPage() {
     category: "",
   });
   const [error, setError] = useState(null);
-  const formRef = useRef(null);
   const navigate = useNavigate();
 
-  // Obtener detalles de la wiki si se está editando
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formErrors, setFormErrors] = useState({
+    title: '',
+    description: '',
+    category: '',
+  });
+
   useEffect(() => {
     if (wikiId) {
       getWiki(wikiId)
@@ -30,109 +28,136 @@ function FormWikiPage() {
           if (data && Object.keys(data).length > 0) {
             setWiki(data);
           } else {
-            setError("No se encontró la wiki solicitada.");
+            setError('Wiki no encontrada.');
           }
         })
-        .catch(() =>
-          setError("Se produjo un error al obtener los detalles de la wiki.")
-        );
+        .catch(() => setError('Error al obtener los detalles de la wiki.'));
     }
   }, [wikiId]);
 
-  // Manejador de cambios en los campos del formulario
   const handleChange = (event) => {
     const { name, value } = event.target;
     setWiki((prevWiki) => ({
       ...prevWiki,
       [name]: value,
     }));
+    // Clear error for the field
+    setFormErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: '',
+    }));
   };
 
-  // Manejador para enviar el formulario
-  async function handleSubmit(event) {
-    event.preventDefault();
+  const validate = () => {
+    let isValid = true;
+    let errors = { title: '', description: '', category: '' };
 
-    const wikiData = {
-      title: wiki.title,
-      description: wiki.description,
-      category: wiki.category,
-    };
+    if (!wiki.title.trim()) {
+      errors.title = 'El título es obligatorio.';
+      isValid = false;
+    }
+    if (!wiki.description.trim()) {
+      errors.description = 'La descripción es obligatoria.';
+      isValid = false;
+    }
+    if (!wiki.category.trim()) {
+      errors.category = 'La categoría es obligatoria.';
+      isValid = false;
+    }
 
+    setFormErrors(errors);
+    return isValid;
+  };
+
+  const handleSubmit = async () => {
     try {
       if (wikiId) {
-        // Actualizar wiki existente
-        await putWiki(wikiId, wikiData);
-        navigate(`/wiki/${wikiId}`);
+        await putWiki(wikiId, wiki);
       } else {
-        // Crear nueva wiki
-        const newWiki = await postWiki(wikiData);
-        navigate(`/wiki/${newWiki.id}`);
+        await postWiki(wiki);
       }
+      navigate('/');
     } catch (error) {
-      console.error("Error al guardar la wiki:", error);
-      setError("Error al guardar la wiki.");
+      console.error('Error al guardar la wiki:', error);
+      setError('Error al guardar la wiki.');
     }
-  }
+  };
+
+  const onSubmit = (event) => {
+    event.preventDefault();
+    if (validate()) {
+      setIsModalOpen(true);
+    }
+  };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4 }}>
-        <form id="formWiki" ref={formRef} onSubmit={handleSubmit}>
-          <Typography variant="h4" gutterBottom>
-            {wikiId ? "Editar Wiki" : "Crear Nueva Wiki"}
-          </Typography>
-          {error && (
-            <Typography variant="body1" color="error" gutterBottom>
-              {error}
-            </Typography>
-          )}
-          <Grid2 container spacing={2}>
-            <Grid2 xs={12}>
-              <TextField
-                id="title"
-                name="title"
-                label="Título"
-                value={wiki.title}
-                onChange={handleChange}
-                variant="outlined"
-                fullWidth
-                required
-              />
-            </Grid2>
-            <Grid2 xs={12}>
-              <TextField
-                id="description"
-                name="description"
-                label="Descripción"
-                value={wiki.description}
-                onChange={handleChange}
-                variant="outlined"
-                fullWidth
-                multiline
-                rows={4}
-                required
-              />
-            </Grid2>
-            <Grid2 xs={12}>
-              <TextField
-                id="category"
-                name="category"
-                label="Categoría"
-                value={wiki.category}
-                onChange={handleChange}
-                variant="outlined"
-                fullWidth
-                required
-              />
-            </Grid2>
-          </Grid2>
-          <Box sx={{ mt: 5 }} display="flex" justifyContent="flex-end">
-            <Button type="submit" variant="contained" color="primary">
-              {wikiId ? "Guardar Cambios" : "Crear Wiki"}
-            </Button>
-          </Box>
-        </form>
-      </Paper>
+    <Container maxWidth="md">
+      <Typography variant="h4" gutterBottom>
+        {wikiId ? "Editar Wiki" : "Crear Nueva Wiki"}
+      </Typography>
+      {error && (
+        <Typography variant="body1" color="error" gutterBottom>
+          {error}
+        </Typography>
+      )}
+      <Box component="form" onSubmit={onSubmit} noValidate sx={{ mt: 1 }}>
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          id="title"
+          name="title"
+          label="Título"
+          value={wiki.title}
+          onChange={handleChange}
+          variant="outlined"
+          error={!!formErrors.title}
+          helperText={formErrors.title}
+        />
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          id="description"
+          name="description"
+          label="Descripción"
+          value={wiki.description}
+          onChange={handleChange}
+          variant="outlined"
+          multiline
+          rows={4}
+          error={!!formErrors.description}
+          helperText={formErrors.description}
+        />
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          id="category"
+          name="category"
+          label="Categoría"
+          value={wiki.category}
+          onChange={handleChange}
+          variant="outlined"
+          error={!!formErrors.category}
+          helperText={formErrors.category}
+        />
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          sx={{ mt: 3, mb: 2 }}
+        >
+          {wikiId ? "Guardar Cambios" : "Crear Wiki"}
+        </Button>
+      </Box>
+
+      <ConfirmationModal
+        show={isModalOpen}
+        handleClose={() => setIsModalOpen(false)}
+        handleConfirm={handleSubmit}
+        message={`¿Estás seguro de que quieres ${wikiId ? 'guardar los cambios' : 'crear esta wiki'}?`}
+      />
     </Container>
   );
 }

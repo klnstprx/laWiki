@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Container,
   Paper,
@@ -11,17 +11,21 @@ import {
   Box,
 } from "@mui/material";
 import { deleteEntry, searchEntries } from "../api/EntryApi.js";
-import { getWiki } from "../api/WikiApi.js";
+import { getWiki, deleteWiki } from "../api/WikiApi.js";
 import EntradaCard from "../components/EntradaCard.jsx";
 import { useToast } from "../context/ToastContext.jsx";
+import ConfirmationModal from "../components/ConfirmationModal.jsx";
 
 function WikiPage() {
   const [wiki, setWiki] = useState({});
   const [entradas, setEntradas] = useState([]);
   const [error, setError] = useState(null);
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const { id } = useParams();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     getWiki(id)
@@ -41,23 +45,33 @@ function WikiPage() {
         if (data && Array.isArray(data)) {
           setEntradas(data);
         } else {
-          setEntradas([]); // Ensure entradas is always an array
+          setEntradas([]);
         }
       })
       .catch((err) => setError(err.message));
   }, [id]);
 
-  // Handler to delete a Entry
   const handleDeleteEntry = async (entryID) => {
     try {
       await deleteEntry(entryID);
       setEntradas((prevEntries) =>
-        prevEntries.filter((entry) => entry.id !== entryID),
+        prevEntries.filter((entry) => entry.id !== entryID)
       );
       showToast("Comentario eliminado correctamente", "success");
     } catch (error) {
       console.error("Error al eliminar el comentario:", error);
       showToast("Error al eliminar el comentario", "error");
+    }
+  };
+
+  const handleDeleteWiki = async () => {
+    try {
+      await deleteWiki(id);
+      showToast("Wiki eliminada correctamente", "success");
+      navigate("/");
+    } catch (error) {
+      console.error("Error al eliminar la wiki:", error);
+      showToast("Error al eliminar la wiki", "error");
     }
   };
 
@@ -109,7 +123,7 @@ function WikiPage() {
             >
               Entradas
             </Typography>
-            {entradas && entradas.length > 0 ? ( // Added null check for entradas
+            {entradas && entradas.length > 0 ? (
               <List>
                 {entradas.map((entrada) => (
                   <ListItem key={entrada.id} divider>
@@ -140,16 +154,34 @@ function WikiPage() {
               Crear Nueva Entrada
             </Button>
 
-            <Button
-              component={Link}
-              to={`/wiki/form/${id}`}
-              variant="contained"
-              color="secondary"
-              sx={{ mt: 2 }}
-            >
-              Editar Wiki
-            </Button>
+            <Box>
+              <Button
+                component={Link}
+                to={`/wiki/form/${id}`}
+                variant="contained"
+                color="secondary"
+                sx={{ mt: 2, mr: 2 }}
+              >
+                Editar Wiki
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                sx={{ mt: 2 }}
+                onClick={() => setIsModalOpen(true)}
+              >
+                Borrar Wiki
+              </Button>
+            </Box>
           </Box>
+
+          {/* Confirmation Modal */}
+          <ConfirmationModal
+            show={isModalOpen}
+            handleClose={() => setIsModalOpen(false)}
+            handleConfirm={handleDeleteWiki}
+            message="¿Estás seguro de que quieres borrar esta wiki?"
+          />
         </>
       )}
     </Container>
