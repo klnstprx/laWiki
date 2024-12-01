@@ -134,6 +134,8 @@ func SearchWikis(w http.ResponseWriter, r *http.Request) {
 	exactTitle := r.URL.Query().Get("exact_title")
 	description := r.URL.Query().Get("description")
 	category := r.URL.Query().Get("category")
+	createdAtFromString := r.URL.Query().Get("createdAtFrom")
+	createdAtToString := r.URL.Query().Get("createdAtTo")
 
 	// Build the MongoDB filter dynamically
 	filter := bson.M{}
@@ -148,6 +150,32 @@ func SearchWikis(w http.ResponseWriter, r *http.Request) {
 	}
 	if category != "" {
 		filter["category"] = category
+	}
+
+	if createdAtFromString != "" || createdAtToString != "" {
+		dateFilter := bson.M{}
+
+		if createdAtFromString != "" {
+			createdAtFrom, err := time.Parse(time.RFC3339, createdAtFromString)
+			if err != nil {
+				config.App.Logger.Error().Err(err).Msg("Invalid 'createdAtFrom' date format. Expected ISO8601 format.")
+				http.Error(w, "Invalid 'createdAtFrom' date format. Expected ISO8601 format.", http.StatusBadRequest)
+				return
+			}
+			dateFilter["$gte"] = createdAtFrom
+		}
+
+		if createdAtToString != "" {
+			createdAtTo, err := time.Parse(time.RFC3339, createdAtToString)
+			if err != nil {
+				config.App.Logger.Error().Err(err).Msg("Invalid 'createdAtTo' date format. Expected ISO8601 format.")
+				http.Error(w, "Invalid 'createdAtTo' date format. Expected ISO8601 format.", http.StatusBadRequest)
+				return
+			}
+			dateFilter["$lte"] = createdAtTo
+		}
+
+		filter["created_at"] = dateFilter
 	}
 
 	// Query the database

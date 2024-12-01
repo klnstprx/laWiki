@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Container,
   TextField,
@@ -6,24 +6,42 @@ import {
   Typography,
   Paper,
   CircularProgress,
-  Grid2,
 } from "@mui/material";
+import Grid from "@mui/joy/Grid";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import Autocomplete from "@mui/material/Autocomplete";
 import SearchResultsList from "../components/SearchResultsList";
-import { searchWikis } from "../api/WikiApi";
+import { searchWikis, getAllWikis } from "../api/WikiApi";
 import { searchEntries } from "../api/EntryApi";
 import { searchComments } from "../api/CommentApi";
 import { searchVersions } from "../api/VersionApi";
 
 const AdvancedSearchPage = () => {
   const [params, setParams] = useState({
+    // Wikis
     wikiTitle: "",
+    wikiDescription: "",
     wikiCategory: "",
+    wikiCreatedAtFrom: null,
+    wikiCreatedAtTo: null,
+    // Entries
     entryTitle: "",
     entryAuthor: "",
+    entryCreatedAtFrom: null,
+    entryCreatedAtTo: null,
+    wikiName: "",
+    wikiID: null,
+    // Comments
     commentContent: "",
     commentAuthor: "",
+    commentCreatedAtFrom: null,
+    commentCreatedAtTo: null,
+    commentRating: "",
+    // Versions
     versionContent: "",
     versionEditor: "",
+    versionCreatedAtFrom: null,
+    versionCreatedAtTo: null,
   });
 
   const [searchResults, setSearchResults] = useState({
@@ -56,6 +74,12 @@ const AdvancedSearchPage = () => {
       if (params.wikiCategory.trim() !== "") {
         wikiSearchParams.category = params.wikiCategory.trim();
       }
+      if (params.wikiCreatedAtFrom) {
+        wikiSearchParams.createdAtFrom = params.wikiCreatedAtFrom.toISOString();
+      }
+      if (params.wikiCreatedAtTo) {
+        wikiSearchParams.createdAtTo = params.wikiCreatedAtTo.toISOString();
+      }
 
       const entriesSearchParams = {};
       if (params.entryTitle.trim() !== "") {
@@ -63,6 +87,16 @@ const AdvancedSearchPage = () => {
       }
       if (params.entryAuthor.trim() !== "") {
         entriesSearchParams.author = params.entryAuthor.trim();
+      }
+      if (params.entryCreatedAtFrom) {
+        entriesSearchParams.createdAtFrom =
+          params.entryCreatedAtFrom.toISOString();
+      }
+      if (params.entryCreatedAtTo) {
+        entriesSearchParams.createdAtTo = params.entryCreatedAtTo.toISOString();
+      }
+      if (params.wikiID) {
+        entriesSearchParams.wikiID = params.wikiID;
       }
 
       const commentsSearchParams = {};
@@ -72,6 +106,17 @@ const AdvancedSearchPage = () => {
       if (params.commentAuthor.trim() !== "") {
         commentsSearchParams.author = params.commentAuthor.trim();
       }
+      if (params.commentCreatedAtFrom) {
+        commentsSearchParams.createdAtFrom =
+          params.commentCreatedAtFrom.toISOString();
+      }
+      if (params.commentCreatedAtTo) {
+        commentsSearchParams.createdAtTo =
+          params.commentCreatedAtTo.toISOString();
+      }
+      if (params.commentRating.trim() !== "") {
+        commentsSearchParams.rating = parseInt(params.commentRating.trim(), 10);
+      }
 
       const versionsSearchParams = {};
       if (params.versionContent.trim() !== "") {
@@ -79,6 +124,14 @@ const AdvancedSearchPage = () => {
       }
       if (params.versionEditor.trim() !== "") {
         versionsSearchParams.editor = params.versionEditor.trim();
+      }
+      if (params.versionCreatedAtFrom) {
+        versionsSearchParams.createdAtFrom =
+          params.versionCreatedAtFrom.toISOString();
+      }
+      if (params.versionCreatedAtTo) {
+        versionsSearchParams.createdAtTo =
+          params.versionCreatedAtTo.toISOString();
       }
 
       const wikisPromise =
@@ -130,33 +183,50 @@ const AdvancedSearchPage = () => {
     }
   };
 
-  const isSearchDisabled =
-    !params.wikiTitle &&
-    !params.wikiCategory &&
-    !params.entryTitle &&
-    !params.entryAuthor &&
-    !params.commentContent &&
-    !params.commentAuthor &&
-    !params.versionContent &&
-    !params.versionEditor;
+  const [wikisList, setWikisList] = useState([]);
+
+  useEffect(() => {
+    getAllWikis()
+      .then((data) => {
+        if (data && Array.isArray(data)) {
+          setWikisList(data);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching wikis:", error);
+      });
+  }, []);
+
+  const isSearchDisabled = Object.values(params).every(
+    (value) => value === "" || value === null,
+  );
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="md">
       <Typography variant="h4" gutterBottom>
         Búsqueda Avanzada
       </Typography>
-      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-        <Grid2 container spacing={2}>
+      <Paper elevation={3} sx={{ padding: 2, marginBottom: 4 }}>
+        <Grid container spacing={2}>
           {/* Wiki Search Fields */}
-          <Grid2 xs={12} sm={6}>
+          <Grid xs={12} sm={6}>
             <Typography variant="h6">Wiki</Typography>
+
             <TextField
               label="Título de la Wiki"
               name="wikiTitle"
               value={params.wikiTitle}
               onChange={handleInputChange}
               fullWidth
-              margin="normal"
+              margin="dense"
+            />
+            <TextField
+              label="Descripción de la Wiki"
+              name="wikiDescription"
+              value={params.wikiDescription}
+              onChange={handleInputChange}
+              fullWidth
+              margin="dense"
             />
             <TextField
               label="Categoría de la Wiki"
@@ -164,20 +234,45 @@ const AdvancedSearchPage = () => {
               value={params.wikiCategory}
               onChange={handleInputChange}
               fullWidth
-              margin="normal"
+              margin="dense"
             />
-          </Grid2>
+
+            <Typography variant="body2" sx={{ marginTop: 2 }}>
+              Fecha de Creación de la Wiki
+            </Typography>
+            <DatePicker
+              label="Desde"
+              value={params.wikiCreatedAtFrom}
+              onChange={(newValue) => {
+                setParams((prevParams) => ({
+                  ...prevParams,
+                  wikiCreatedAtFrom: newValue,
+                }));
+              }}
+            />
+            <DatePicker
+              label="Hasta"
+              value={params.wikiCreatedAtTo}
+              onChange={(newValue) => {
+                setParams((prevParams) => ({
+                  ...prevParams,
+                  wikiCreatedAtTo: newValue,
+                }));
+              }}
+            />
+          </Grid>
 
           {/* Entry Search Fields */}
-          <Grid2 xs={12} sm={6}>
+          <Grid xs={12} sm={6}>
             <Typography variant="h6">Entrada</Typography>
+
             <TextField
               label="Título de la Entrada"
               name="entryTitle"
               value={params.entryTitle}
               onChange={handleInputChange}
               fullWidth
-              margin="normal"
+              margin="dense"
             />
             <TextField
               label="Autor de la Entrada"
@@ -185,20 +280,63 @@ const AdvancedSearchPage = () => {
               value={params.entryAuthor}
               onChange={handleInputChange}
               fullWidth
-              margin="normal"
+              margin="dense"
             />
-          </Grid2>
+
+            <Typography variant="body2" sx={{ marginTop: 2 }}>
+              Fecha de Creación de la Entrada
+            </Typography>
+            <DatePicker
+              label="Desde"
+              value={params.entryCreatedAtFrom}
+              onChange={(newValue) => {
+                setParams((prevParams) => ({
+                  ...prevParams,
+                  entryCreatedAtFrom: newValue,
+                }));
+              }}
+            />
+            <DatePicker
+              label="Hasta"
+              value={params.entryCreatedAtTo}
+              onChange={(newValue) => {
+                setParams((prevParams) => ({
+                  ...prevParams,
+                  entryCreatedAtTo: newValue,
+                }));
+              }}
+            />
+            <Autocomplete
+              options={wikisList}
+              getOptionLabel={(option) => option.title}
+              onChange={(event, newValue) => {
+                setParams((prevParams) => ({
+                  ...prevParams,
+                  wikiID: newValue ? newValue.id : null,
+                  wikiName: newValue ? newValue.title : "",
+                }));
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Wiki de la Entrada"
+                  margin="dense"
+                />
+              )}
+            />
+          </Grid>
 
           {/* Comment Search Fields */}
-          <Grid2 xs={12} sm={6}>
+          <Grid xs={12} sm={6}>
             <Typography variant="h6">Comentario</Typography>
+
             <TextField
               label="Contenido del Comentario"
               name="commentContent"
               value={params.commentContent}
               onChange={handleInputChange}
               fullWidth
-              margin="normal"
+              margin="dense"
             />
             <TextField
               label="Autor del Comentario"
@@ -206,20 +344,54 @@ const AdvancedSearchPage = () => {
               value={params.commentAuthor}
               onChange={handleInputChange}
               fullWidth
-              margin="normal"
+              margin="dense"
             />
-          </Grid2>
+
+            <Typography variant="body2" sx={{ marginTop: 2 }}>
+              Fecha de Creación del Comentario
+            </Typography>
+            <DatePicker
+              label="Desde"
+              value={params.commentCreatedAtFrom}
+              onChange={(newValue) => {
+                setParams((prevParams) => ({
+                  ...prevParams,
+                  commentCreatedAtFrom: newValue,
+                }));
+              }}
+            />
+            <DatePicker
+              label="Hasta"
+              value={params.commentCreatedAtTo}
+              onChange={(newValue) => {
+                setParams((prevParams) => ({
+                  ...prevParams,
+                  commentCreatedAtTo: newValue,
+                }));
+              }}
+            />
+            <TextField
+              label="Calificación del Comentario"
+              name="commentRating"
+              value={params.commentRating}
+              onChange={handleInputChange}
+              fullWidth
+              margin="dense"
+              type="number"
+            />
+          </Grid>
 
           {/* Version Search Fields */}
-          <Grid2 xs={12} sm={6}>
+          <Grid xs={12} sm={6}>
             <Typography variant="h6">Versión</Typography>
+
             <TextField
               label="Contenido de la Versión"
               name="versionContent"
               value={params.versionContent}
               onChange={handleInputChange}
               fullWidth
-              margin="normal"
+              margin="dense"
             />
             <TextField
               label="Editor de la Versión"
@@ -227,16 +399,40 @@ const AdvancedSearchPage = () => {
               value={params.versionEditor}
               onChange={handleInputChange}
               fullWidth
-              margin="normal"
+              margin="dense"
             />
-          </Grid2>
-        </Grid2>
+
+            <Typography variant="body2" sx={{ marginTop: 2 }}>
+              Fecha de Creación de la Versión
+            </Typography>
+            <DatePicker
+              label="Desde"
+              value={params.versionCreatedAtFrom}
+              onChange={(newValue) => {
+                setParams((prevParams) => ({
+                  ...prevParams,
+                  versionCreatedAtFrom: newValue,
+                }));
+              }}
+            />
+            <DatePicker
+              label="Hasta"
+              value={params.versionCreatedAtTo}
+              onChange={(newValue) => {
+                setParams((prevParams) => ({
+                  ...prevParams,
+                  versionCreatedAtTo: newValue,
+                }));
+              }}
+            />
+          </Grid>
+        </Grid>
 
         <Button
           variant="contained"
           color="primary"
           onClick={handleSearch}
-          sx={{ mt: 2 }}
+          sx={{ marginTop: 3 }}
           fullWidth
           disabled={isSearchDisabled}
         >
@@ -244,14 +440,14 @@ const AdvancedSearchPage = () => {
         </Button>
       </Paper>
       {error && (
-        <Typography variant="body2" color="error" sx={{ mt: 2 }}>
+        <Typography variant="body2" color="error" sx={{ marginTop: 2 }}>
           {error}
         </Typography>
       )}
       {loading ? (
         <div style={{ display: "flex", alignItems: "center", padding: "10px" }}>
           <CircularProgress size={24} />
-          <Typography variant="body2" sx={{ ml: 2 }}>
+          <Typography variant="body2" sx={{ marginLeft: 2 }}>
             Cargando...
           </Typography>
         </div>
