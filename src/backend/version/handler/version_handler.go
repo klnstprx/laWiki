@@ -371,6 +371,57 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	// Get the MediaIDs associated with the version
+
+	var version model.Version
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	err = database.VersionCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&version)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Version not found")
+		http.Error(w, "Version not found", http.StatusNotFound)
+		return
+	}
+
+	// Delete associated media files first
+
+	for _, mediaID := range version.MediaIDs {
+		mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.API_GATEWAY_URL, mediaID)
+		req, err := http.NewRequest("DELETE", mediaServiceURL, nil)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to create request to media service")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		config.App.Logger.Info().Str("url", mediaServiceURL).Msg("Sending delete request to media service")
+
+		resp, err := client.Do(req)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to send delete request to media service")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+			bodyBytes, _ := io.ReadAll(resp.Body)
+			bodyString := string(bodyBytes)
+			config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("Media service returned error")
+			http.Error(w, "Failed to delete associated media files", http.StatusInternalServerError)
+			return
+		}
+	}
+
 	// Delete associated comments first
 	commentServiceURL := fmt.Sprintf("%s/api/comments/version?versionID=%s", config.App.API_GATEWAY_URL, id)
 	config.App.Logger.Info().Str("url", commentServiceURL).Msg("Preparing to delete associated comments")
@@ -383,9 +434,6 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	config.App.Logger.Info().Str("url", commentServiceURL).Msg("Sending request to delete associated comments")
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -407,12 +455,6 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Now proceed to delete the version document
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid version ID")
-		http.Error(w, "Invalid version ID", http.StatusBadRequest)
-		return
-	}
 
 	result, err := database.VersionCollection.DeleteOne(ctx, bson.M{"_id": objID})
 	if err != nil {

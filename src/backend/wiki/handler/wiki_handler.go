@@ -310,6 +310,7 @@ func PutWiki(w http.ResponseWriter, r *http.Request) {
 			"description": wiki.Description,
 			"category":    wiki.Category,
 			"updated_at":  wiki.UpdatedAt,
+			"media_id":    wiki.MediaID,
 		},
 	}
 
@@ -357,6 +358,58 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	//get the media ID, found in the wiki object
+	var wiki model.Wiki
+	objID, err := primitive.ObjectIDFromHex(wikiID)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	err = database.WikiCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&wiki)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to retrieve wiki")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Delete associated media first
+	if wiki.MediaID != "" {
+		mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.API_GATEWAY_URL, wiki.MediaID)
+		config.App.Logger.Info().Str("url", mediaServiceURL).Msg("Preparing to delete associated media")
+
+		req, err := http.NewRequest("DELETE", mediaServiceURL, nil)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to create request to media service")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to send request to media service")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+			bodyBytes, _ := io.ReadAll(resp.Body)
+			bodyString := string(bodyBytes)
+			config.App.Logger.Error().
+				Int("status", resp.StatusCode).
+				Str("body", bodyString).
+				Msg("Media service returned error")
+			http.Error(w, "Failed to delete associated media", http.StatusInternalServerError)
+			return
+		}
+	}
+
 	// Delete associated entries first
 	entryServiceURL := fmt.Sprintf("%s/api/entries/wiki?wikiID=%s", config.App.API_GATEWAY_URL, wikiID)
 	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Preparing to delete associated entries")
@@ -369,9 +422,6 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 	}
 
 	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Sending request to delete associated entries")
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -393,12 +443,6 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Now proceed to delete the wiki document
-	objID, err := primitive.ObjectIDFromHex(wikiID)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid wiki ID")
-		http.Error(w, "Invalid wiki ID", http.StatusBadRequest)
-		return
-	}
 
 	result, err := database.WikiCollection.DeleteOne(ctx, bson.M{"_id": objID})
 	if err != nil {
