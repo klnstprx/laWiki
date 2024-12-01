@@ -1,10 +1,16 @@
-import PropTypes from 'prop-types';
-import { Card, CardActionArea, CardMedia, CardContent, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
+import PropTypes from "prop-types";
+import {
+  Card,
+  CardActionArea,
+  CardMedia,
+  CardContent,
+  Typography,
+} from "@mui/material";
+import { Link } from "react-router-dom";
 
 const WikiCard = ({ wiki }) => {
   return (
-    <Card sx={{ width: '100%' }}>
+    <Card sx={{ width: "100%" }}>
       <CardActionArea component={Link} to={`/wiki/${wiki.id}`}>
         <CardMedia
           component="img"

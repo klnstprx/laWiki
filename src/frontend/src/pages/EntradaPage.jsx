@@ -20,13 +20,24 @@ import {
   Button,
   Alert,
   TextField,
-  Grid2,
   Divider,
   Breadcrumbs,
+  Rating,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
 import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css'; // Import the carousel styles
 import { getWiki } from "../api/WikiApi.js";
+import InfoIcon from "@mui/icons-material/Info";
+import HistoryIcon from "@mui/icons-material/History";
+import EditIcon from "@mui/icons-material/Edit";
+import PersonIcon from "@mui/icons-material/Person";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { Carousel } from "react-responsive-carousel";
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import the carousel styles
+
+import Grid from "@mui/joy/Grid";
 
 function EntradaPage() {
   const { entryId, versionId } = useParams();
@@ -48,7 +59,9 @@ function EntradaPage() {
 
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
 
-  const geoCacheRef = useRef(JSON.parse(sessionStorage.getItem("geoCache")) || {}); // cache de geocoding
+  const geoCacheRef = useRef(
+    JSON.parse(sessionStorage.getItem("geoCache")) || {},
+  ); // cache de geocoding
 
   const saveCacheToSessionStorage = () => {
     sessionStorage.setItem("geoCache", JSON.stringify(geoCacheRef.current));
@@ -172,7 +185,8 @@ function EntradaPage() {
     if (!Array.isArray(mediaIdsArray) || mediaIdsArray.length === 0) {
       console.log("No media IDs found or mediaIdsArray is not an array.");
       return;
-    }    try {
+    }
+    try {
       const mediaPromises = mediaIdsArray.map((id) => getMedia(id));
       const mediaResults = await Promise.all(mediaPromises);
       setMediaList(mediaResults);
@@ -199,6 +213,7 @@ function EntradaPage() {
             const latestVersion = versions[0];
             setActualVersionId(latestVersion.id);
           } else {
+            setLoadingVersion(false);
             setVersionError(
               "No se encontró ninguna versión para esta entrada.",
             );
@@ -255,6 +270,7 @@ function EntradaPage() {
     const formData = new FormData(event.target);
     const jsonData = Object.fromEntries(formData.entries());
     jsonData["version_id"] = actualVersionId;
+    jsonData["entry_id"] = entryId;
     jsonData["rating"] = parseInt(jsonData["rating"], 10);
     setPendingComment(jsonData);
     setShowModal(true);
@@ -274,12 +290,71 @@ function EntradaPage() {
       </Breadcrumbs>
 
       {/* Entry Title */}
-      {entryError && <Alert severity="error">{entryError}</Alert>}
       {!entryError && entry && (
         <Typography variant="h3" gutterBottom>
           {entry.title}
         </Typography>
       )}
+
+            {/* Entry Details */}
+      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        {!entryError && entry && (
+          <>
+            <Tooltip
+              title={
+                <Typography variant="subtitle1">
+                  Autor: {entry.author}
+                </Typography>
+              }
+              arrow
+            >
+              <IconButton>
+                <PersonIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip
+              title={
+                <Typography variant="subtitle1">
+                  Fecha de creación:{" "}
+                  {new Date(entry.created_at).toLocaleString("es-ES", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </Typography>
+              }
+              arrow
+            >
+              <IconButton>
+                <CalendarTodayIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip 
+            title={
+            <Typography variant="subtitle1">
+              Ver historial
+            </Typography>}
+             arrow>
+              <IconButton component={Link} to={`/versiones/${entry.id}/`}>
+                <HistoryIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip 
+            title={
+              <Typography variant="subtitle1">
+                Editar contenido
+              </Typography>
+            }
+             arrow>
+              <IconButton component={Link} to={`/version/form/${entry.id}/${actualVersionId || ""}`}>
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+          </>
+        )}
+      </Paper>
 
       {/* Version Content */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
@@ -308,7 +383,12 @@ function EntradaPage() {
         {mediaError && <Alert severity="error">{mediaError}</Alert>}
         {mediaList.length > 0 && ( // Verifica si hay elementos en mediaList
           <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-            <Carousel showThumbs={false} infiniteLoop useKeyboardArrows autoPlay>
+            <Carousel
+              showThumbs={false}
+              infiniteLoop
+              useKeyboardArrows
+              autoPlay
+            >
               {mediaList.map((media, index) => (
                 <div key={index}>
                   <img
@@ -323,19 +403,19 @@ function EntradaPage() {
         )}
       </Container>
 
-
       {/* Entry Details */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        {entryError && <Alert severity="error">{entryError}</Alert>}
         {!entryError && entry && (
           <>
             <Typography variant="subtitle1" gutterBottom>
               Autor: {entry.author} | Fecha de creación:{" "}
-              {new Date(entry.created_at).toLocaleString('es-ES', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
+              {new Date(entry.created_at).toLocaleString("es-ES", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
               })}
             </Typography>
             <Typography variant="subtitle1" gutterBottom>
@@ -348,9 +428,6 @@ function EntradaPage() {
           </>
         )}
       </Paper>
-
-
-
 
       {/* Comments */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
@@ -385,8 +462,8 @@ function EntradaPage() {
           Añadir comentario
         </Typography>
         <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
-          <Grid2 container spacing={2}>
-            <Grid2 xs={12}>
+          <Grid container spacing={2}>
+            <Grid xs={12}>
               <TextField
                 id="content"
                 name="content"
@@ -394,20 +471,16 @@ function EntradaPage() {
                 multiline
                 required
                 fullWidth
+                rows={4}
               />
-            </Grid2>
-            <Grid2 xs={12} sm={6} md={4}>
-              <TextField
-                id="rating"
-                name="rating"
-                label="Calificación"
-                type="number"
-                inputProps={{ min: 1, max: 5 }}
-                required
-                fullWidth
-              />
-            </Grid2>
-            <Grid2 xs={12} sm={6} md={4}>
+            </Grid>
+            <Grid xs={12} sm={6} md={4}>
+              <Typography variant="subtitle1" gutterBottom>
+                Valoración:
+              </Typography>
+              <Rating name="rating" id="rating" size="large" />
+            </Grid>
+            <Grid xs={12} sm={6} md={4}>
               <TextField
                 id="author"
                 name="author"
@@ -415,19 +488,19 @@ function EntradaPage() {
                 required
                 fullWidth
               />
-            </Grid2>
-            <Grid2 xs={12} md={4}>
+            </Grid>
+            <Grid xs={12} md={4}>
               <Button
                 type="submit"
                 variant="contained"
-                color="prry"
+                color="primary"
                 fullWidth
                 sx={{ height: "100%" }}
               >
                 Enviar
               </Button>
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </form>
       </Paper>
 
