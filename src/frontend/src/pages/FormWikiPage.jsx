@@ -76,7 +76,7 @@ function FormWikiPage() {
       } else {
         await postWiki(wiki);
       }
-      navigate('/wikis');
+      navigate('/');
     } catch (error) {
       console.error('Error al guardar la wiki:', error);
       setError('Error al guardar la wiki.');
