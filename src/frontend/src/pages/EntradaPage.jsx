@@ -289,16 +289,14 @@ function EntradaPage() {
 
       {/* Entry Title */}
       {!entryError && entry && (
-        <Typography variant="h3" gutterBottom>
-          {entry.title}
-        </Typography>
-      )}
-
-            {/* Entry Details */}
-      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-        {!entryError && entry && (
-          <>
-            <Tooltip
+        <Paper
+          elevation={3}
+          sx={{ p: 2,  mb: 4, textAlign: "center", borderRadius: 1 }}
+        >
+          <Typography variant="h3" component="h1" sx={{ m: 0 }}>
+            {entry.title}
+          </Typography>
+          <Tooltip
               title={
                 <Typography variant="subtitle1">
                   Autor: {entry.author}
@@ -350,9 +348,8 @@ function EntradaPage() {
                 <EditIcon />
               </IconButton>
             </Tooltip>
-          </>
-        )}
-      </Paper>
+        </Paper>
+      )}
 
       {/* Version Content */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
