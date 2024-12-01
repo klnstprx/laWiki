@@ -7,12 +7,12 @@ import {
   Typography,
   Button,
   TextField,
-  Grid2,
   Box,
 } from "@mui/material";
+import Grid from "@mui/joy/Grid";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import ConfirmationModal from '../components/ConfirmationModal.jsx'; // add import
+import ConfirmationModal from "../components/ConfirmationModal.jsx"; // add import
 
 function FormVersionPage() {
   const { entryId, versionId } = useParams();
@@ -99,11 +99,11 @@ function FormVersionPage() {
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4 }}>
         <form id="miFormulario" ref={formRef} onSubmit={onSubmit}>
           {/* Title and Editor input */}
-          <Grid2 container spacing={2} alignItems="center">
-            <Grid2 item xs={12} sm={8}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid xs={12} sm={8}>
               <Typography variant="h4">Editar entrada</Typography>
-            </Grid2>
-            <Grid2 item xs={12} sm={4}>
+            </Grid>
+            <Grid xs={12} sm={4}>
               <TextField
                 id="editor"
                 name="editor"
@@ -114,8 +114,8 @@ function FormVersionPage() {
                 fullWidth
                 required
               />
-            </Grid2>
-            <Grid2 item xs={12} sm={4}>
+            </Grid>
+            <Grid xs={12} sm={4}>
               <TextField
                 id="address"
                 name="address"
@@ -125,8 +125,8 @@ function FormVersionPage() {
                 variant="outlined"
                 fullWidth
               />
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
           {versionError && (
             <Typography variant="body1" color="error" gutterBottom>
               {versionError}
@@ -154,7 +154,7 @@ function FormVersionPage() {
         show={isModalOpen}
         handleClose={() => setIsModalOpen(false)}
         handleConfirm={handleSubmit}
-        message={`¿Estás seguro de que deseas ${versionId ? 'guardar los cambios' : 'crear esta versión'}?`}
+        message={`¿Estás seguro de que deseas ${versionId ? "guardar los cambios" : "crear esta versión"}?`}
       />
     </Container>
   );

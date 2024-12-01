@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
-import {
-  Container,
-  Typography,
-  Alert,
-  Grid2,
-  Button,
-} from "@mui/material";
+import { Container, Typography, Alert, Button } from "@mui/material";
+
+import Grid from "@mui/joy/Grid";
 import { getAllWikis } from "../api/WikiApi.js";
 import WikiCard from "../components/WikiCard.jsx";
 import { Link } from "react-router-dom";
@@ -44,7 +40,7 @@ function HomePage() {
 
       {error && <Alert severity="error">{error}</Alert>}
       {!error && wikis.length > 0 ? (
-        <Grid2
+        <Grid
           container
           spacing={4}
           sx={{
@@ -54,18 +50,18 @@ function HomePage() {
           }}
         >
           {wikis.map((wiki) => (
-            <Grid2
+            <Grid
               key={wiki.id}
               xs={12}
               sm={6}
               md={4}
               lg={4}
-              sx={{ flexBasis: '30%', maxWidth: '30%' }}
+              sx={{ flexBasis: "30%", maxWidth: "30%" }}
             >
               <WikiCard wiki={wiki} />
-            </Grid2>
+            </Grid>
           ))}
-        </Grid2>
+        </Grid>
       ) : null}
     </Container>
   );

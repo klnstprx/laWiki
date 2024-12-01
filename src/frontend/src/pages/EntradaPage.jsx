@@ -20,9 +20,10 @@ import {
   Button,
   Alert,
   TextField,
-  Grid2,
   Divider,
 } from "@mui/material";
+
+import Grid from "@mui/joy/Grid";
 
 function EntradaPage() {
   const { entryId, versionId } = useParams();
@@ -43,7 +44,9 @@ function EntradaPage() {
 
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
 
-  const geoCacheRef = useRef(JSON.parse(sessionStorage.getItem("geoCache")) || {}); // cache de geocoding
+  const geoCacheRef = useRef(
+    JSON.parse(sessionStorage.getItem("geoCache")) || {},
+  ); // cache de geocoding
 
   const saveCacheToSessionStorage = () => {
     sessionStorage.setItem("geoCache", JSON.stringify(geoCacheRef.current));
@@ -150,7 +153,8 @@ function EntradaPage() {
     if (!Array.isArray(mediaIdsArray) || mediaIdsArray.length === 0) {
       console.log("No media IDs found or mediaIdsArray is not an array.");
       return;
-    }    try {
+    }
+    try {
       const mediaPromises = mediaIdsArray.map((id) => getMedia(id));
       const mediaResults = await Promise.all(mediaPromises);
       setMediaList(mediaResults);
@@ -177,6 +181,7 @@ function EntradaPage() {
             const latestVersion = versions[0];
             setActualVersionId(latestVersion.id);
           } else {
+            setLoadingVersion(false);
             setVersionError(
               "No se encontró ninguna versión para esta entrada.",
             );
@@ -233,6 +238,7 @@ function EntradaPage() {
     const formData = new FormData(event.target);
     const jsonData = Object.fromEntries(formData.entries());
     jsonData["version_id"] = actualVersionId;
+    jsonData["entry_id"] = entryId;
     jsonData["rating"] = parseInt(jsonData["rating"], 10);
     setPendingComment(jsonData);
     setShowModal(true);
@@ -241,7 +247,6 @@ function EntradaPage() {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {/* Entry Title */}
-      {entryError && <Alert severity="error">{entryError}</Alert>}
       {!entryError && entry && (
         <Typography variant="h3" gutterBottom>
           {entry.title}
@@ -271,16 +276,17 @@ function EntradaPage() {
 
       {/* Entry Details */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        {entryError && <Alert severity="error">{entryError}</Alert>}
         {!entryError && entry && (
           <>
             <Typography variant="subtitle1" gutterBottom>
               Autor: {entry.author} | Fecha de creación:{" "}
-              {new Date(entry.created_at).toLocaleString('es-ES', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
+              {new Date(entry.created_at).toLocaleString("es-ES", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
               })}
             </Typography>
             <Typography variant="subtitle1" gutterBottom>
@@ -296,12 +302,15 @@ function EntradaPage() {
 
       {/* Media */}
       <Container>
-        {entryError && <Alert severity="error">{entryError}</Alert>}
         {mediaError && <Alert severity="error">{mediaError}</Alert>}
         <Stack spacing={2}>
           {mediaList.map((media, index) => (
             <Paper key={index}>
-              <img src={media.uploadUrl} alt={media.publicId} style={{ maxWidth: "40%" }} />
+              <img
+                src={media.uploadUrl}
+                alt={media.publicId}
+                style={{ maxWidth: "40%" }}
+              />
             </Paper>
           ))}
         </Stack>
@@ -340,8 +349,8 @@ function EntradaPage() {
           Añadir comentario
         </Typography>
         <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
-          <Grid2 container spacing={2}>
-            <Grid2 xs={12}>
+          <Grid container spacing={2}>
+            <Grid xs={12}>
               <TextField
                 id="content"
                 name="content"
@@ -349,9 +358,10 @@ function EntradaPage() {
                 multiline
                 required
                 fullWidth
+                rows={4}
               />
-            </Grid2>
-            <Grid2 xs={12} sm={6} md={4}>
+            </Grid>
+            <Grid xs={12} sm={6} md={4}>
               <TextField
                 id="rating"
                 name="rating"
@@ -361,8 +371,8 @@ function EntradaPage() {
                 required
                 fullWidth
               />
-            </Grid2>
-            <Grid2 xs={12} sm={6} md={4}>
+            </Grid>
+            <Grid xs={12} sm={6} md={4}>
               <TextField
                 id="author"
                 name="author"
@@ -370,8 +380,8 @@ function EntradaPage() {
                 required
                 fullWidth
               />
-            </Grid2>
-            <Grid2 xs={12} md={4}>
+            </Grid>
+            <Grid xs={12} md={4}>
               <Button
                 type="submit"
                 variant="contained"
@@ -381,8 +391,8 @@ function EntradaPage() {
               >
                 Enviar
               </Button>
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </form>
       </Paper>
 

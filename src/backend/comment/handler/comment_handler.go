@@ -3,6 +3,8 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -136,6 +138,7 @@ func SearchComments(w http.ResponseWriter, r *http.Request) {
 	createdAtToString := r.URL.Query().Get("createdAtTo")
 	ratingString := r.URL.Query().Get("rating")
 	versionID := r.URL.Query().Get("versionID")
+	entryID := r.URL.Query().Get("entryID")
 
 	// Build the MongoDB filter dynamically
 	filter := bson.M{}
@@ -189,6 +192,10 @@ func SearchComments(w http.ResponseWriter, r *http.Request) {
 
 	if versionID != "" {
 		filter["version_id"] = versionID
+	}
+
+	if entryID != "" {
+		filter["entry_id"] = entryID
 	}
 
 	// Query the database
@@ -256,6 +263,60 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 
 	comment.CreatedAt = time.Now().UTC()
 
+	// Retrieve EntryID from the provided VersionID by making an HTTP request
+	versionServiceURL := fmt.Sprintf("%s/api/versions/%s", config.App.API_GATEWAY_URL, comment.VersionID)
+	config.App.Logger.Info().Str("url", versionServiceURL).Msg("Fetching Version to get EntryID")
+
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	req, err := http.NewRequest("GET", versionServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to version service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to version service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", bodyString).
+			Msg("Version service returned error")
+		if resp.StatusCode == http.StatusNotFound {
+			http.Error(w, "Version not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Failed to retrieve Version", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	var version struct {
+		ID      string `json:"id"`
+		EntryID string `json:"entry_id"`
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&version)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode Version data")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Set the EntryID in the comment
+	comment.EntryID = version.EntryID
+
+	// Proceed to insert the comment into the database
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

@@ -5,14 +5,21 @@ import {
   CardActionArea,
   CardContent,
   Typography,
-  Grid2,
-  IconButton
+  IconButton,
 } from "@mui/material";
+import Grid from "@mui/joy/Grid";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ConfirmationModal from '../components/ConfirmationModal.jsx'; // add import
-import { useState } from 'react'; // add import
+import ConfirmationModal from "../components/ConfirmationModal.jsx"; // add import
+import { useState } from "react"; // add import
 
-const EntradaCard = ({ id, title, author, createdAt, onEntradaClick, onDelete }) => {
+const EntradaCard = ({
+  id,
+  title,
+  author,
+  createdAt,
+  onEntradaClick,
+  onDelete,
+}) => {
   const handleClick = () => {
     if (onEntradaClick) {
       onEntradaClick(id);
@@ -23,7 +30,7 @@ const EntradaCard = ({ id, title, author, createdAt, onEntradaClick, onDelete })
 
   const handleDelete = () => {
     setShowDeleteModal(true);
-  }; 
+  };
 
   const confirmDelete = () => {
     onDelete(id);
@@ -41,33 +48,35 @@ const EntradaCard = ({ id, title, author, createdAt, onEntradaClick, onDelete })
           <Typography variant="h5" component="div">
             {title}
           </Typography>
-          <Grid2 container spacing={2} sx={{ mt: 1 }}>
-            <Grid2 xs={6}>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid xs={6}>
               <Typography variant="subtitle1" color="textSecondary">
                 Autor
               </Typography>
               <Typography variant="body2">{author}</Typography>
-            </Grid2>
-            <Grid2 xs={6}>
+            </Grid>
+            <Grid xs={6}>
               <Typography variant="subtitle1" color="textSecondary">
                 Creado
               </Typography>
-              <Typography variant="body2">{new Date(createdAt).toLocaleString('es-ES', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}</Typography>
-            </Grid2>
-          </Grid2>
+              <Typography variant="body2">
+                {new Date(createdAt).toLocaleString("es-ES", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Typography>
+            </Grid>
+          </Grid>
         </CardContent>
       </CardActionArea>
-      <Grid2>
+      <Grid>
         <IconButton color="error" onClick={handleDelete}>
-            <DeleteIcon />
+          <DeleteIcon />
         </IconButton>
-      </Grid2>
+      </Grid>
       <ConfirmationModal
         show={showDeleteModal}
         handleClose={() => setShowDeleteModal(false)}
@@ -84,7 +93,7 @@ EntradaCard.propTypes = {
   author: PropTypes.string.isRequired,
   createdAt: PropTypes.string.isRequired,
   onEntradaClick: PropTypes.func,
-  onDelete: PropTypes.func.isRequired
+  onDelete: PropTypes.func.isRequired,
 };
 
 export default EntradaCard;
