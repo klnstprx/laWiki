@@ -278,13 +278,13 @@ function EntradaPage() {
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
 
       <Breadcrumbs sx={{ mb: 2 }}>
-        <Typography color="textPrimary" component={Link} to="/">
+        <Typography className="breadcrumb-link" component={Link} to="/">
           Inicio
         </Typography>
-        <Typography color="textPrimary" component={Link} to={`/wiki/${wiki.id}`}>
+        <Typography className="breadcrumb-link" component={Link} to={`/wiki/${wiki.id}`}>
           {wiki.title}
         </Typography>
-        <Typography color="textPrimary">{entry.title}</Typography>
+        <Typography className="breadcrumb-active">{entry.title}</Typography>
       </Breadcrumbs>
 
       {/* Entry Title */}

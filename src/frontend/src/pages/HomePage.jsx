@@ -41,7 +41,7 @@ function HomePage() {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Breadcrumbs sx={{ mb: 2 }}>
-          <Typography color="textPrimary">Inicio</Typography>
+          <Typography className="breadcrumb-active">Inicio</Typography>
         </Breadcrumbs>
 
         <Typography variant="h2" gutterBottom>

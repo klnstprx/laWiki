@@ -160,10 +160,10 @@ function FormWikiPage() {
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-        <Typography color="textPrimary" component={Link} to="/">
+        <Typography className="breadcrumb-link" component={Link} to="/">
           Inicio
         </Typography>
-        <Typography color="textPrimary" component={Link} to={`/wiki/${wikiId}`}>
+        <Typography className="breadcrumb-link" component={Link} to={`/wiki/${wikiId}`}>
           {wiki.title}
         </Typography>
       </Breadcrumbs>

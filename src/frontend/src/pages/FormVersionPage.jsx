@@ -152,13 +152,13 @@ function FormVersionPage() {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Breadcrumbs sx={{ mb: 2 }}>
-        <Typography color="textPrimary" component={Link} to="/">
+        <Typography className="breadcrumb-link" component={Link} to="/">
           Inicio
         </Typography>
-        <Typography color="textPrimary" component={Link} to={`/wiki/${wiki.id}`}>
+        <Typography className="breadcrumb-link" component={Link} to={`/wiki/${wiki.id}`}>
           {wiki.title}
         </Typography>
-        <Typography color="textPrimary" component={Link} to={`/entrada/${entry.id}`}>
+        <Typography className="breadcrumb-link" component={Link} to={`/entrada/${entry.id}`}>
           {entry.title}
         </Typography>
       </Breadcrumbs>
