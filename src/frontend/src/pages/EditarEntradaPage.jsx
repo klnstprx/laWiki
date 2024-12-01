@@ -62,6 +62,7 @@ function EditarEntradaPage() {
       content: version.content,
       editor: version.editor,
       entry_id: entryId,
+      address: version.address,
     };
 
     console.log("Submitting version:", jsonData); // Debugging
@@ -93,6 +94,17 @@ function EditarEntradaPage() {
                 variant="outlined"
                 fullWidth
                 required
+              />
+            </Grid2>
+            <Grid2 item xs={12} sm={4}>
+              <TextField
+                id="address"
+                name="address"
+                label="Ubicación de mapa (opcional)"
+                value={version.address || ""}
+                onChange={handleChange}
+                variant="outlined"
+                fullWidth
               />
             </Grid2>
           </Grid2>
