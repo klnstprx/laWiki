@@ -7,8 +7,9 @@ import {
   Box,
   IconButton,
   Alert,
+  Breadcrumbs
 } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { getWiki, postWiki, putWiki } from "../api/WikiApi";
 import { postMedia } from "../api/MediaApi";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -157,7 +158,16 @@ function FormWikiPage() {
   };
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+        <Typography color="textPrimary" component={Link} to="/">
+          Inicio
+        </Typography>
+        <Typography color="textPrimary" component={Link} to={`/wiki/${wikiId}`}>
+          {wiki.title}
+        </Typography>
+      </Breadcrumbs>
+
       <Typography variant="h4" gutterBottom>
         {wikiId ? "Editar Wiki" : "Crear Nueva Wiki"}
       </Typography>

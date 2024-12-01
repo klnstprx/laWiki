@@ -160,6 +160,9 @@ const Header = () => {
             color: "inherit",
             textDecoration: "none",
             flexGrow: 1,
+            "&:hover": {
+              color: "pink",
+            },
           }}
         >
           Home
