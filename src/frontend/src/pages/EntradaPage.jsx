@@ -269,6 +269,19 @@ function EntradaPage() {
       {/* Divider */}
       <Divider sx={{ my: 4 }} />
 
+      {/* Media */}
+      <Container>
+        {entryError && <Alert severity="error">{entryError}</Alert>}
+        {mediaError && <Alert severity="error">{mediaError}</Alert>}
+        <Stack spacing={2}>
+          {mediaList.map((media, index) => (
+            <Paper key={index} sx={{display: 'flex', justifyContent:'center'}}>
+              <img src={media.uploadUrl} alt={media.publicId} style={{ maxWidth: "40%" }} />
+            </Paper>
+          ))}
+        </Stack>
+      </Container>
+
       {/* Entry Details */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
         {!entryError && entry && (
@@ -294,18 +307,8 @@ function EntradaPage() {
         )}
       </Paper>
 
-      {/* Media */}
-      <Container>
-        {entryError && <Alert severity="error">{entryError}</Alert>}
-        {mediaError && <Alert severity="error">{mediaError}</Alert>}
-        <Stack spacing={2}>
-          {mediaList.map((media, index) => (
-            <Paper key={index}>
-              <img src={media.uploadUrl} alt={media.publicId} style={{ maxWidth: "40%" }} />
-            </Paper>
-          ))}
-        </Stack>
-      </Container>
+
+
 
       {/* Comments */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
@@ -375,7 +378,7 @@ function EntradaPage() {
               <Button
                 type="submit"
                 variant="contained"
-                color="primary"
+                color="prry"
                 fullWidth
                 sx={{ height: "100%" }}
               >
