@@ -9,6 +9,7 @@ import {
   List,
   ListItem,
   Box,
+  Grid,
 } from "@mui/material";
 import { deleteEntry, searchEntries } from "../api/EntryApi.js";
 import { getWiki, deleteWiki } from "../api/WikiApi.js";
@@ -124,9 +125,9 @@ function WikiPage() {
               Entradas
             </Typography>
             {entradas && entradas.length > 0 ? (
-              <List>
+              <Grid container spacing={2}>
                 {entradas.map((entrada) => (
-                  <ListItem key={entrada.id} divider>
+                  <Grid item xs={12} sm={6} md={4} key={entrada.id}>
                     <EntradaCard
                       id={entrada.id}
                       title={entrada.title}
@@ -134,11 +135,11 @@ function WikiPage() {
                       createdAt={entrada.created_at}
                       onDelete={handleDeleteEntry}
                     />
-                  </ListItem>
+                  </Grid>
                 ))}
-              </List>
+              </Grid>
             ) : (
-              <Alert severity="info">No entries found.</Alert>
+              <Typography>No entries available</Typography>
             )}
           </Paper>
 

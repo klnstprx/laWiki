@@ -12,13 +12,15 @@ import {
 } from "@mui/material";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import ConfirmationModal from '../components/ConfirmationModal.jsx'; // add import
 
-function EditarEntradaPage() {
+function FormVersionPage() {
   const { entryId, versionId } = useParams();
   const [version, setVersion] = useState({});
   const [versionError, setVersionError] = useState(null);
   const formRef = useRef(null);
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false); // add state
 
   // Fetch the version details
   useEffect(() => {
@@ -38,7 +40,7 @@ function EditarEntradaPage() {
   }, [versionId]);
 
   // Handler for ReactQuill editor change
-  const handleEditorChange = (content, delta, source, editor) => {
+  const handleEditorChange = (content) => {
     setVersion((prevVersion) => ({
       ...prevVersion,
       content: content,
@@ -54,8 +56,18 @@ function EditarEntradaPage() {
     }));
   };
 
+  // Validation function
+  const validate = () => {
+    if (!version.editor) {
+      setVersionError("El campo Editor es obligatorio.");
+      return false;
+    }
+    setVersionError(null);
+    return true;
+  };
+
   // Handler to submit the version
-  async function subirVersion(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     const jsonData = {
@@ -68,17 +80,24 @@ function EditarEntradaPage() {
     console.log("Submitting version:", jsonData); // Debugging
 
     try {
-      const newVersion = await postVersion(jsonData);
+      await postVersion(jsonData);
       navigate(`/entrada/${entryId}`);
     } catch (error) {
       console.error("Error posting version:", error);
     }
   }
 
+  const onSubmit = (event) => {
+    event.preventDefault();
+    if (validate()) {
+      setIsModalOpen(true);
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4 }}>
-        <form id="miFormulario" ref={formRef} onSubmit={subirVersion}>
+        <form id="miFormulario" ref={formRef} onSubmit={onSubmit}>
           {/* Title and Editor input */}
           <Grid2 container spacing={2} alignItems="center">
             <Grid2 item xs={12} sm={8}>
@@ -100,7 +119,7 @@ function EditarEntradaPage() {
               <TextField
                 id="address"
                 name="address"
-                label="Ubicación de mapa (opcional)"
+                label="Ubicación (opcional)"
                 value={version.address || ""}
                 onChange={handleChange}
                 variant="outlined"
@@ -131,8 +150,14 @@ function EditarEntradaPage() {
           </Box>
         </form>
       </Paper>
+      <ConfirmationModal
+        show={isModalOpen}
+        handleClose={() => setIsModalOpen(false)}
+        handleConfirm={handleSubmit}
+        message={`¿Estás seguro de que deseas ${versionId ? 'guardar los cambios' : 'crear esta versión'}?`}
+      />
     </Container>
   );
 }
 
-export default EditarEntradaPage;
+export default FormVersionPage;
