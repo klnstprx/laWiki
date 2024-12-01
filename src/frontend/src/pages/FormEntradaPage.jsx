@@ -84,7 +84,7 @@ function FormEntradaPage() {
     let isValid = true;
 
     if (!title.trim()) {
-      setTitleError("El título es requerido");
+      setTitleError("Introduzca un título");
       isValid = false;
     } else {
       setTitleError("");
@@ -147,15 +147,14 @@ function FormEntradaPage() {
       <Typography variant="h4" gutterBottom>
         Crear Nueva Entrada
       </Typography>
-      {(error || titleError) && (
+      {(error) && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error || titleError}
+          {error}
         </Alert>
       )}
       <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
         <TextField
           margin="normal"
-          required
           fullWidth
           id="title"
           label="Título"
@@ -164,7 +163,7 @@ function FormEntradaPage() {
           autoFocus
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          error={Boolean(titleError)}
+          error={!!titleError}
           helperText={titleError}
         />
         <Button variant="contained" component="label" sx={{ mt: 2 }}>
