@@ -20,7 +20,6 @@ import {
   Button,
   Alert,
   TextField,
-  Grid2,
   Divider,
   Rating,
   Tooltip,
@@ -33,6 +32,8 @@ import PersonIcon from "@mui/icons-material/Person";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import the carousel styles
+
+import Grid from "@mui/joy/Grid";
 
 function EntradaPage() {
   const { entryId, versionId } = useParams();
@@ -54,7 +55,7 @@ function EntradaPage() {
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
 
   const geoCacheRef = useRef(
-    JSON.parse(sessionStorage.getItem("geoCache")) || {}
+    JSON.parse(sessionStorage.getItem("geoCache")) || {},
   ); // cache de geocoding
 
   const saveCacheToSessionStorage = () => {
@@ -66,14 +67,14 @@ function EntradaPage() {
     if (geoCacheRef.current[address]) {
       console.log(
         "Obteniendo coordenadas desde el cache en memoria:",
-        geoCacheRef.current[address]
+        geoCacheRef.current[address],
       );
       return geoCacheRef.current[address]; // Retorna las coordenadas almacenadas
     }
 
     // Si no está en el cache, realiza la solicitud a la API
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-      address
+      address,
     )}&format=json&addressdetails=1&limit=1`;
 
     try {
@@ -131,7 +132,7 @@ function EntradaPage() {
   const confirmDeleteComment = async () => {
     await deleteComment(commentToDelete);
     setComments((prevComments) =>
-      prevComments.filter((comment) => comment.id !== commentToDelete)
+      prevComments.filter((comment) => comment.id !== commentToDelete),
     );
     setShowDeleteCommentModal(false);
     showToast("Comentario eliminado correctamente", "success");
@@ -150,7 +151,7 @@ function EntradaPage() {
           }
         })
         .catch(() =>
-          setEntryError("Se produjo un error al obtener la entrada.")
+          setEntryError("Se produjo un error al obtener la entrada."),
         );
     } else {
       setEntryError("No se proporcionó un ID de entrada válido.");
@@ -185,18 +186,19 @@ function EntradaPage() {
           if (versions && versions.length > 0) {
             // Sort the versions by createdAt descending to get the latest
             versions.sort(
-              (a, b) => new Date(b.created_at) - new Date(a.created_at)
+              (a, b) => new Date(b.created_at) - new Date(a.created_at),
             );
             const latestVersion = versions[0];
             setActualVersionId(latestVersion.id);
           } else {
+            setLoadingVersion(false);
             setVersionError(
-              "No se encontró ninguna versión para esta entrada."
+              "No se encontró ninguna versión para esta entrada.",
             );
           }
         })
         .catch(() =>
-          setVersionError("Se produjo un error al obtener las versiones.")
+          setVersionError("Se produjo un error al obtener las versiones."),
         );
     }
   }, [entryId, versionId]);
@@ -235,7 +237,7 @@ function EntradaPage() {
           }
         })
         .catch(() =>
-          setCommentsError("Se produjo un error al obtener los comentarios.")
+          setCommentsError("Se produjo un error al obtener los comentarios."),
         );
     }
   }, [actualVersionId, fetchCoordinatesNominatim]);
@@ -246,6 +248,7 @@ function EntradaPage() {
     const formData = new FormData(event.target);
     const jsonData = Object.fromEntries(formData.entries());
     jsonData["version_id"] = actualVersionId;
+    jsonData["entry_id"] = entryId;
     jsonData["rating"] = parseInt(jsonData["rating"], 10);
     setPendingComment(jsonData);
     setShowModal(true);
@@ -254,7 +257,6 @@ function EntradaPage() {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {/* Entry Title */}
-      {entryError && <Alert severity="error">{entryError}</Alert>}
       {!entryError && entry && (
         <Typography variant="h3" gutterBottom>
           {entry.title}
@@ -368,6 +370,31 @@ function EntradaPage() {
         )}
       </Container>
 
+      {/* Entry Details */}
+      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        {entryError && <Alert severity="error">{entryError}</Alert>}
+        {!entryError && entry && (
+          <>
+            <Typography variant="subtitle1" gutterBottom>
+              Autor: {entry.author} | Fecha de creación:{" "}
+              {new Date(entry.created_at).toLocaleString("es-ES", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </Typography>
+            <Typography variant="subtitle1" gutterBottom>
+              <Link to={`/versiones/${entry.id}/`}>Ver historial</Link>
+              {" | "}
+              <Link to={`/version/form/${entry.id}/${actualVersionId || ""}`}>
+                Editar contenido
+              </Link>
+            </Typography>
+          </>
+        )}
+      </Paper>
 
       {/* Comments */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
@@ -402,8 +429,8 @@ function EntradaPage() {
           Añadir comentario
         </Typography>
         <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
-          <Grid2 container spacing={2}>
-            <Grid2 xs={12}>
+          <Grid container spacing={2}>
+            <Grid xs={12}>
               <TextField
                 id="content"
                 name="content"
@@ -411,15 +438,16 @@ function EntradaPage() {
                 multiline
                 required
                 fullWidth
+                rows={4}
               />
-            </Grid2>
-            <Grid2 xs={12} sm={6} md={4}>
+            </Grid>
+            <Grid xs={12} sm={6} md={4}>
               <Typography variant="subtitle1" gutterBottom>
                 Valoración:
               </Typography>
               <Rating name="rating" id="rating" size="large" />
-            </Grid2>
-            <Grid2 xs={12} sm={6} md={4}>
+            </Grid>
+            <Grid xs={12} sm={6} md={4}>
               <TextField
                 id="author"
                 name="author"
@@ -427,8 +455,8 @@ function EntradaPage() {
                 required
                 fullWidth
               />
-            </Grid2>
-            <Grid2 xs={12} md={4}>
+            </Grid>
+            <Grid xs={12} md={4}>
               <Button
                 type="submit"
                 variant="contained"
@@ -438,8 +466,8 @@ function EntradaPage() {
               >
                 Enviar
               </Button>
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </form>
       </Paper>
 

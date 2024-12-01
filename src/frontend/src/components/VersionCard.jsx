@@ -1,15 +1,10 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Grid2,
-  IconButton,
-} from "@mui/material";
+import { Card, CardContent, Typography, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
 import { useState } from "react";
+import Grid from "@mui/joy/Grid";
 
 const VersionCard = ({
   entradaId,
@@ -32,8 +27,8 @@ const VersionCard = ({
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
-        <Grid2 container spacing={2} alignItems="center">
-          <Grid2 xs={12} sm={5}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid xs={12} sm={5}>
             <Typography variant="body1">
               <strong>Fecha:</strong>{" "}
               {new Date(created_at).toLocaleString("es-ES", {
@@ -44,23 +39,23 @@ const VersionCard = ({
                 minute: "2-digit",
               })}
             </Typography>
-          </Grid2>
-          <Grid2 xs={12} sm={5}>
+          </Grid>
+          <Grid xs={12} sm={5}>
             <Typography variant="body1">
               <strong>Editor:</strong> {editor}
             </Typography>
-          </Grid2>
-          <Grid2 xs={12} sm={2}>
+          </Grid>
+          <Grid xs={12} sm={2}>
             <Typography variant="body1">
               <Link to={`/entrada/${entradaId}/${versionId}`}>Ver</Link>
             </Typography>
-          </Grid2>
-          <Grid2>
+          </Grid>
+          <Grid>
             <IconButton color="error" onClick={handleDelete}>
               <DeleteIcon />
             </IconButton>
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
       </CardContent>
       <ConfirmationModal
         show={showDeleteModal}
