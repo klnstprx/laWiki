@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   searchComments,
   postComment,
@@ -40,20 +40,20 @@ function EntradaPage() {
 
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
 
-  const geoCache = JSON.parse(sessionStorage.getItem("geoCache")) || {}; // cache de geocoding
+  const geoCacheRef = useRef(JSON.parse(sessionStorage.getItem("geoCache")) || {}); // cache de geocoding
 
   const saveCacheToSessionStorage = () => {
-    sessionStorage.setItem("geoCache", JSON.stringify(geoCache));
+    sessionStorage.setItem("geoCache", JSON.stringify(geoCacheRef.current));
   };
 
-  const fetchCoordinatesNominatim = async (address) => {
+  const fetchCoordinatesNominatim = useCallback(async (address) => {
     // Comprueba si la dirección ya está en el cache
-    if (geoCache[address]) {
+    if (geoCacheRef.current[address]) {
       console.log(
         "Obteniendo coordenadas desde el cache en memoria:",
-        geoCache[address],
+        geoCacheRef.current[address],
       );
-      return geoCache[address]; // Retorna las coordenadas almacenadas
+      return geoCacheRef.current[address]; // Retorna las coordenadas almacenadas
     }
 
     // Si no está en el cache, realiza la solicitud a la API
@@ -71,7 +71,7 @@ function EntradaPage() {
         console.log("Coordenadas obtenidas de la API:", coordinates);
 
         // Almacena las coordenadas en el cache y en sessionStorage antes de retornarlas
-        geoCache[address] = coordinates;
+        geoCacheRef.current[address] = coordinates;
         saveCacheToSessionStorage(); // Actualiza sessionStorage
         return coordinates;
       } else {
@@ -81,7 +81,7 @@ function EntradaPage() {
       console.error("Error al realizar la geocodificación:", error);
       return null;
     }
-  };
+  }, []);
 
   // Handler to close the confirmation modal
   const handleClose = () => {
@@ -180,9 +180,6 @@ function EntradaPage() {
               const coords = await fetchCoordinatesNominatim(data.address);
               setCoordinates(coords);
             }
-            // replace with the following lines to test
-            // const coords = await fetchCoordinatesNominatim(fixedAddress); // Remove this line when using real address data
-            // setCoordinates(coords); // Remove this line when using real address data
           } else {
             setVersionError("No se encontró la versión solicitada.");
             setLoadingVersion(false);
@@ -206,7 +203,7 @@ function EntradaPage() {
           setCommentsError("Se produjo un error al obtener los comentarios."),
         );
     }
-  }, [actualVersionId]);
+  }, [actualVersionId, fetchCoordinatesNominatim]);
 
   // Handler to submit a new comment
   async function subirComentario(event) {
