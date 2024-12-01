@@ -231,12 +231,19 @@ func SearchEntries(w http.ResponseWriter, r *http.Request) {
 // @Failure      400    {string}  string  "Invalid request body"
 // @Failure      500    {string}  string  "Internal server error"
 // @Router       /api/entries/ [post]
+
 func PostEntry(w http.ResponseWriter, r *http.Request) {
 	var entry model.Entry
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&entry); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if entry.Title == "" || entry.WikiID == "" {
+		config.App.Logger.Error().Msg("Missing required fields")
+		http.Error(w, "Missing required fields", http.StatusBadRequest)
 		return
 	}
 
