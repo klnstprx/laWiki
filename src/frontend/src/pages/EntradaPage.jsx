@@ -19,7 +19,7 @@ import {
   Button,
   Alert,
   TextField,
-  Grid,
+  Grid2,
   Divider,
 } from "@mui/material";
 
@@ -48,43 +48,46 @@ function EntradaPage() {
 
   const fetchCoordinatesNominatim = async (address) => {
     // Comprueba si la dirección ya está en el cache
-  if (geoCache[address]) {
-    console.log("Obteniendo coordenadas desde el cache en memoria:", geoCache[address]);
-    return geoCache[address]; // Retorna las coordenadas almacenadas
-  }
-
-  // Si no está en el cache, realiza la solicitud a la API
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-    address,
-  )}&format=json&addressdetails=1&limit=1`;
-
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (data.length > 0) {
-      const { lat, lon } = data[0];
-      const coordinates = { lat: parseFloat(lat), lon: parseFloat(lon) };
-      console.log("Coordenadas obtenidas de la API:", coordinates);
-
-      // Almacena las coordenadas en el cache y en sessionStorage antes de retornarlas
-      geoCache[address] = coordinates;
-      saveCacheToSessionStorage(); // Actualiza sessionStorage
-      return coordinates;
-    } else {
-      throw new Error("No se encontraron coordenadas para la dirección.");
+    if (geoCache[address]) {
+      console.log(
+        "Obteniendo coordenadas desde el cache en memoria:",
+        geoCache[address],
+      );
+      return geoCache[address]; // Retorna las coordenadas almacenadas
     }
-  } catch (error) {
-    console.error("Error al realizar la geocodificación:", error);
-    return null;
-  }
+
+    // Si no está en el cache, realiza la solicitud a la API
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+      address,
+    )}&format=json&addressdetails=1&limit=1`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.length > 0) {
+        const { lat, lon } = data[0];
+        const coordinates = { lat: parseFloat(lat), lon: parseFloat(lon) };
+        console.log("Coordenadas obtenidas de la API:", coordinates);
+
+        // Almacena las coordenadas en el cache y en sessionStorage antes de retornarlas
+        geoCache[address] = coordinates;
+        saveCacheToSessionStorage(); // Actualiza sessionStorage
+        return coordinates;
+      } else {
+        throw new Error("No se encontraron coordenadas para la dirección.");
+      }
+    } catch (error) {
+      console.error("Error al realizar la geocodificación:", error);
+      return null;
+    }
   };
 
   // Handler to close the confirmation modal
   const handleClose = () => {
     setShowModal(false);
     setPendingComment(null);
-    showToast("El comentario no se ha creado", "danger");
+    showToast("El comentario no se ha creado", "warning");
   };
 
   // Handler to confirm and post the comment
@@ -98,7 +101,7 @@ function EntradaPage() {
       showToast("El comentario se ha creado correctamente!", "success");
     } catch (error) {
       console.error("Error al enviar:", error);
-      showToast("Error al enviar el comentario", "danger");
+      showToast("Error al enviar el comentario", "error");
     }
   };
 
@@ -112,7 +115,7 @@ function EntradaPage() {
       showToast("Comentario eliminado correctamente", "success");
     } catch (error) {
       console.error("Error al eliminar el comentario:", error);
-      showToast("Error al eliminar el comentario", "danger");
+      showToast("Error al eliminar el comentario", "error");
     }
   };
 
@@ -163,6 +166,8 @@ function EntradaPage() {
     }
   }, [entryId, versionId]);
 
+  const [loadingVersion, setLoadingVersion] = useState(true);
+
   // Fetch the version data when actualVersionId changes
   useEffect(() => {
     if (actualVersionId) {
@@ -170,6 +175,7 @@ function EntradaPage() {
         .then(async (data) => {
           if (data && Object.keys(data).length > 0) {
             setVersion(data);
+            setLoadingVersion(false); // Data is now loaded
             if (data.address) {
               const coords = await fetchCoordinatesNominatim(data.address);
               setCoordinates(coords);
@@ -179,11 +185,13 @@ function EntradaPage() {
             // setCoordinates(coords); // Remove this line when using real address data
           } else {
             setVersionError("No se encontró la versión solicitada.");
+            setLoadingVersion(false);
           }
         })
-        .catch(() =>
-          setVersionError("Se produjo un error al obtener la versión."),
-        );
+        .catch(() => {
+          setVersionError("Se produjo un error al obtener la versión.");
+          setLoadingVersion(false);
+        });
 
       // Fetch comments for the actual version
       searchComments({ versionID: actualVersionId })
@@ -223,8 +231,11 @@ function EntradaPage() {
 
       {/* Version Content */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-        {versionError && <Alert severity="error">{versionError}</Alert>}
-        {!versionError && version && (
+        {loadingVersion ? (
+          <Typography variant="body1">Cargando versión...</Typography>
+        ) : versionError ? (
+          <Alert severity="error">{versionError}</Alert>
+        ) : (
           <Version
             content={version.content}
             editor={version.editor}
@@ -291,8 +302,8 @@ function EntradaPage() {
           Añadir comentario
         </Typography>
         <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
+          <Grid2 container spacing={2}>
+            <Grid2 xs={12}>
               <TextField
                 id="content"
                 name="content"
@@ -301,8 +312,8 @@ function EntradaPage() {
                 required
                 fullWidth
               />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            </Grid2>
+            <Grid2 xs={12} sm={6} md={4}>
               <TextField
                 id="rating"
                 name="rating"
@@ -312,8 +323,8 @@ function EntradaPage() {
                 required
                 fullWidth
               />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            </Grid2>
+            <Grid2 xs={12} sm={6} md={4}>
               <TextField
                 id="author"
                 name="author"
@@ -321,8 +332,8 @@ function EntradaPage() {
                 required
                 fullWidth
               />
-            </Grid>
-            <Grid item xs={12} md={4}>
+            </Grid2>
+            <Grid2 xs={12} md={4}>
               <Button
                 type="submit"
                 variant="contained"
@@ -332,8 +343,8 @@ function EntradaPage() {
               >
                 Enviar
               </Button>
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
         </form>
       </Paper>
 

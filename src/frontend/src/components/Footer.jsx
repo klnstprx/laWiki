@@ -9,8 +9,14 @@ const Footer = () => {
       py={2}
       bgcolor="primary.main"
       color="white"
-      textAlign="center"
-      sx={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1000 }}
+      sx={{
+        position: "sticky",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        textAlign: "center",
+      }}
       elevation={3}
     >
       <Typography variant="body2">
