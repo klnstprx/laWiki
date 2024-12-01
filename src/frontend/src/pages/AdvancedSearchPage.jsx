@@ -39,7 +39,7 @@ const AdvancedSearchPage = () => {
     commentAuthor: "",
     commentCreatedAtFrom: null,
     commentCreatedAtTo: null,
-    commentRating: "",
+    commentRating: null,
     // Versions
     versionContent: "",
     versionEditor: "",
@@ -117,8 +117,8 @@ const AdvancedSearchPage = () => {
         commentsSearchParams.createdAtTo =
           params.commentCreatedAtTo.toISOString();
       }
-      if (params.commentRating.trim() !== "") {
-        commentsSearchParams.rating = parseInt(params.commentRating.trim(), 10);
+      if (params.commentRating != null) {
+        commentsSearchParams.rating = params.commentRating;
       }
 
       const versionsSearchParams = {};
@@ -179,7 +179,7 @@ const AdvancedSearchPage = () => {
         versions: [],
       });
       setError(
-        "Ocurrió un error durante la búsqueda. Por favor, inténtelo de nuevo.",
+        "Ocurrió un error durante la búsqueda. Por favor, inténtelo de nuevo."
       );
     } finally {
       setLoading(false);
@@ -201,7 +201,7 @@ const AdvancedSearchPage = () => {
   }, []);
 
   const isSearchDisabled = Object.values(params).every(
-    (value) => value === "" || value === null,
+    (value) => value === "" || value === null
   );
 
   return (
@@ -387,8 +387,13 @@ const AdvancedSearchPage = () => {
             <Typography variant="body2">Valoración del Comentario</Typography>
             <Rating
               name="commentRating"
-              value={params.commentRating || 0}
-              onChange={handleInputChange}
+              value={params.commentRating}
+              onChange={(event, newValue) => {
+                setParams((prevParams) => ({
+                  ...prevParams,
+                  commentRating: newValue,
+                }));
+              }}
               size="large"
             />
           </Grid>

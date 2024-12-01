@@ -10,4 +10,5 @@ type Comment struct {
 	UpdatedAt time.Time `bson:"updated_at,omitempty" json:"updated_at,omitempty"`
 	Author    string    `json:"author" bson:"author"`
 	VersionID string    `json:"version_id" bson:"version_id"`
+	EntryID   string    `json:"entry_id" bson:"entry_id"`
 }

@@ -36,7 +36,7 @@ function VersionPage() {
           }
         })
         .catch(() =>
-          setError("Se ha producido un error al obtener las versiones."),
+          setError("Se ha producido un error al obtener las versiones.")
         );
 
         getEntry(entryId)
@@ -77,7 +77,7 @@ function VersionPage() {
     try {
       await deleteVersion(versionId);
       setVersiones((prevVersiones) =>
-        prevVersiones.filter((version) => version.id !== versionId),
+        prevVersiones.filter((version) => version.id !== versionId)
       );
       showToast("Version eliminada correctamente", "success");
     } catch (error) {
