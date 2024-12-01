@@ -45,14 +45,14 @@ const EntradaCard = ({ id, title, author, createdAt, onEntradaClick, onDelete })
               </Typography>
               <Typography variant="body2">{createdAt}</Typography>
             </Grid2>
-            <Grid2>
-              <IconButton color="error" onClick={handleDelete}>
-                  <DeleteIcon />
-              </IconButton>
-            </Grid2>
           </Grid2>
         </CardContent>
       </CardActionArea>
+      <Grid2>
+        <IconButton color="error" onClick={handleDelete}>
+            <DeleteIcon />
+        </IconButton>
+      </Grid2>
     </Card>
   );
 };
@@ -63,7 +63,7 @@ EntradaCard.propTypes = {
   author: PropTypes.string.isRequired,
   createdAt: PropTypes.string.isRequired,
   onEntradaClick: PropTypes.func,
-  onDelete: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired
 };
 
 export default EntradaCard;
