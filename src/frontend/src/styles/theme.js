@@ -83,13 +83,13 @@ const theme = createTheme({
             },
           },
           "&.breadcrumb-active": {
-                color: "black",
+            color: "black",
             fontWeight: 500,
           },
         },
       },
     },
-  }
+  },
 });
 
 export default theme;
