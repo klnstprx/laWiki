@@ -5,6 +5,7 @@ import {
   Button,
   Typography,
   Paper,
+  Rating,
   CircularProgress,
 } from "@mui/material";
 import Grid from "@mui/joy/Grid";
@@ -202,11 +203,11 @@ const AdvancedSearchPage = () => {
   );
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
         Búsqueda Avanzada
       </Typography>
-      <Paper elevation={3} sx={{ padding: 2, marginBottom: 4 }}>
+      <Paper elevation={3} sx={{ padding: 2, mb: 4 }}>
         <Grid container spacing={2}>
           {/* Wiki Search Fields */}
           <Grid xs={12} sm={6}>
@@ -249,6 +250,7 @@ const AdvancedSearchPage = () => {
                   wikiCreatedAtFrom: newValue,
                 }));
               }}
+              sx={{ mb: 2, mx: 1 }}
             />
             <DatePicker
               label="Hasta"
@@ -259,6 +261,7 @@ const AdvancedSearchPage = () => {
                   wikiCreatedAtTo: newValue,
                 }));
               }}
+              sx={{ mb: 2, mx: 1 }}
             />
           </Grid>
 
@@ -295,6 +298,7 @@ const AdvancedSearchPage = () => {
                   entryCreatedAtFrom: newValue,
                 }));
               }}
+              sx={{ mb: 2, mx: 1 }}
             />
             <DatePicker
               label="Hasta"
@@ -305,6 +309,7 @@ const AdvancedSearchPage = () => {
                   entryCreatedAtTo: newValue,
                 }));
               }}
+              sx={{ mb: 2, mx: 1 }}
             />
             <Autocomplete
               options={wikisList}
@@ -359,6 +364,7 @@ const AdvancedSearchPage = () => {
                   commentCreatedAtFrom: newValue,
                 }));
               }}
+              sx={{ mb: 2, mx: 1 }}
             />
             <DatePicker
               label="Hasta"
@@ -369,15 +375,14 @@ const AdvancedSearchPage = () => {
                   commentCreatedAtTo: newValue,
                 }));
               }}
+              sx={{ mb: 2, mx: 1 }}
             />
-            <TextField
-              label="Calificación del Comentario"
+            <Typography variant="body2">Valoración del Comentario</Typography>
+            <Rating
               name="commentRating"
-              value={params.commentRating}
+              value={params.commentRating || 0}
               onChange={handleInputChange}
-              fullWidth
-              margin="dense"
-              type="number"
+              size="large"
             />
           </Grid>
 
@@ -414,6 +419,7 @@ const AdvancedSearchPage = () => {
                   versionCreatedAtFrom: newValue,
                 }));
               }}
+              sx={{ mb: 2, mx: 1 }}
             />
             <DatePicker
               label="Hasta"
@@ -424,6 +430,7 @@ const AdvancedSearchPage = () => {
                   versionCreatedAtTo: newValue,
                 }));
               }}
+              sx={{ mb: 2, mx: 1 }}
             />
           </Grid>
         </Grid>
