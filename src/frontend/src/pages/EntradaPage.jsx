@@ -105,18 +105,21 @@ function EntradaPage() {
     }
   };
 
-  // Handler to delete a comment
-  const handleDeleteComment = async (commentId) => {
-    try {
-      await deleteComment(commentId);
-      setComments((prevComments) =>
-        prevComments.filter((comment) => comment.id !== commentId),
-      );
-      showToast("Comentario eliminado correctamente", "success");
-    } catch (error) {
-      console.error("Error al eliminar el comentario:", error);
-      showToast("Error al eliminar el comentario", "error");
-    }
+  const [showDeleteCommentModal, setShowDeleteCommentModal] = useState(false); // add state
+  const [commentToDelete, setCommentToDelete] = useState(null); // add state
+
+  const handleDeleteComment = (commentId) => {
+    setCommentToDelete(commentId);
+    setShowDeleteCommentModal(true);
+  };
+
+  const confirmDeleteComment = async () => {
+    await deleteComment(commentToDelete);
+    setComments((prevComments) =>
+      prevComments.filter((comment) => comment.id !== commentToDelete),
+    );
+    setShowDeleteCommentModal(false);
+    showToast("Comentario eliminado correctamente", "success");
   };
 
   // Fetch the entry details
@@ -288,7 +291,7 @@ function EntradaPage() {
                 rating={comment.rating}
                 created_at={comment.created_at}
                 author={comment.author}
-                onDelete={handleDeleteComment}
+                onDelete={(id) => handleDeleteComment(id)}
               />
             ))}
           </Stack>
@@ -356,6 +359,13 @@ function EntradaPage() {
         show={showModal}
         handleClose={handleClose}
         handleConfirm={handleConfirm}
+      />
+
+      <ConfirmationModal
+        show={showDeleteCommentModal}
+        handleClose={() => setShowDeleteCommentModal(false)}
+        handleConfirm={confirmDeleteComment}
+        message="¿Estás seguro de que deseas eliminar este comentario?"
       />
     </Container>
   );
