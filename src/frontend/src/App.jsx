@@ -5,7 +5,7 @@ import WikiPage from "./pages/WikiPage.jsx";
 import VersionPage from "./pages/VersionPage.jsx";
 import FormEntradaPage from "./pages/FormEntradaPage.jsx";
 import MainLayout from "./layout/MainLayout.jsx";
-import EditarEntradaPage from "./pages/EditarEntradaPage.jsx";
+import FormVersionPage from "./pages/FormVersionPage.jsx";
 import AdvancedSearchPage from "./pages/AdvancedSearchPage.jsx";
 import FormWikiPage from "./pages/FormWikiPage.jsx";
 
@@ -21,8 +21,8 @@ function App() {
         <Route path="/versiones/:entryId" element={<VersionPage />} />
         <Route path="/crear-entrada/:id" element={<FormEntradaPage />} />
         <Route
-          path="/editar-entrada/:entryId/:versionId?"
-          element={<EditarEntradaPage />}
+          path="/version/form/:entryId/:versionId?"
+          element={<FormVersionPage />}
         />
         <Route path="/advanced-search" element={<AdvancedSearchPage />} />
         {/* <Route path="/about" element={<About />} /> */}
