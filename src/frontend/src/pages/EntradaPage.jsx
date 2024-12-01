@@ -46,7 +46,6 @@ function EntradaPage() {
     sessionStorage.setItem("geoCache", JSON.stringify(geoCache));
   };
 
-  const fixedAddress = "hospital clinico, malaga";
   const fetchCoordinatesNominatim = async (address) => {
     // Comprueba si la dirección ya está en el cache
     if (geoCache[address]) {
@@ -177,13 +176,13 @@ function EntradaPage() {
           if (data && Object.keys(data).length > 0) {
             setVersion(data);
             setLoadingVersion(false); // Data is now loaded
-            // Uncomment the following lines when using real address data
-            // if (data.address) {
-            //   const coords = await fetchCoordinatesNominatim(data.address);
-            //   setCoordinates(coords);
-            // }
-            const coords = await fetchCoordinatesNominatim(fixedAddress); // Remove this line when using real address data
-            setCoordinates(coords); // Remove this line when using real address data
+            if (data.address) {
+              const coords = await fetchCoordinatesNominatim(data.address);
+              setCoordinates(coords);
+            }
+            // replace with the following lines to test
+            // const coords = await fetchCoordinatesNominatim(fixedAddress); // Remove this line when using real address data
+            // setCoordinates(coords); // Remove this line when using real address data
           } else {
             setVersionError("No se encontró la versión solicitada.");
             setLoadingVersion(false);
@@ -242,7 +241,7 @@ function EntradaPage() {
             editor={version.editor}
             created_at={version.created_at}
             entry_id={version.entry_id}
-            address={fixedAddress} // Replace with version.address when available
+            address={version.address}
             coordinates={coordinates}
           />
         )}

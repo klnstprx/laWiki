@@ -308,6 +308,7 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 			"content":    version.Content,
 			"editor":     version.Editor,
 			"updated_at": version.UpdatedAt,
+			"address":    version.Address,
 		},
 	}
 
