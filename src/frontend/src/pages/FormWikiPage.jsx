@@ -221,7 +221,7 @@ function FormWikiPage() {
           error={!!formErrors.category}
           helperText={formErrors.category}
         />
-        <Button variant="contained" component="label" sx={{ mt: 2 }}>
+        <Button variant="outlined" color="primary" component="label" sx={{ mt: 2 }}>
           Añadir Imagen
           <input
             id="image-input"

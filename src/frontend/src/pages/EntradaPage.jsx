@@ -367,6 +367,18 @@ function EntradaPage() {
             coordinates={coordinates}
           />
         )}
+
+        <Divider sx={{ my: 4 }} />
+
+        <Typography variant="subtitle1" gutterBottom sx={{ display: "flex", justifyContent: "space-around", width: "100%" }}>
+          <Link to={`/versiones/${entry.id}/`} sx={{ textDecoration: "none" }}>
+            Ver historial
+          </Link>
+          <Link to={`/version/form/${entry.id}/${actualVersionId || ""}`} sx={{ textDecoration: "none" }}>
+            Editar contenido
+          </Link>
+        </Typography>
+
       </Paper>
 
       {/* Divider */}
@@ -390,32 +402,6 @@ function EntradaPage() {
           </Carousel>
         </Paper>
       )}
-
-      {/* Entry Details */}
-      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-        {entryError && <Alert severity="error">{entryError}</Alert>}
-        {!entryError && entry && (
-          <>
-            <Typography variant="subtitle1" gutterBottom>
-              Autor: {entry.author} | Fecha de creación:{" "}
-              {new Date(entry.created_at).toLocaleString("es-ES", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Typography>
-            <Typography variant="subtitle1" gutterBottom>
-              <Link to={`/versiones/${entry.id}/`}>Ver historial</Link>
-              {" | "}
-              <Link to={`/version/form/${entry.id}/${actualVersionId || ""}`}>
-                Editar contenido
-              </Link>
-            </Typography>
-          </>
-        )}
-      </Paper>
 
       {/* Comments */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
