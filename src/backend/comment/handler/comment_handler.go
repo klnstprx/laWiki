@@ -132,7 +132,8 @@ func SearchComments(w http.ResponseWriter, r *http.Request) {
 	// Parse query parameters
 	content := r.URL.Query().Get("content")
 	author := r.URL.Query().Get("author")
-	createdAtString := r.URL.Query().Get("createdAt")
+	createdAtFromString := r.URL.Query().Get("createdAtFrom")
+	createdAtToString := r.URL.Query().Get("createdAtTo")
 	ratingString := r.URL.Query().Get("rating")
 	versionID := r.URL.Query().Get("versionID")
 
@@ -150,21 +151,30 @@ func SearchComments(w http.ResponseWriter, r *http.Request) {
 		filter["author"] = author
 	}
 
-	if createdAtString != "" {
-		// Parse the date string
-		createdAt, err := time.Parse("2006-01-02", createdAtString)
-		if err != nil {
-			config.App.Logger.Error().Err(err).Msg("Invalid date format. Expected YYYY-MM-DD")
-			http.Error(w, "Invalid date format. Expected YYYY-MM-DD", http.StatusBadRequest)
-			return
+	if createdAtFromString != "" || createdAtToString != "" {
+		dateFilter := bson.M{}
+
+		if createdAtFromString != "" {
+			createdAtFrom, err := time.Parse(time.RFC3339, createdAtFromString)
+			if err != nil {
+				config.App.Logger.Error().Err(err).Msg("Invalid 'createdAtFrom' date format. Expected ISO8601 format.")
+				http.Error(w, "Invalid 'createdAtFrom' date format. Expected ISO8601 format.", http.StatusBadRequest)
+				return
+			}
+			dateFilter["$gte"] = createdAtFrom
 		}
-		// Define the start and end of the day
-		startOfDay := createdAt
-		endOfDay := createdAt.AddDate(0, 0, 1)
-		filter["created_at"] = bson.M{
-			"$gte": startOfDay,
-			"$lt":  endOfDay,
+
+		if createdAtToString != "" {
+			createdAtTo, err := time.Parse(time.RFC3339, createdAtToString)
+			if err != nil {
+				config.App.Logger.Error().Err(err).Msg("Invalid 'createdAtTo' date format. Expected ISO8601 format.")
+				http.Error(w, "Invalid 'createdAtTo' date format. Expected ISO8601 format.", http.StatusBadRequest)
+				return
+			}
+			dateFilter["$lte"] = createdAtTo
 		}
+
+		filter["created_at"] = dateFilter
 	}
 
 	if ratingString != "" {
@@ -212,7 +222,6 @@ func SearchComments(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(comments) == 0 {
-		config.App.Logger.Info().Msg("No comments found")
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
