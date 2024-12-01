@@ -7,9 +7,10 @@ import {
   Button,
   Alert,
   Box,
-  Grid,
-  Pagination
+  Pagination,
 } from "@mui/material";
+
+import Grid from "@mui/joy/Grid";
 import { deleteEntry, searchEntries } from "../api/EntryApi.js";
 import { getWiki, deleteWiki } from "../api/WikiApi.js";
 import EntradaCard from "../components/EntradaCard.jsx";
@@ -27,14 +28,15 @@ function WikiPage() {
 
   const { id } = useParams();
 
-  
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
 
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const selectedEntradas = entradas.slice(startIndex, startIndex + itemsPerPage);
-
+  const selectedEntradas = entradas.slice(
+    startIndex,
+    startIndex + itemsPerPage,
+  );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -66,7 +68,7 @@ function WikiPage() {
     try {
       await deleteEntry(entryID);
       setEntradas((prevEntries) =>
-        prevEntries.filter((entry) => entry.id !== entryID)
+        prevEntries.filter((entry) => entry.id !== entryID),
       );
       showToast("Comentario eliminado correctamente", "success");
     } catch (error) {
@@ -151,11 +153,11 @@ function WikiPage() {
             ) : (
               <Typography>No entries available</Typography>
             )}
-              <Pagination
-                count={Math.ceil(entradas.length / itemsPerPage)}
-                page={currentPage}
-                onChange={handlePageChange}
-                sx={{ mt: 4 }}
+            <Pagination
+              count={Math.ceil(entradas.length / itemsPerPage)}
+              page={currentPage}
+              onChange={handlePageChange}
+              sx={{ mt: 4 }}
             />
           </Paper>
 

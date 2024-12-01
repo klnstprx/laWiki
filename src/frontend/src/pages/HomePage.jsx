@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { Container, Typography, Alert, Grid2, Button, Pagination } from "@mui/material";
+import {
+  Container,
+  Typography,
+  Alert,
+  Button,
+  Pagination,
+} from "@mui/material";
+
+import Grid from "@mui/joy/Grid";
 import { getAllWikis } from "../api/WikiApi.js";
 import WikiCard from "../components/WikiCard.jsx";
 import { Link } from "react-router-dom";
@@ -26,9 +34,8 @@ function HomePage() {
     setCurrentPage(value);
   };
 
-    const startIndex = (currentPage - 1) * itemsPerPage;
+  const startIndex = (currentPage - 1) * itemsPerPage;
   const selectedWikis = wikis.slice(startIndex, startIndex + itemsPerPage);
-
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -49,7 +56,7 @@ function HomePage() {
       {error && <Alert severity="error">{error}</Alert>}
       {!error && wikis.length > 0 ? (
         <>
-          <Grid2
+          <Grid
             container
             spacing={4}
             sx={{
@@ -59,7 +66,7 @@ function HomePage() {
             }}
           >
             {selectedWikis.map((wiki) => (
-              <Grid2
+              <Grid
                 key={wiki.id}
                 xs={12}
                 sm={6}
@@ -68,9 +75,9 @@ function HomePage() {
                 sx={{ flexBasis: "30%", maxWidth: "30%" }}
               >
                 <WikiCard wiki={wiki} />
-              </Grid2>
+              </Grid>
             ))}
-          </Grid2>
+          </Grid>
           <Pagination
             count={Math.ceil(wikis.length / itemsPerPage)}
             page={currentPage}

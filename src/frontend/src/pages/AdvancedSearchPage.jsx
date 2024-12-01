@@ -37,7 +37,7 @@ const AdvancedSearchPage = () => {
     commentAuthor: "",
     commentCreatedAtFrom: null,
     commentCreatedAtTo: null,
-    commentRating: "",
+    commentRating: null,
     // Versions
     versionContent: "",
     versionEditor: "",
@@ -115,8 +115,8 @@ const AdvancedSearchPage = () => {
         commentsSearchParams.createdAtTo =
           params.commentCreatedAtTo.toISOString();
       }
-      if (params.commentRating.trim() !== "") {
-        commentsSearchParams.rating = parseInt(params.commentRating.trim(), 10);
+      if (params.commentRating != null) {
+        commentsSearchParams.rating = params.commentRating;
       }
 
       const versionsSearchParams = {};
@@ -380,8 +380,13 @@ const AdvancedSearchPage = () => {
             <Typography variant="body2">Valoración del Comentario</Typography>
             <Rating
               name="commentRating"
-              value={params.commentRating || 0}
-              onChange={handleInputChange}
+              value={params.commentRating}
+              onChange={(event, newValue) => {
+                setParams((prevParams) => ({
+                  ...prevParams,
+                  commentRating: newValue,
+                }));
+              }}
               size="large"
             />
           </Grid>
