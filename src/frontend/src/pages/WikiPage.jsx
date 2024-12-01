@@ -7,6 +7,7 @@ import {
   Button,
   Alert,
   Box,
+  Pagination,
 } from "@mui/material";
 
 import Grid from "@mui/joy/Grid";
@@ -22,8 +23,20 @@ function WikiPage() {
   const [error, setError] = useState(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   const { id } = useParams();
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const selectedEntradas = entradas.slice(
+    startIndex,
+    startIndex + itemsPerPage,
+  );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -140,6 +153,12 @@ function WikiPage() {
             ) : (
               <Typography>No entries available</Typography>
             )}
+            <Pagination
+              count={Math.ceil(entradas.length / itemsPerPage)}
+              page={currentPage}
+              onChange={handlePageChange}
+              sx={{ mt: 4 }}
+            />
           </Paper>
 
           {/* Buttons */}

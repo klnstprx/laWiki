@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { Container, Typography, TextField, Button, Box } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
-import { getWiki, postWiki, putWiki } from '../api/WikiApi';
-import ConfirmationModal from '../components/ConfirmationModal.jsx';
+import { useEffect, useState } from "react";
+import { Container, Typography, TextField, Button, Box } from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
+import { getWiki, postWiki, putWiki } from "../api/WikiApi";
+import ConfirmationModal from "../components/ConfirmationModal.jsx";
 
 function FormWikiPage() {
   const { wikiId } = useParams();
@@ -16,9 +16,9 @@ function FormWikiPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formErrors, setFormErrors] = useState({
-    title: '',
-    description: '',
-    category: '',
+    title: "",
+    description: "",
+    category: "",
   });
 
   useEffect(() => {
@@ -28,10 +28,10 @@ function FormWikiPage() {
           if (data && Object.keys(data).length > 0) {
             setWiki(data);
           } else {
-            setError('Wiki no encontrada.');
+            setError("Wiki no encontrada.");
           }
         })
-        .catch(() => setError('Error al obtener los detalles de la wiki.'));
+        .catch(() => setError("Error al obtener los detalles de la wiki."));
     }
   }, [wikiId]);
 
@@ -44,24 +44,24 @@ function FormWikiPage() {
     // Clear error for the field
     setFormErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: '',
+      [name]: "",
     }));
   };
 
   const validate = () => {
     let isValid = true;
-    let errors = { title: '', description: '', category: '' };
+    let errors = { title: "", description: "", category: "" };
 
     if (!wiki.title.trim()) {
-      errors.title = 'El título es obligatorio.';
+      errors.title = "El título es obligatorio.";
       isValid = false;
     }
     if (!wiki.description.trim()) {
-      errors.description = 'La descripción es obligatoria.';
+      errors.description = "La descripción es obligatoria.";
       isValid = false;
     }
     if (!wiki.category.trim()) {
-      errors.category = 'La categoría es obligatoria.';
+      errors.category = "La categoría es obligatoria.";
       isValid = false;
     }
 
@@ -76,10 +76,10 @@ function FormWikiPage() {
       } else {
         await postWiki(wiki);
       }
-      navigate('/');
+      navigate("/");
     } catch (error) {
-      console.error('Error al guardar la wiki:', error);
-      setError('Error al guardar la wiki.');
+      console.error("Error al guardar la wiki:", error);
+      setError("Error al guardar la wiki.");
     }
   };
 
@@ -156,7 +156,9 @@ function FormWikiPage() {
         show={isModalOpen}
         handleClose={() => setIsModalOpen(false)}
         handleConfirm={handleSubmit}
-        message={`¿Estás seguro de que quieres ${wikiId ? 'guardar los cambios' : 'crear esta wiki'}?`}
+        message={`¿Estás seguro de que quieres ${
+          wikiId ? "guardar los cambios" : "crear esta wiki"
+        }?`}
       />
     </Container>
   );

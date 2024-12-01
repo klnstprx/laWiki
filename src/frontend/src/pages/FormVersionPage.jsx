@@ -154,7 +154,9 @@ function FormVersionPage() {
         show={isModalOpen}
         handleClose={() => setIsModalOpen(false)}
         handleConfirm={handleSubmit}
-        message={`¿Estás seguro de que deseas ${versionId ? "guardar los cambios" : "crear esta versión"}?`}
+        message={`¿Estás seguro de que deseas ${
+          versionId ? "guardar los cambios" : "crear esta versión"
+        }?`}
       />
     </Container>
   );
