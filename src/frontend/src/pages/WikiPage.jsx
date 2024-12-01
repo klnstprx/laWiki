@@ -6,8 +6,6 @@ import {
   Typography,
   Button,
   Alert,
-  List,
-  ListItem,
   Box,
   Grid,
 } from "@mui/material";
@@ -144,7 +142,7 @@ function WikiPage() {
           </Paper>
 
           {/* Buttons */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
             <Button
               component={Link}
               to={`/crear-entrada/${id}`}

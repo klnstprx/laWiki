@@ -22,9 +22,10 @@ import {
   TextField,
   Grid2,
   Divider,
+  Rating,
 } from "@mui/material";
-import { Carousel } from 'react-responsive-carousel';
-import 'react-responsive-carousel/lib/styles/carousel.min.css'; // Import the carousel styles
+import { Carousel } from "react-responsive-carousel";
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import the carousel styles
 
 function EntradaPage() {
   const { entryId, versionId } = useParams();
@@ -45,7 +46,9 @@ function EntradaPage() {
 
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
 
-  const geoCacheRef = useRef(JSON.parse(sessionStorage.getItem("geoCache")) || {}); // cache de geocoding
+  const geoCacheRef = useRef(
+    JSON.parse(sessionStorage.getItem("geoCache")) || {}
+  ); // cache de geocoding
 
   const saveCacheToSessionStorage = () => {
     sessionStorage.setItem("geoCache", JSON.stringify(geoCacheRef.current));
@@ -56,14 +59,14 @@ function EntradaPage() {
     if (geoCacheRef.current[address]) {
       console.log(
         "Obteniendo coordenadas desde el cache en memoria:",
-        geoCacheRef.current[address],
+        geoCacheRef.current[address]
       );
       return geoCacheRef.current[address]; // Retorna las coordenadas almacenadas
     }
 
     // Si no está en el cache, realiza la solicitud a la API
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-      address,
+      address
     )}&format=json&addressdetails=1&limit=1`;
 
     try {
@@ -121,7 +124,7 @@ function EntradaPage() {
   const confirmDeleteComment = async () => {
     await deleteComment(commentToDelete);
     setComments((prevComments) =>
-      prevComments.filter((comment) => comment.id !== commentToDelete),
+      prevComments.filter((comment) => comment.id !== commentToDelete)
     );
     setShowDeleteCommentModal(false);
     showToast("Comentario eliminado correctamente", "success");
@@ -140,7 +143,7 @@ function EntradaPage() {
           }
         })
         .catch(() =>
-          setEntryError("Se produjo un error al obtener la entrada."),
+          setEntryError("Se produjo un error al obtener la entrada.")
         );
     } else {
       setEntryError("No se proporcionó un ID de entrada válido.");
@@ -152,7 +155,8 @@ function EntradaPage() {
     if (!Array.isArray(mediaIdsArray) || mediaIdsArray.length === 0) {
       console.log("No media IDs found or mediaIdsArray is not an array.");
       return;
-    }    try {
+    }
+    try {
       const mediaPromises = mediaIdsArray.map((id) => getMedia(id));
       const mediaResults = await Promise.all(mediaPromises);
       setMediaList(mediaResults);
@@ -174,18 +178,18 @@ function EntradaPage() {
           if (versions && versions.length > 0) {
             // Sort the versions by createdAt descending to get the latest
             versions.sort(
-              (a, b) => new Date(b.created_at) - new Date(a.created_at),
+              (a, b) => new Date(b.created_at) - new Date(a.created_at)
             );
             const latestVersion = versions[0];
             setActualVersionId(latestVersion.id);
           } else {
             setVersionError(
-              "No se encontró ninguna versión para esta entrada.",
+              "No se encontró ninguna versión para esta entrada."
             );
           }
         })
         .catch(() =>
-          setVersionError("Se produjo un error al obtener las versiones."),
+          setVersionError("Se produjo un error al obtener las versiones.")
         );
     }
   }, [entryId, versionId]);
@@ -224,7 +228,7 @@ function EntradaPage() {
           }
         })
         .catch(() =>
-          setCommentsError("Se produjo un error al obtener los comentarios."),
+          setCommentsError("Se produjo un error al obtener los comentarios.")
         );
     }
   }, [actualVersionId, fetchCoordinatesNominatim]);
@@ -277,7 +281,12 @@ function EntradaPage() {
         {mediaError && <Alert severity="error">{mediaError}</Alert>}
         {mediaList.length > 0 && ( // Verifica si hay elementos en mediaList
           <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-            <Carousel showThumbs={false} infiniteLoop useKeyboardArrows autoPlay>
+            <Carousel
+              showThumbs={false}
+              infiniteLoop
+              useKeyboardArrows
+              autoPlay
+            >
               {mediaList.map((media, index) => (
                 <div key={index}>
                   <img
@@ -292,19 +301,18 @@ function EntradaPage() {
         )}
       </Container>
 
-
       {/* Entry Details */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
         {!entryError && entry && (
           <>
             <Typography variant="subtitle1" gutterBottom>
               Autor: {entry.author} | Fecha de creación:{" "}
-              {new Date(entry.created_at).toLocaleString('es-ES', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
+              {new Date(entry.created_at).toLocaleString("es-ES", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
               })}
             </Typography>
             <Typography variant="subtitle1" gutterBottom>
@@ -317,9 +325,6 @@ function EntradaPage() {
           </>
         )}
       </Paper>
-
-
-
 
       {/* Comments */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
@@ -366,15 +371,10 @@ function EntradaPage() {
               />
             </Grid2>
             <Grid2 xs={12} sm={6} md={4}>
-              <TextField
-                id="rating"
-                name="rating"
-                label="Calificación"
-                type="number"
-                inputProps={{ min: 1, max: 5 }}
-                required
-                fullWidth
-              />
+              <Typography variant="subtitle1" gutterBottom>
+                Valoración:
+              </Typography>
+              <Rating name="rating" id="rating" size="large" />
             </Grid2>
             <Grid2 xs={12} sm={6} md={4}>
               <TextField
@@ -389,7 +389,7 @@ function EntradaPage() {
               <Button
                 type="submit"
                 variant="contained"
-                color="prry"
+                color="primary"
                 fullWidth
                 sx={{ height: "100%" }}
               >
