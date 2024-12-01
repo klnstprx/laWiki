@@ -49,7 +49,6 @@ const theme = createTheme({
         },
       },
     },
-    // Style overrides for other components if needed
     MuiListItem: {
       styleOverrides: {
         root: {
@@ -65,7 +64,32 @@ const theme = createTheme({
         },
       },
     },
-  },
+    MuiBreadcrumbs: {
+      styleOverrides: {
+        root: {
+          marginBottom: "16px",
+        },
+      },
+    },
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          "&.breadcrumb-link": {
+            textDecoration: "none",
+            color: "black",
+            fontWeight: 500,
+            "&:hover": {
+              color: "#535bf2",
+            },
+          },
+          "&.breadcrumb-active": {
+                color: "black",
+            fontWeight: 500,
+          },
+        },
+      },
+    },
+  }
 });
 
 export default theme;

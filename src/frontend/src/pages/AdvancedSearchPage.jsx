@@ -207,7 +207,7 @@ const AdvancedSearchPage = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-        <Typography color="textPrimary" component={Link} to="/">
+        <Typography component={Link} to="/" className="breadcrumb-link">
           Inicio
         </Typography>
       </Breadcrumbs>

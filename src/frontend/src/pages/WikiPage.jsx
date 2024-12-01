@@ -92,10 +92,10 @@ function WikiPage() {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Breadcrumbs sx={{ mb: 2 }}>
-        <Typography color="textPrimary" component={Link} to="/">
+        <Typography color="textPrimary" component={Link} to="/" className="breadcrumb-link">
           Inicio
         </Typography>
-        <Typography color="textPrimary">{wiki.title}</Typography>
+        <Typography color="textPrimary" className="breadcrumb-active">{wiki.title}</Typography>
       </Breadcrumbs>
 
       {error && (
@@ -186,7 +186,7 @@ function WikiPage() {
                 component={Link}
                 to={`/wiki/form/${id}`}
                 variant="contained"
-                color="secondary"
+                color="gray"
                 sx={{ mt: 2, mr: 2 }}
               >
                 Editar Wiki
