@@ -21,7 +21,10 @@ import {
   Alert,
   TextField,
   Divider,
+  Rating,
 } from "@mui/material";
+import { Carousel } from "react-responsive-carousel";
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import the carousel styles
 
 import Grid from "@mui/joy/Grid";
 
@@ -274,6 +277,32 @@ function EntradaPage() {
       {/* Divider */}
       <Divider sx={{ my: 4 }} />
 
+      {/* Media */}
+      <Container>
+        {entryError && <Alert severity="error">{entryError}</Alert>}
+        {mediaError && <Alert severity="error">{mediaError}</Alert>}
+        {mediaList.length > 0 && ( // Verifica si hay elementos en mediaList
+          <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+            <Carousel
+              showThumbs={false}
+              infiniteLoop
+              useKeyboardArrows
+              autoPlay
+            >
+              {mediaList.map((media, index) => (
+                <div key={index}>
+                  <img
+                    src={media.uploadUrl}
+                    alt={media.publicId}
+                    style={{ maxWidth: "33%" }}
+                  />
+                </div>
+              ))}
+            </Carousel>
+          </Paper>
+        )}
+      </Container>
+
       {/* Entry Details */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
         {entryError && <Alert severity="error">{entryError}</Alert>}
@@ -299,22 +328,6 @@ function EntradaPage() {
           </>
         )}
       </Paper>
-
-      {/* Media */}
-      <Container>
-        {mediaError && <Alert severity="error">{mediaError}</Alert>}
-        <Stack spacing={2}>
-          {mediaList.map((media, index) => (
-            <Paper key={index}>
-              <img
-                src={media.uploadUrl}
-                alt={media.publicId}
-                style={{ maxWidth: "40%" }}
-              />
-            </Paper>
-          ))}
-        </Stack>
-      </Container>
 
       {/* Comments */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
@@ -362,15 +375,10 @@ function EntradaPage() {
               />
             </Grid>
             <Grid xs={12} sm={6} md={4}>
-              <TextField
-                id="rating"
-                name="rating"
-                label="Calificación"
-                type="number"
-                inputProps={{ min: 1, max: 5 }}
-                required
-                fullWidth
-              />
+              <Typography variant="subtitle1" gutterBottom>
+                Valoración:
+              </Typography>
+              <Rating name="rating" id="rating" size="large" />
             </Grid>
             <Grid xs={12} sm={6} md={4}>
               <TextField
