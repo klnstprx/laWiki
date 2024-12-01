@@ -112,15 +112,15 @@ function FormWikiPage() {
     let errors = { title: "", description: "", category: "" };
 
     if (!wiki.title.trim()) {
-      errors.title = "El título es obligatorio.";
+      errors.title = "Introduzca un título";
       isValid = false;
     }
     if (!wiki.description.trim()) {
-      errors.description = "La descripción es obligatoria.";
+      errors.description = "Introduzca una descripción";
       isValid = false;
     }
     if (!wiki.category.trim()) {
-      errors.category = "La categoría es obligatoria.";
+      errors.category = "Introduzca una categoría";
       isValid = false;
     }
 
