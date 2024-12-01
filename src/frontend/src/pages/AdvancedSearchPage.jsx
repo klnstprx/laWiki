@@ -1,19 +1,31 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Container, TextField, Button, Typography, Grid2 } from "@mui/material";
+import {
+  Container,
+  TextField,
+  Button,
+  Typography,
+  Paper,
+  CircularProgress,
+  Grid2,
+} from "@mui/material";
+import SearchResultsList from "../components/SearchResultsList";
+import { searchWikis } from "../api/WikiApi";
+import { searchEntries } from "../api/EntryApi";
 
 const AdvancedSearchPage = () => {
-  const navigate = useNavigate();
   const [params, setParams] = useState({
     wikiTitle: "",
     wikiCategory: "",
     entryTitle: "",
     entryAuthor: "",
-    commentContent: "",
-    commentAuthor: "",
-    versionContent: "",
-    versionEditor: "",
   });
+
+  const [searchResults, setSearchResults] = useState({
+    wikis: [],
+    entries: [],
+  });
+
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -22,151 +34,145 @@ const AdvancedSearchPage = () => {
       [name]: value,
     }));
   };
+  const [error, setError] = useState("");
+  const handleSearch = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      // Build wiki search parameters
+      const wikiSearchParams = {};
+      if (params.wikiTitle.trim() !== "") {
+        wikiSearchParams.title = params.wikiTitle.trim();
+      }
+      if (params.wikiCategory.trim() !== "") {
+        wikiSearchParams.category = params.wikiCategory.trim();
+      }
 
-  const handleSearch = () => {
-    const urlParams = new URLSearchParams();
+      // Build entry search parameters
+      const entriesSearchParams = {};
+      if (params.entryTitle.trim() !== "") {
+        entriesSearchParams.title = params.entryTitle.trim();
+      }
+      if (params.entryAuthor.trim() !== "") {
+        entriesSearchParams.author = params.entryAuthor.trim();
+      }
 
-    // Add wiki search parameters
-    if (params.wikiTitle) urlParams.append("wikiTitle", params.wikiTitle);
-    if (params.wikiCategory)
-      urlParams.append("wikiCategory", params.wikiCategory);
+      // Only call the API if there are parameters to search
+      const wikisPromise =
+        Object.keys(wikiSearchParams).length > 0
+          ? searchWikis(wikiSearchParams)
+          : Promise.resolve([]);
 
-    // Add entry search parameters
-    if (params.entryTitle) urlParams.append("entryTitle", params.entryTitle);
-    if (params.entryAuthor) urlParams.append("entryAuthor", params.entryAuthor);
+      const entriesPromise =
+        Object.keys(entriesSearchParams).length > 0
+          ? searchEntries(entriesSearchParams)
+          : Promise.resolve([]);
 
-    // Add comment search parameters
-    if (params.commentContent)
-      urlParams.append("commentContent", params.commentContent);
-    if (params.commentAuthor)
-      urlParams.append("commentAuthor", params.commentAuthor);
+      const [wikis, entries] = await Promise.all([
+        wikisPromise,
+        entriesPromise,
+      ]);
 
-    // Add version search parameters
-    if (params.versionContent)
-      urlParams.append("versionContent", params.versionContent);
-    if (params.versionEditor)
-      urlParams.append("versionEditor", params.versionEditor);
+      console.log("Received wikis:", wikis);
+      console.log("Received entries:", entries);
 
-    navigate(`/search?${urlParams.toString()}`);
+      setSearchResults({
+        wikis: Array.isArray(wikis) ? wikis : [],
+        entries: Array.isArray(entries) ? entries : [],
+      });
+    } catch (error) {
+      console.error("Error during advanced search:", error);
+      setSearchResults({ wikis: [], entries: [] });
+      setError(
+        "Ocurrió un error durante la búsqueda. Por favor, inténtelo de nuevo.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const isSearchDisabled =
+    !params.wikiTitle &&
+    !params.wikiCategory &&
+    !params.entryTitle &&
+    !params.entryAuthor;
+
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
+    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Advanced Search
+        Búsqueda Avanzada
       </Typography>
-      <form>
-        <Grid2 container spacing={3}>
+      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+        <Grid2 container spacing={2}>
           {/* Wiki Search Fields */}
-          <Grid2 item xs={12} sm={6}>
-            <Typography variant="h6">Wiki </Typography>
-            <Grid2 container spacing={2}>
-              <Grid2 item xs={12} sm={6}>
-                <TextField
-                  label="Wiki Title"
-                  name="wikiTitle"
-                  value={params.wikiTitle}
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-              </Grid2>
-              <Grid2 item xs={12} sm={6}>
-                <TextField
-                  label="Wiki Category"
-                  name="wikiCategory"
-                  value={params.wikiCategory}
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-              </Grid2>
-            </Grid2>
+          <Grid2 xs={12} sm={6}>
+            <Typography variant="h6">Wiki</Typography>
+            <TextField
+              label="Título de la Wiki"
+              name="wikiTitle"
+              value={params.wikiTitle}
+              onChange={handleInputChange}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Categoría de la Wiki"
+              name="wikiCategory"
+              value={params.wikiCategory}
+              onChange={handleInputChange}
+              fullWidth
+              margin="normal"
+            />
           </Grid2>
 
           {/* Entry Search Fields */}
-          <Grid2 item xs={12} sm={6}>
-            <Typography variant="h6">Entrada </Typography>
-            <Grid2 container spacing={2}>
-              <Grid2 item xs={12} sm={6}>
-                <TextField
-                  label="Entry Title"
-                  name="entryTitle"
-                  value={params.entryTitle}
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-              </Grid2>
-              <Grid2 item xs={12} sm={6}>
-                <TextField
-                  label="Entry Author"
-                  name="entryAuthor"
-                  value={params.entryAuthor}
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-              </Grid2>
-            </Grid2>
+          <Grid2 xs={12} sm={6}>
+            <Typography variant="h6">Entrada</Typography>
+            <TextField
+              label="Título de la Entrada"
+              name="entryTitle"
+              value={params.entryTitle}
+              onChange={handleInputChange}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Autor de la Entrada"
+              name="entryAuthor"
+              value={params.entryAuthor}
+              onChange={handleInputChange}
+              fullWidth
+              margin="normal"
+            />
           </Grid2>
-
-          {/* Comment Search Fields */}
-          <Grid2 item xs={12} sm={6}>
-            <Typography variant="h6">Commentario</Typography>
-            <Grid2 container spacing={2}>
-              <Grid2 item xs={12} sm={6}>
-                <TextField
-                  label="Comment Content"
-                  name="commentContent"
-                  value={params.commentContent}
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-              </Grid2>
-              <Grid2 item xs={12} sm={6}>
-                <TextField
-                  label="Comment Author"
-                  name="commentAuthor"
-                  value={params.commentAuthor}
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-              </Grid2>
-            </Grid2>
-          </Grid2>
-
-          {/* Version Search Fields */}
-          <Grid2 item xs={12} sm={6}>
-            <Typography variant="h6">Version</Typography>
-            <Grid2 container spacing={2}>
-              <Grid2 item xs={12} sm={6}>
-                <TextField
-                  label="Version Content"
-                  name="versionContent"
-                  value={params.versionContent}
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-              </Grid2>
-              <Grid2 item xs={12} sm={6}>
-                <TextField
-                  label="Version Editor"
-                  name="versionEditor"
-                  value={params.versionEditor}
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-              </Grid2>
-            </Grid2>
-          </Grid2>
-
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSearch}
-            fullWidth
-          >
-            Buscar
-          </Button>
         </Grid2>
-      </form>
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSearch}
+          sx={{ mt: 2 }}
+          fullWidth
+          disabled={isSearchDisabled}
+        >
+          Buscar
+        </Button>
+      </Paper>
+      {error && (
+        <Typography variant="body2" color="error" sx={{ mt: 2 }}>
+          {error}
+        </Typography>
+      )}
+      {loading ? (
+        <div style={{ display: "flex", alignItems: "center", padding: "10px" }}>
+          <CircularProgress size={24} />
+          <Typography variant="body2" sx={{ ml: 2 }}>
+            Cargando...
+          </Typography>
+        </div>
+      ) : (
+        <SearchResultsList results={searchResults} />
+      )}
     </Container>
   );
 };
