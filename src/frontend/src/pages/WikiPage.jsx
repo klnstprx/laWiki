@@ -8,6 +8,7 @@ import {
   Alert,
   List,
   ListItem,
+  Box,
 } from "@mui/material";
 import { deleteEntry, searchEntries } from "../api/EntryApi.js";
 import { getWiki } from "../api/WikiApi.js";
@@ -78,6 +79,12 @@ function WikiPage() {
             <Typography variant="h3" component="h1" sx={{ m: 0 }}>
               {wiki.title}
             </Typography>
+            <Typography variant="h6" gutterBottom>
+              <strong>Descripción:</strong> {wiki.description}
+            </Typography>
+            <Typography variant="h6" gutterBottom>
+              <strong>Categoría:</strong> {wiki.category}
+            </Typography>
           </Paper>
 
           {/* Wiki Information */}
@@ -121,16 +128,28 @@ function WikiPage() {
             )}
           </Paper>
 
-          {/* Button to create new entry */}
-          <Button
-            component={Link}
-            to={`/crear-entrada/${id}`}
-            variant="contained"
-            color="primary"
-            sx={{ mt: 2 }}
-          >
-            Crear Nueva Entrada
-          </Button>
+          {/* Buttons */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Button
+              component={Link}
+              to={`/crear-entrada/${id}`}
+              variant="contained"
+              color="primary"
+              sx={{ mt: 2 }}
+            >
+              Crear Nueva Entrada
+            </Button>
+
+            <Button
+              component={Link}
+              to={`/wiki/form/${id}`}
+              variant="contained"
+              color="secondary"
+              sx={{ mt: 2 }}
+            >
+              Editar Wiki
+            </Button>
+          </Box>
         </>
       )}
     </Container>
