@@ -23,7 +23,14 @@ import {
   Grid2,
   Divider,
   Rating,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
+import InfoIcon from "@mui/icons-material/Info";
+import HistoryIcon from "@mui/icons-material/History";
+import EditIcon from "@mui/icons-material/Edit";
+import PersonIcon from "@mui/icons-material/Person";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import the carousel styles
 
@@ -254,6 +261,66 @@ function EntradaPage() {
         </Typography>
       )}
 
+            {/* Entry Details */}
+      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+        {!entryError && entry && (
+          <>
+            <Tooltip
+              title={
+                <Typography variant="subtitle1">
+                  Autor: {entry.author}
+                </Typography>
+              }
+              arrow
+            >
+              <IconButton>
+                <PersonIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip
+              title={
+                <Typography variant="subtitle1">
+                  Fecha de creación:{" "}
+                  {new Date(entry.created_at).toLocaleString("es-ES", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </Typography>
+              }
+              arrow
+            >
+              <IconButton>
+                <CalendarTodayIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip 
+            title={
+            <Typography variant="subtitle1">
+              Ver historial
+            </Typography>}
+             arrow>
+              <IconButton component={Link} to={`/versiones/${entry.id}/`}>
+                <HistoryIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip 
+            title={
+              <Typography variant="subtitle1">
+                Editar contenido
+              </Typography>
+            }
+             arrow>
+              <IconButton component={Link} to={`/version/form/${entry.id}/${actualVersionId || ""}`}>
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+          </>
+        )}
+      </Paper>
+
       {/* Version Content */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
         {loadingVersion ? (
@@ -301,30 +368,6 @@ function EntradaPage() {
         )}
       </Container>
 
-      {/* Entry Details */}
-      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-        {!entryError && entry && (
-          <>
-            <Typography variant="subtitle1" gutterBottom>
-              Autor: {entry.author} | Fecha de creación:{" "}
-              {new Date(entry.created_at).toLocaleString("es-ES", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Typography>
-            <Typography variant="subtitle1" gutterBottom>
-              <Link to={`/versiones/${entry.id}/`}>Ver historial</Link>
-              {" | "}
-              <Link to={`/version/form/${entry.id}/${actualVersionId || ""}`}>
-                Editar contenido
-              </Link>
-            </Typography>
-          </>
-        )}
-      </Paper>
 
       {/* Comments */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
