@@ -1,10 +1,11 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   searchComments,
   postComment,
   deleteComment,
 } from "../api/CommentApi.js";
 import { getEntry } from "../api/EntryApi.js";
+import { getMedia } from "../api/MediaApi.js";
 import { getVersion, searchVersions } from "../api/VersionApi.js";
 import { useParams, Link } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
@@ -28,6 +29,8 @@ function EntradaPage() {
   const [entry, setEntry] = useState({});
   const [version, setVersion] = useState({});
   const [comments, setComments] = useState([]);
+  const [mediaList, setMediaList] = useState([]);
+  const [mediaError, setMediaError] = useState(null);
   const [entryError, setEntryError] = useState(null);
   const [commentsError, setCommentsError] = useState(null);
   const [versionError, setVersionError] = useState(null);
@@ -40,20 +43,20 @@ function EntradaPage() {
 
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
 
-  const geoCache = JSON.parse(sessionStorage.getItem("geoCache")) || {}; // cache de geocoding
+  const geoCacheRef = useRef(JSON.parse(sessionStorage.getItem("geoCache")) || {}); // cache de geocoding
 
   const saveCacheToSessionStorage = () => {
-    sessionStorage.setItem("geoCache", JSON.stringify(geoCache));
+    sessionStorage.setItem("geoCache", JSON.stringify(geoCacheRef.current));
   };
 
-  const fetchCoordinatesNominatim = async (address) => {
+  const fetchCoordinatesNominatim = useCallback(async (address) => {
     // Comprueba si la dirección ya está en el cache
-    if (geoCache[address]) {
+    if (geoCacheRef.current[address]) {
       console.log(
         "Obteniendo coordenadas desde el cache en memoria:",
-        geoCache[address],
+        geoCacheRef.current[address],
       );
-      return geoCache[address]; // Retorna las coordenadas almacenadas
+      return geoCacheRef.current[address]; // Retorna las coordenadas almacenadas
     }
 
     // Si no está en el cache, realiza la solicitud a la API
@@ -71,7 +74,7 @@ function EntradaPage() {
         console.log("Coordenadas obtenidas de la API:", coordinates);
 
         // Almacena las coordenadas en el cache y en sessionStorage antes de retornarlas
-        geoCache[address] = coordinates;
+        geoCacheRef.current[address] = coordinates;
         saveCacheToSessionStorage(); // Actualiza sessionStorage
         return coordinates;
       } else {
@@ -81,7 +84,7 @@ function EntradaPage() {
       console.error("Error al realizar la geocodificación:", error);
       return null;
     }
-  };
+  }, []);
 
   // Handler to close the confirmation modal
   const handleClose = () => {
@@ -105,18 +108,21 @@ function EntradaPage() {
     }
   };
 
-  // Handler to delete a comment
-  const handleDeleteComment = async (commentId) => {
-    try {
-      await deleteComment(commentId);
-      setComments((prevComments) =>
-        prevComments.filter((comment) => comment.id !== commentId),
-      );
-      showToast("Comentario eliminado correctamente", "success");
-    } catch (error) {
-      console.error("Error al eliminar el comentario:", error);
-      showToast("Error al eliminar el comentario", "error");
-    }
+  const [showDeleteCommentModal, setShowDeleteCommentModal] = useState(false); // add state
+  const [commentToDelete, setCommentToDelete] = useState(null); // add state
+
+  const handleDeleteComment = (commentId) => {
+    setCommentToDelete(commentId);
+    setShowDeleteCommentModal(true);
+  };
+
+  const confirmDeleteComment = async () => {
+    await deleteComment(commentToDelete);
+    setComments((prevComments) =>
+      prevComments.filter((comment) => comment.id !== commentToDelete),
+    );
+    setShowDeleteCommentModal(false);
+    showToast("Comentario eliminado correctamente", "success");
   };
 
   // Fetch the entry details
@@ -126,6 +132,7 @@ function EntradaPage() {
         .then((data) => {
           if (data && Object.keys(data).length > 0) {
             setEntry(data);
+            fetchMedia(data.media_ids);
           } else {
             setEntryError("No se encontró la entrada solicitada.");
           }
@@ -137,6 +144,21 @@ function EntradaPage() {
       setEntryError("No se proporcionó un ID de entrada válido.");
     }
   }, [entryId]);
+
+  //fetch media
+  const fetchMedia = async (mediaIdsArray) => {
+    if (!Array.isArray(mediaIdsArray) || mediaIdsArray.length === 0) {
+      console.log("No media IDs found or mediaIdsArray is not an array.");
+      return;
+    }    try {
+      const mediaPromises = mediaIdsArray.map((id) => getMedia(id));
+      const mediaResults = await Promise.all(mediaPromises);
+      setMediaList(mediaResults);
+    } catch (error) {
+      console.error("Error fetching media:", error);
+      setMediaError("Failed to fetch media");
+    }
+  };
 
   // Fetch the version details
   useEffect(() => {
@@ -180,9 +202,6 @@ function EntradaPage() {
               const coords = await fetchCoordinatesNominatim(data.address);
               setCoordinates(coords);
             }
-            // replace with the following lines to test
-            // const coords = await fetchCoordinatesNominatim(fixedAddress); // Remove this line when using real address data
-            // setCoordinates(coords); // Remove this line when using real address data
           } else {
             setVersionError("No se encontró la versión solicitada.");
             setLoadingVersion(false);
@@ -206,7 +225,7 @@ function EntradaPage() {
           setCommentsError("Se produjo un error al obtener los comentarios."),
         );
     }
-  }, [actualVersionId]);
+  }, [actualVersionId, fetchCoordinatesNominatim]);
 
   // Handler to submit a new comment
   async function subirComentario(event) {
@@ -256,18 +275,37 @@ function EntradaPage() {
           <>
             <Typography variant="subtitle1" gutterBottom>
               Autor: {entry.author} | Fecha de creación:{" "}
-              {new Date(entry.created_at).toLocaleDateString()}
+              {new Date(entry.created_at).toLocaleString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
             </Typography>
             <Typography variant="subtitle1" gutterBottom>
               <Link to={`/versiones/${entry.id}/`}>Ver historial</Link>
               {" | "}
-              <Link to={`/editar-entrada/${entry.id}/${actualVersionId || ""}`}>
+              <Link to={`/version/form/${entry.id}/${actualVersionId || ""}`}>
                 Editar contenido
               </Link>
             </Typography>
           </>
         )}
       </Paper>
+
+      {/* Media */}
+      <Container>
+        {entryError && <Alert severity="error">{entryError}</Alert>}
+        {mediaError && <Alert severity="error">{mediaError}</Alert>}
+        <Stack spacing={2}>
+          {mediaList.map((media, index) => (
+            <Paper key={index}>
+              <img src={media.uploadUrl} alt={media.publicId} style={{ maxWidth: "40%" }} />
+            </Paper>
+          ))}
+        </Stack>
+      </Container>
 
       {/* Comments */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
@@ -285,7 +323,7 @@ function EntradaPage() {
                 rating={comment.rating}
                 created_at={comment.created_at}
                 author={comment.author}
-                onDelete={handleDeleteComment}
+                onDelete={(id) => handleDeleteComment(id)}
               />
             ))}
           </Stack>
@@ -353,6 +391,13 @@ function EntradaPage() {
         show={showModal}
         handleClose={handleClose}
         handleConfirm={handleConfirm}
+      />
+
+      <ConfirmationModal
+        show={showDeleteCommentModal}
+        handleClose={() => setShowDeleteCommentModal(false)}
+        handleConfirm={confirmDeleteComment}
+        message="¿Estás seguro de que deseas eliminar este comentario?"
       />
     </Container>
   );
