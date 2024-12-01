@@ -15,7 +15,13 @@ const VersionCard = ({ entradaId, versionId, editor, created_at, onDelete }) => 
           <Grid2 xs={12} sm={5}>
             <Typography variant="body1">
               <strong>Fecha:</strong>{" "}
-              {new Date(created_at).toLocaleDateString()}
+              {new Date(created_at).toLocaleString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
             </Typography>
           </Grid2>
           <Grid2 xs={12} sm={5}>
