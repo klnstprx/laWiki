@@ -10,13 +10,7 @@ import {
 import { Link as RouterLink } from "react-router-dom";
 
 const SearchResultsList = ({ results = {}, onItemClick }) => {
-  const {
-    wikis = [],
-    entries = [],
-    comments = [],
-    versions = [],
-    media = [],
-  } = results;
+  const { wikis = [], entries = [], comments = [], versions = [] } = results;
 
   return (
     <>
@@ -80,12 +74,12 @@ const SearchResultsList = ({ results = {}, onItemClick }) => {
               <ListItem key={comment.id} disablePadding>
                 <ListItemButton
                   component={RouterLink}
-                  to={`/entrada/${comment.version_id}`}
+                  to={`/version/${comment.entry_id}/${comment.version_id}`}
                   onClick={onItemClick}
                 >
                   <ListItemText
-                    primary={`Autor: ${comment.author}`}
-                    secondary={comment.content}
+                    primary={comment.content}
+                    secondary={`Autor: ${comment.author}`}
                   />
                 </ListItemButton>
               </ListItem>
@@ -120,36 +114,10 @@ const SearchResultsList = ({ results = {}, onItemClick }) => {
         </>
       )}
 
-      {media.length > 0 && (
-        <>
-          <Typography variant="subtitle1" sx={{ pl: 2, pt: 1 }}>
-            Media
-          </Typography>
-          <List>
-            {media.map((item) => (
-              <ListItem key={item.id} disablePadding>
-                <ListItemButton
-                  component={RouterLink}
-                  to={`/media/${item.id}`}
-                  onClick={onItemClick}
-                >
-                  <ListItemText
-                    primary={item.title || `Media ID: ${item.id}`}
-                    secondary={`Tipo: ${item.type}`}
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-          <Divider />
-        </>
-      )}
-
       {wikis.length === 0 &&
         entries.length === 0 &&
         comments.length === 0 &&
-        versions.length === 0 &&
-        media.length === 0 && (
+        versions.length === 0 && (
           <Typography variant="body2" sx={{ pl: 2, pt: 1 }}>
             No se encontraron resultados.
           </Typography>
@@ -164,7 +132,6 @@ SearchResultsList.propTypes = {
     entries: PropTypes.array,
     comments: PropTypes.array,
     versions: PropTypes.array,
-    media: PropTypes.array,
   }),
   onItemClick: PropTypes.func,
 };

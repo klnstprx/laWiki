@@ -6,11 +6,10 @@ import {
   Typography,
   Button,
   Alert,
-  List,
-  ListItem,
   Box,
-  Grid,
 } from "@mui/material";
+
+import Grid from "@mui/joy/Grid";
 import { deleteEntry, searchEntries } from "../api/EntryApi.js";
 import { getWiki, deleteWiki } from "../api/WikiApi.js";
 import EntradaCard from "../components/EntradaCard.jsx";
@@ -56,7 +55,7 @@ function WikiPage() {
     try {
       await deleteEntry(entryID);
       setEntradas((prevEntries) =>
-        prevEntries.filter((entry) => entry.id !== entryID)
+        prevEntries.filter((entry) => entry.id !== entryID),
       );
       showToast("Comentario eliminado correctamente", "success");
     } catch (error) {
@@ -144,7 +143,7 @@ function WikiPage() {
           </Paper>
 
           {/* Buttons */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
             <Button
               component={Link}
               to={`/crear-entrada/${id}`}
