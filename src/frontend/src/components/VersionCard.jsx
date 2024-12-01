@@ -1,16 +1,28 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { Card, CardContent, Typography, Grid2, IconButton } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Grid2,
+  IconButton,
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ConfirmationModal from '../components/ConfirmationModal.jsx';
-import { useState } from 'react';
+import ConfirmationModal from "../components/ConfirmationModal.jsx";
+import { useState } from "react";
 
-const VersionCard = ({ entradaId, versionId, editor, created_at, onDelete }) => {
+const VersionCard = ({
+  entradaId,
+  versionId,
+  editor,
+  created_at,
+  onDelete,
+}) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleDelete = () => {
     setShowDeleteModal(true);
-  }; 
+  };
 
   const confirmDelete = () => {
     onDelete(versionId);
@@ -24,12 +36,12 @@ const VersionCard = ({ entradaId, versionId, editor, created_at, onDelete }) => 
           <Grid2 xs={12} sm={5}>
             <Typography variant="body1">
               <strong>Fecha:</strong>{" "}
-              {new Date(created_at).toLocaleString('es-ES', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
+              {new Date(created_at).toLocaleString("es-ES", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
               })}
             </Typography>
           </Grid2>
@@ -45,7 +57,7 @@ const VersionCard = ({ entradaId, versionId, editor, created_at, onDelete }) => 
           </Grid2>
           <Grid2>
             <IconButton color="error" onClick={handleDelete}>
-                <DeleteIcon />
+              <DeleteIcon />
             </IconButton>
           </Grid2>
         </Grid2>

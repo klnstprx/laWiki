@@ -1,11 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Container,
-  Typography,
-  Alert,
-  Grid2,
-  Button,
-} from "@mui/material";
+import { Container, Typography, Alert, Grid2, Button } from "@mui/material";
 import { getAllWikis } from "../api/WikiApi.js";
 import WikiCard from "../components/WikiCard.jsx";
 import { Link } from "react-router-dom";
@@ -60,7 +54,7 @@ function HomePage() {
               sm={6}
               md={4}
               lg={4}
-              sx={{ flexBasis: '30%', maxWidth: '30%' }}
+              sx={{ flexBasis: "30%", maxWidth: "30%" }}
             >
               <WikiCard wiki={wiki} />
             </Grid2>

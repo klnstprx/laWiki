@@ -110,7 +110,9 @@ const SearchResultsList = ({ results = {}, onItemClick }) => {
                 >
                   <ListItemText
                     primary={`Editor: ${version.editor}`}
-                    secondary={`Fecha: ${new Date(version.created_at).toLocaleDateString()}`}
+                    secondary={`Fecha: ${new Date(
+                      version.created_at
+                    ).toLocaleDateString()}`}
                   />
                 </ListItemButton>
               </ListItem>

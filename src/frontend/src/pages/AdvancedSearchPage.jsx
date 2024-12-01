@@ -177,7 +177,7 @@ const AdvancedSearchPage = () => {
         versions: [],
       });
       setError(
-        "Ocurrió un error durante la búsqueda. Por favor, inténtelo de nuevo.",
+        "Ocurrió un error durante la búsqueda. Por favor, inténtelo de nuevo."
       );
     } finally {
       setLoading(false);
@@ -199,7 +199,7 @@ const AdvancedSearchPage = () => {
   }, []);
 
   const isSearchDisabled = Object.values(params).every(
-    (value) => value === "" || value === null,
+    (value) => value === "" || value === null
   );
 
   return (

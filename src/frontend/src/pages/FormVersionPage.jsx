@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import ConfirmationModal from '../components/ConfirmationModal.jsx'; // add import
+import ConfirmationModal from "../components/ConfirmationModal.jsx"; // add import
 
 function FormVersionPage() {
   const { entryId, versionId } = useParams();
@@ -34,7 +34,7 @@ function FormVersionPage() {
           }
         })
         .catch(() =>
-          setVersionError("Se produjo un error al obtener la versión."),
+          setVersionError("Se produjo un error al obtener la versión.")
         );
     }
   }, [versionId]);
@@ -154,7 +154,9 @@ function FormVersionPage() {
         show={isModalOpen}
         handleClose={() => setIsModalOpen(false)}
         handleConfirm={handleSubmit}
-        message={`¿Estás seguro de que deseas ${versionId ? 'guardar los cambios' : 'crear esta versión'}?`}
+        message={`¿Estás seguro de que deseas ${
+          versionId ? "guardar los cambios" : "crear esta versión"
+        }?`}
       />
     </Container>
   );

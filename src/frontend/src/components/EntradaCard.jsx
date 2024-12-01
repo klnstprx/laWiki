@@ -6,13 +6,20 @@ import {
   CardContent,
   Typography,
   Grid2,
-  IconButton
+  IconButton,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ConfirmationModal from '../components/ConfirmationModal.jsx'; // add import
-import { useState } from 'react'; // add import
+import ConfirmationModal from "../components/ConfirmationModal.jsx"; // add import
+import { useState } from "react"; // add import
 
-const EntradaCard = ({ id, title, author, createdAt, onEntradaClick, onDelete }) => {
+const EntradaCard = ({
+  id,
+  title,
+  author,
+  createdAt,
+  onEntradaClick,
+  onDelete,
+}) => {
   const handleClick = () => {
     if (onEntradaClick) {
       onEntradaClick(id);
@@ -23,7 +30,7 @@ const EntradaCard = ({ id, title, author, createdAt, onEntradaClick, onDelete })
 
   const handleDelete = () => {
     setShowDeleteModal(true);
-  }; 
+  };
 
   const confirmDelete = () => {
     onDelete(id);
@@ -52,20 +59,22 @@ const EntradaCard = ({ id, title, author, createdAt, onEntradaClick, onDelete })
               <Typography variant="subtitle1" color="textSecondary">
                 Creado
               </Typography>
-              <Typography variant="body2">{new Date(createdAt).toLocaleString('es-ES', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}</Typography>
+              <Typography variant="body2">
+                {new Date(createdAt).toLocaleString("es-ES", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Typography>
             </Grid2>
           </Grid2>
         </CardContent>
       </CardActionArea>
       <Grid2>
         <IconButton color="error" onClick={handleDelete}>
-            <DeleteIcon />
+          <DeleteIcon />
         </IconButton>
       </Grid2>
       <ConfirmationModal
@@ -84,7 +93,7 @@ EntradaCard.propTypes = {
   author: PropTypes.string.isRequired,
   createdAt: PropTypes.string.isRequired,
   onEntradaClick: PropTypes.func,
-  onDelete: PropTypes.func.isRequired
+  onDelete: PropTypes.func.isRequired,
 };
 
 export default EntradaCard;
