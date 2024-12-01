@@ -9,4 +9,5 @@ type Wiki struct {
 	Category    string    `json:"category" bson:"category"`
 	UpdatedAt   time.Time `bson:"updated_at,omitempty" json:"updated_at,omitempty"`
 	CreatedAt   time.Time `json:"created_at" bson:"created_at"`
+	MediaID     string    `json:"media_id,omitempty" bson:"media_id,omitempty"`
 }
