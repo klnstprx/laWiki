@@ -4,6 +4,7 @@ import {
   Typography,
   Alert,
   Button,
+  Breadcrumbs,
   Pagination,
 } from "@mui/material";
 
@@ -39,24 +40,27 @@ function HomePage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h2" gutterBottom>
-        Wikis
-      </Typography>
+        <Breadcrumbs sx={{ mb: 2 }}>
+          <Typography color="textPrimary">Inicio</Typography>
+        </Breadcrumbs>
 
-      <Button
-        variant="contained"
-        color="primary"
-        component={Link}
-        to="/wiki/form"
-        sx={{ mb: 2 }}
-      >
-        Crear Wiki
-      </Button>
+        <Typography variant="h2" gutterBottom>
+          Wikis
+        </Typography>
 
-      {error && <Alert severity="error">{error}</Alert>}
-      {!error && wikis.length > 0 ? (
-        <>
-          <Grid
+        <Button
+          variant="contained"
+          color="primary"
+          component={Link}
+          to="/wiki/form"
+          sx={{ mb: 2 }}
+        >
+          Crear Wiki
+        </Button>
+
+        {error && <Alert severity="error">{error}</Alert>}
+        {!error && wikis.length > 0 ? (
+          <><Grid
             container
             spacing={4}
             sx={{
@@ -72,21 +76,19 @@ function HomePage() {
                 sm={6}
                 md={4}
                 lg={4}
-                sx={{ flexBasis: "30%", maxWidth: "30%" }}
+                sx={{ flexBasis: '30%', maxWidth: '30%' }}
               >
                 <WikiCard wiki={wiki} />
               </Grid>
             ))}
           </Grid>
           <Pagination
-            count={Math.ceil(wikis.length / itemsPerPage)}
-            page={currentPage}
-            onChange={handlePageChange}
-            sx={{ mt: 4 }}
-          />
-        </>
-      ) : null}
-    </Container>
+              count={Math.ceil(wikis.length / itemsPerPage)}
+              page={currentPage}
+              onChange={handlePageChange}
+              sx={{ mt: 4 }} /></>
+        ) : null}
+      </Container>
   );
 }
 

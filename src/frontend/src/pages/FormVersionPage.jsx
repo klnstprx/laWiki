@@ -12,10 +12,16 @@ import {
 import Grid from "@mui/joy/Grid";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import ConfirmationModal from "../components/ConfirmationModal.jsx"; // add import
+import ConfirmationModal from '../components/ConfirmationModal.jsx';
+import { Link } from "react-router-dom";
+import { Breadcrumbs } from "@mui/material";
+import { getEntry } from "../api/EntryApi.js";
+import { getWiki } from "../api/WikiApi.js";
 
 function FormVersionPage() {
   const { entryId, versionId } = useParams();
+  const [entry, setEntry] = useState({});
+  const [wiki, setWiki] = useState({});
   const [version, setVersion] = useState({});
   const [versionError, setVersionError] = useState(null);
   const formRef = useRef(null);
@@ -38,6 +44,42 @@ function FormVersionPage() {
         );
     }
   }, [versionId]);
+
+  // Fetch the entry details
+  useEffect(() => {
+    if (entryId) {
+      getEntry(entryId)
+        .then((data) => {
+          if (data && Object.keys(data).length > 0) {
+            setEntry(data);
+          } else {
+            setVersionError("No se encontró la entrada solicitada.");
+          }
+        })
+        .catch(() =>
+          setVersionError("Se produjo un error al obtener la entrada."),
+        );
+    } else {
+      setVersionError("No se proporcionó un ID de entrada válido.");
+    }
+  }, [entryId]);
+
+  // Fetch the wiki details
+  useEffect(() => {
+    if (entry && entry.wiki_id) {
+      getWiki(entry.wiki_id)
+        .then((data) => {
+          if (data && Object.keys(data).length > 0) {
+            setWiki(data);
+          } else {
+            setVersionError("No se encontró la wiki asociada a esta entrada.");
+          }
+        })
+        .catch(() =>
+          setVersionError("Se produjo un error al obtener la wiki asociada."),
+        );
+    }
+  }, [entry, entryId]);
 
   // Handler for ReactQuill editor change
   const handleEditorChange = (content) => {
@@ -96,6 +138,18 @@ function FormVersionPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Breadcrumbs sx={{ mb: 2 }}>
+        <Typography color="textPrimary" component={Link} to="/">
+          Inicio
+        </Typography>
+        <Typography color="textPrimary" component={Link} to={`/wiki/${wiki.id}`}>
+          {wiki.title}
+        </Typography>
+        <Typography color="textPrimary" component={Link} to={`/entrada/${entry.id}`}>
+          {entry.title}
+        </Typography>
+      </Breadcrumbs>
+
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4 }}>
         <form id="miFormulario" ref={formRef} onSubmit={onSubmit}>
           {/* Title and Editor input */}
