@@ -2,12 +2,21 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { Card, CardContent, Typography, Grid2, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-
+import ConfirmationModal from '../components/ConfirmationModal.jsx';
+import { useState } from 'react';
 
 const VersionCard = ({ entradaId, versionId, editor, created_at, onDelete }) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   const handleDelete = () => {
-    onDelete(versionId);
+    setShowDeleteModal(true);
   }; 
+
+  const confirmDelete = () => {
+    onDelete(versionId);
+    setShowDeleteModal(false);
+  };
+
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
@@ -41,6 +50,12 @@ const VersionCard = ({ entradaId, versionId, editor, created_at, onDelete }) => 
           </Grid2>
         </Grid2>
       </CardContent>
+      <ConfirmationModal
+        show={showDeleteModal}
+        handleClose={() => setShowDeleteModal(false)}
+        handleConfirm={confirmDelete}
+        message="¿Estás seguro de que deseas eliminar esta versión?"
+      />
     </Card>
   );
 };
