@@ -11,6 +11,8 @@ import {
 import Grid from "@mui/joy/Grid";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Autocomplete from "@mui/material/Autocomplete";
+import Breadcrumbs from "@mui/material/Breadcrumbs";
+import { Link } from "react-router-dom";
 import SearchResultsList from "../components/SearchResultsList";
 import { searchWikis, getAllWikis } from "../api/WikiApi";
 import { searchEntries } from "../api/EntryApi";
@@ -204,6 +206,11 @@ const AdvancedSearchPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+        <Typography color="textPrimary" component={Link} to="/">
+          Inicio
+        </Typography>
+      </Breadcrumbs>
       <Typography variant="h4" gutterBottom>
         Búsqueda Avanzada
       </Typography>

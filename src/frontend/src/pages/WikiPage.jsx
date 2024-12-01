@@ -6,10 +6,9 @@ import {
   Typography,
   Button,
   Alert,
-  List,
-  ListItem,
   Box,
   Grid,
+  Breadcrumbs
 } from "@mui/material";
 import { deleteEntry, searchEntries } from "../api/EntryApi.js";
 import { getWiki, deleteWiki } from "../api/WikiApi.js";
@@ -78,6 +77,13 @@ function WikiPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Breadcrumbs sx={{ mb: 2 }}>
+        <Typography color="textPrimary" component={Link} to="/">
+          Inicio
+        </Typography>
+        <Typography color="textPrimary">{wiki.title}</Typography>
+      </Breadcrumbs>
+
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
