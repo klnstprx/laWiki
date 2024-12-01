@@ -256,7 +256,13 @@ function EntradaPage() {
           <>
             <Typography variant="subtitle1" gutterBottom>
               Autor: {entry.author} | Fecha de creación:{" "}
-              {new Date(entry.created_at).toLocaleDateString()}
+              {new Date(entry.created_at).toLocaleString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
             </Typography>
             <Typography variant="subtitle1" gutterBottom>
               <Link to={`/versiones/${entry.id}/`}>Ver historial</Link>

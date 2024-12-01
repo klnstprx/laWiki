@@ -23,7 +23,13 @@ const Version = ({ content, editor, created_at, address, coordinates }) => {
         Editor: {editor}
       </Typography>
       <Typography variant="subtitle1" gutterBottom>
-        Fecha de creación: {created_at}
+        Fecha de creación: {new Date(created_at).toLocaleString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
       </Typography>
       <Typography variant="subtitle1" gutterBottom>
         Ubicación: {address || "No especificada"}
