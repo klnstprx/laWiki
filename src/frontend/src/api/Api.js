@@ -11,13 +11,14 @@ export default async function apiRequest(endpoint, options = {}) {
 
   if (!resp.ok) {
     let errorMessage = `HTTP error! status: ${resp.status}`;
-    try {
-      const errorData = await resp.json();
+    const errorData = await resp.json().catch(() => null);
+    if (errorData) {
       errorMessage = errorData.message || errorMessage;
-    } catch {
-      // Ignore JSON parsing errors
     }
-    throw new Error(errorMessage);
+    const error = new Error(errorMessage);
+    error.status = resp.status;
+    error.data = errorData;
+    throw error;
   }
 
   // delete no tienen contenido
