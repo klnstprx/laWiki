@@ -12,7 +12,7 @@ import {
 import Grid from "@mui/joy/Grid";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import ConfirmationModal from '../components/ConfirmationModal.jsx';
+import ConfirmationModal from "../components/ConfirmationModal.jsx";
 import { Link } from "react-router-dom";
 import { Breadcrumbs } from "@mui/material";
 import { getEntry } from "../api/EntryApi.js";
@@ -113,7 +113,10 @@ function FormVersionPage() {
       errors.editor = "El editor es obligatorio.";
       isValid = false;
     }
-    if (!version.content || version.content.replace(/<[^>]+>/g, "").trim().length === 0) {
+    if (
+      !version.content ||
+      version.content.replace(/<[^>]+>/g, "").trim().length === 0
+    ) {
       errors.content = "El contenido no puede estar vacío.";
       isValid = false;
     }
@@ -155,10 +158,18 @@ function FormVersionPage() {
         <Typography className="breadcrumb-link" component={Link} to="/">
           Inicio
         </Typography>
-        <Typography className="breadcrumb-link" component={Link} to={`/wiki/${wiki.id}`}>
+        <Typography
+          className="breadcrumb-link"
+          component={Link}
+          to={`/wiki/${wiki.id}`}
+        >
           {wiki.title}
         </Typography>
-        <Typography className="breadcrumb-link" component={Link} to={`/entrada/${entry.id}`}>
+        <Typography
+          className="breadcrumb-link"
+          component={Link}
+          to={`/entrada/${entry.id}`}
+        >
           {entry.title}
         </Typography>
       </Breadcrumbs>
@@ -203,15 +214,20 @@ function FormVersionPage() {
           <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
             Contenido:
           </Typography>
-          <Box sx={{ height: "400px", mb: 2 }}>
-          <ReactQuill
+          <Box
+            sx={{
+              height: "400px",
+            }}
+          >
+            <ReactQuill
               theme="snow"
               value={version.content || ""}
               onChange={handleEditorChange}
               style={{
                 height: "100%",
-                border: formErrors.content ? "2px solid red" : "1px solid #ccc",
-                borderRadius: "4px",
+                display: "flex",
+                flexDirection: "column",
+                border: formErrors.content ? "1px solid red" : "1px solid #ccc",
               }}
             />
             {formErrors.content && (
