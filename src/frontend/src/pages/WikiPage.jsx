@@ -46,19 +46,19 @@ function WikiPage() {
       .catch((err) => setError(err.message));
   }, [id]);
 
-    // Handler to delete a Entry
-    const handleDeleteEntry = async (entryID) => {
-      try {
-        await deleteEntry(entryID);
-        setEntradas((prevEntries) =>
-          prevEntries.filter((entry) => entry.id !== entryID),
-        );
-        showToast("Comentario eliminado correctamente", "success");
-      } catch (error) {
-        console.error("Error al eliminar el comentario:", error);
-        showToast("Error al eliminar el comentario", "danger");
-      }
-    };
+  // Handler to delete a Entry
+  const handleDeleteEntry = async (entryID) => {
+    try {
+      await deleteEntry(entryID);
+      setEntradas((prevEntries) =>
+        prevEntries.filter((entry) => entry.id !== entryID),
+      );
+      showToast("Comentario eliminado correctamente", "success");
+    } catch (error) {
+      console.error("Error al eliminar el comentario:", error);
+      showToast("Error al eliminar el comentario", "error");
+    }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
