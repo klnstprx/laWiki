@@ -23,6 +23,8 @@ import {
   Grid2,
   Divider,
 } from "@mui/material";
+import { Carousel } from 'react-responsive-carousel';
+import 'react-responsive-carousel/lib/styles/carousel.min.css'; // Import the carousel styles
 
 function EntradaPage() {
   const { entryId, versionId } = useParams();
@@ -273,13 +275,15 @@ function EntradaPage() {
       <Container>
         {entryError && <Alert severity="error">{entryError}</Alert>}
         {mediaError && <Alert severity="error">{mediaError}</Alert>}
-        <Stack spacing={2}>
-          {mediaList.map((media, index) => (
-            <Paper key={index} sx={{display: 'flex', justifyContent:'center'}}>
-              <img src={media.uploadUrl} alt={media.publicId} style={{ maxWidth: "40%" }} />
-            </Paper>
-          ))}
-        </Stack>
+        <Paper sx={{ p: 2 }}>
+          <Carousel showThumbs={false} infiniteLoop useKeyboardArrows autoPlay>
+            {mediaList.map((media, index) => (
+              <div key={index}>
+                <img src={media.uploadUrl} alt={media.publicId} style={{ maxWidth: "33%" }} />
+              </div>
+            ))}
+          </Carousel>
+        </Paper>
       </Container>
 
       {/* Entry Details */}
