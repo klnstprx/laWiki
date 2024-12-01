@@ -4,9 +4,11 @@ import {
   Typography,
   Alert,
   Grid2,
+  Button,
 } from "@mui/material";
 import { getAllWikis } from "../api/WikiApi.js";
-import WikiCard from '../components/WikiCard.jsx';
+import WikiCard from "../components/WikiCard.jsx";
+import { Link } from "react-router-dom";
 
 function HomePage() {
   const [wikis, setWikis] = useState([]);
@@ -29,6 +31,17 @@ function HomePage() {
       <Typography variant="h2" gutterBottom>
         Wikis
       </Typography>
+
+      <Button
+        variant="contained"
+        color="primary"
+        component={Link}
+        to="/wiki/form"
+        sx={{ mb: 2 }}
+      >
+        Crear Wiki
+      </Button>
+
       {error && <Alert severity="error">{error}</Alert>}
       {!error && wikis.length > 0 ? (
         <Grid2
