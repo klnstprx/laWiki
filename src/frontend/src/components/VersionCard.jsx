@@ -1,8 +1,13 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { Card, CardContent, Typography, Grid2 } from "@mui/material";
+import { Card, CardContent, Typography, Grid2, IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const VersionCard = ({ entradaId, versionId, editor, created_at }) => {
+
+const VersionCard = ({ entradaId, versionId, editor, created_at, onDelete }) => {
+  const handleDelete = () => {
+    onDelete(versionId);
+  }; 
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
@@ -23,6 +28,11 @@ const VersionCard = ({ entradaId, versionId, editor, created_at }) => {
               <Link to={`/entrada/${entradaId}/${versionId}`}>Ver</Link>
             </Typography>
           </Grid2>
+          <Grid2>
+            <IconButton color="error" onClick={handleDelete}>
+                <DeleteIcon />
+            </IconButton>
+          </Grid2>
         </Grid2>
       </CardContent>
     </Card>
@@ -34,6 +44,7 @@ VersionCard.propTypes = {
   versionId: PropTypes.string.isRequired,
   editor: PropTypes.string.isRequired,
   created_at: PropTypes.string.isRequired,
+  onDelete: PropTypes.func.isRequired
 };
 
 export default VersionCard;

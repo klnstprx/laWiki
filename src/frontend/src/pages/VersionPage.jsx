@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useToast } from "../context/ToastContext.jsx";
 import {
   Container,
   Paper,
@@ -9,13 +10,14 @@ import {
   ListItem,
 } from "@mui/material";
 import VersionCard from "../components/VersionCard.jsx";
-import { searchVersions } from "../api/VersionApi.js";
+import { deleteVersion, searchVersions } from "../api/VersionApi.js";
 
 function VersionPage() {
   const [versiones, setVersiones] = useState([]);
   const [error, setError] = useState(null);
 
   const { entryId } = useParams();
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (entryId) {
@@ -34,6 +36,20 @@ function VersionPage() {
       setError("No se proporcionó un ID de entrada válido.");
     }
   }, [entryId]);
+
+  // Handler to delete a comment
+  const handleDeleteVersion = async (versionId) => {
+    try {
+      await deleteVersion(versionId);
+      setVersiones((prevVersiones) =>
+        prevVersiones.filter((version) => version.id !== versionId),
+      );
+      showToast("Version eliminada correctamente", "success");
+    } catch (error) {
+      console.error("Error al eliminar la version:", error);
+      showToast("Error al eliminar la version", "danger");
+    }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -58,6 +74,7 @@ function VersionPage() {
                   versionId={version.id}
                   editor={version.editor}
                   created_at={version.created_at}
+                  onDelete={handleDeleteVersion}
                 />
               </ListItem>
             ))}
