@@ -4,12 +4,12 @@ import { Link } from 'react-router-dom';
 
 const WikiCard = ({ wiki }) => {
   return (
-    <Card>
+    <Card sx={{ width: '100%' }}>
       <CardActionArea component={Link} to={`/wiki/${wiki.id}`}>
         <CardMedia
           component="img"
           height="140"
-          image="https://via.placeholder.com/350x140" //later we will use wiki.image, queried from the backend
+          image="https://res.cloudinary.com/dxj6khc6b/image/upload/v1733081078/books.png" //later we will use wiki.image, queried from the backend
           alt="Imagen de la Wiki"
         />
         <CardContent>
