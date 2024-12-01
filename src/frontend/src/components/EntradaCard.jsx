@@ -9,6 +9,8 @@ import {
   IconButton
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ConfirmationModal from '../components/ConfirmationModal.jsx'; // add import
+import { useState } from 'react'; // add import
 
 const EntradaCard = ({ id, title, author, createdAt, onEntradaClick, onDelete }) => {
   const handleClick = () => {
@@ -17,9 +19,16 @@ const EntradaCard = ({ id, title, author, createdAt, onEntradaClick, onDelete })
     }
   };
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // add state
+
   const handleDelete = () => {
-    onDelete(id);
+    setShowDeleteModal(true);
   }; 
+
+  const confirmDelete = () => {
+    onDelete(id);
+    setShowDeleteModal(false);
+  };
 
   return (
     <Card sx={{ mb: 2 }}>
@@ -59,6 +68,12 @@ const EntradaCard = ({ id, title, author, createdAt, onEntradaClick, onDelete })
             <DeleteIcon />
         </IconButton>
       </Grid2>
+      <ConfirmationModal
+        show={showDeleteModal}
+        handleClose={() => setShowDeleteModal(false)}
+        handleConfirm={confirmDelete}
+        message="¿Estás seguro de que deseas eliminar esta entrada?"
+      />
     </Card>
   );
 };

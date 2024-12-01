@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import ConfirmationModal from '../components/ConfirmationModal.jsx'; // add import
 
 function FormVersionPage() {
   const { entryId, versionId } = useParams();
@@ -19,6 +20,7 @@ function FormVersionPage() {
   const [versionError, setVersionError] = useState(null);
   const formRef = useRef(null);
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false); // add state
 
   // Fetch the version details
   useEffect(() => {
@@ -54,8 +56,18 @@ function FormVersionPage() {
     }));
   };
 
+  // Validation function
+  const validate = () => {
+    if (!version.editor) {
+      setVersionError("El campo Editor es obligatorio.");
+      return false;
+    }
+    setVersionError(null);
+    return true;
+  };
+
   // Handler to submit the version
-  async function subirVersion(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     const jsonData = {
@@ -75,10 +87,17 @@ function FormVersionPage() {
     }
   }
 
+  const onSubmit = (event) => {
+    event.preventDefault();
+    if (validate()) {
+      setIsModalOpen(true);
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4 }}>
-        <form id="miFormulario" ref={formRef} onSubmit={subirVersion}>
+        <form id="miFormulario" ref={formRef} onSubmit={onSubmit}>
           {/* Title and Editor input */}
           <Grid2 container spacing={2} alignItems="center">
             <Grid2 item xs={12} sm={8}>
@@ -100,7 +119,7 @@ function FormVersionPage() {
               <TextField
                 id="address"
                 name="address"
-                label="Ubicación de mapa (opcional)"
+                label="Ubicación (opcional)"
                 value={version.address || ""}
                 onChange={handleChange}
                 variant="outlined"
@@ -131,6 +150,12 @@ function FormVersionPage() {
           </Box>
         </form>
       </Paper>
+      <ConfirmationModal
+        show={isModalOpen}
+        handleClose={() => setIsModalOpen(false)}
+        handleConfirm={handleSubmit}
+        message={`¿Estás seguro de que deseas ${versionId ? 'guardar los cambios' : 'crear esta versión'}?`}
+      />
     </Container>
   );
 }
