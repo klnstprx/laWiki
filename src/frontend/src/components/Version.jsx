@@ -1,7 +1,7 @@
 import Paper from "@mui/material/Paper";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import PropTypes from "prop-types";
-import { Typography, Box, Divider } from "@mui/material";
+import { Typography, Box, Divider, Stack } from "@mui/material";
 import DOMPurify from "dompurify";
 import "leaflet/dist/leaflet.css";
 
@@ -19,22 +19,32 @@ const Version = ({ content, editor, created_at, address, coordinates }) => {
       <Divider sx={{ my: 4 }} />
 
       {/* Details Section */}
-      <Typography variant="subtitle1" gutterBottom>
-        Editor: {editor}
-      </Typography>
-      <Typography variant="subtitle1" gutterBottom>
-        Fecha de creación:{" "}
-        {new Date(created_at).toLocaleString("es-ES", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        })}
-      </Typography>
-      <Typography variant="subtitle1" gutterBottom>
-        Ubicación: {address || "No especificada"}
-      </Typography>
+      <Stack
+        direction="row"
+        spacing={2}
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ mx: "auto", width: "80%" }}
+      >
+        <Typography variant="subtitle1" gutterBottom>
+          Editor: {editor}
+        </Typography>
+        <Divider orientation="vertical" flexItem />
+        <Typography variant="subtitle1" gutterBottom>
+          Fecha de creación:{" "}
+          {new Date(created_at).toLocaleString("es-ES", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </Typography>
+        <Divider orientation="vertical" flexItem />
+        <Typography variant="subtitle1" gutterBottom>
+          Ubicación: {address || "No especificada"}
+        </Typography>
+      </Stack>
 
       {/* Map Section */}
       {coordinates && (
