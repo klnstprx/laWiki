@@ -1,10 +1,10 @@
-import { Box, Typography, Link as MuiLink } from "@mui/material";
+import { Paper, Typography, Link as MuiLink } from "@mui/material";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   return (
-    <Box
+    <Paper
       component="footer"
       py={2}
       bgcolor="primary.main"
@@ -19,7 +19,7 @@ const Footer = () => {
           Home
         </MuiLink>
       </Typography>
-    </Box>
+    </Paper>
   );
 };
 
