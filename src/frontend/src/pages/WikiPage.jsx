@@ -165,7 +165,7 @@ function WikiPage() {
               count={Math.ceil(entradas.length / itemsPerPage)}
               page={currentPage}
               onChange={handlePageChange}
-              sx={{ mt: 4 }}
+              sx={{ mt: 4, display: "flex", justifyContent: "center" }}
             />
           </Paper>
 
