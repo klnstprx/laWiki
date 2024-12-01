@@ -167,7 +167,7 @@ function FormEntradaPage() {
           error={Boolean(titleError)}
           helperText={titleError}
         />
-        <Button variant="contained" component="label" sx={{ mt: 2 }}>
+        <Button component="label" sx={{ mt: 2 }} variant="outlined" color="primary">
           Añadir Imágenes
           <input
             id="image-input"

@@ -172,8 +172,8 @@ function WikiPage() {
               <Button
                 component={Link}
                 to={`/wiki/form/${id}`}
-                variant="contained"
-                color="gray"
+                variant="outlined"
+                color="primary"
                 sx={{ mt: 2, mr: 2 }}
               >
                 Editar Wiki
