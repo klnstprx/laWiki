@@ -14,6 +14,7 @@ import (
 	"github.com/laWiki/version/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // HealthCheck godoc
@@ -172,12 +173,14 @@ func SearchVersions(w http.ResponseWriter, r *http.Request) {
 		filter["entry_id"] = entryID
 	}
 
+	opts := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}})
+
 	var versions []model.Version
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cursor, err := database.VersionCollection.Find(ctx, filter)
+	cursor, err := database.VersionCollection.Find(ctx, filter, opts)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
