@@ -227,6 +227,11 @@ const AdvancedSearchPage = () => {
               onChange={handleInputChange}
               fullWidth
               margin="dense"
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
             />
             <TextField
               label="Descripción de la Wiki"
@@ -235,6 +240,11 @@ const AdvancedSearchPage = () => {
               onChange={handleInputChange}
               fullWidth
               margin="dense"
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
             />
             <TextField
               label="Categoría de la Wiki"
@@ -243,6 +253,11 @@ const AdvancedSearchPage = () => {
               onChange={handleInputChange}
               fullWidth
               margin="dense"
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
             />
 
             <Typography variant="body2" sx={{ marginTop: 2 }}>
@@ -283,6 +298,11 @@ const AdvancedSearchPage = () => {
               onChange={handleInputChange}
               fullWidth
               margin="dense"
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
             />
             <TextField
               label="Autor de la Entrada"
@@ -291,6 +311,11 @@ const AdvancedSearchPage = () => {
               onChange={handleInputChange}
               fullWidth
               margin="dense"
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
             />
 
             <Typography variant="body2" sx={{ marginTop: 2 }}>
@@ -333,6 +358,11 @@ const AdvancedSearchPage = () => {
                   {...params}
                   label="Wiki de la Entrada"
                   margin="dense"
+                  slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                    },
+                  }}
                 />
               )}
             />
@@ -349,6 +379,11 @@ const AdvancedSearchPage = () => {
               onChange={handleInputChange}
               fullWidth
               margin="dense"
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
             />
             <TextField
               label="Autor del Comentario"
@@ -357,6 +392,11 @@ const AdvancedSearchPage = () => {
               onChange={handleInputChange}
               fullWidth
               margin="dense"
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
             />
 
             <Typography variant="body2" sx={{ marginTop: 2 }}>
@@ -440,6 +480,11 @@ const AdvancedSearchPage = () => {
                   ...prevParams,
                   versionCreatedAtFrom: newValue,
                 }));
+              }}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
               }}
               sx={{ mb: 2, mx: 1 }}
             />
