@@ -173,7 +173,7 @@ function FormWikiPage() {
       </Typography>
       {(error) && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error.join(", ")}
+          {error}
         </Alert>
       )}
       <Box component="form" onSubmit={onSubmit} noValidate sx={{ mt: 1 }}>
