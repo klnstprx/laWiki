@@ -181,6 +181,11 @@ function FormVersionPage() {
                 error={!!formErrors.editor}
                 helperText={formErrors.editor}
                 fullWidth
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
               />
             </Grid>
             <Grid xs={12} sm={4}>
@@ -192,6 +197,11 @@ function FormVersionPage() {
                 onChange={handleChange}
                 variant="outlined"
                 fullWidth
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
               />
             </Grid>
           </Grid>

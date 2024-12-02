@@ -409,6 +409,11 @@ const AdvancedSearchPage = () => {
               onChange={handleInputChange}
               fullWidth
               margin="dense"
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
             />
             <TextField
               label="Editor de la Versión"
@@ -417,6 +422,11 @@ const AdvancedSearchPage = () => {
               onChange={handleInputChange}
               fullWidth
               margin="dense"
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
             />
 
             <Typography variant="body2" sx={{ marginTop: 2 }}>
