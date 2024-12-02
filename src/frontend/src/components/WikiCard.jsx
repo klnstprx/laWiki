@@ -42,18 +42,16 @@ const WikiCard = ({ wiki }) => {
   if (mediaError) {
     return <Typography color="error">{mediaError}</Typography>;
   }
-
+  const defaultImageUrl = "https://res.cloudinary.com/dxj6khc6b/image/upload/v1733154871/abstract_background.png";
   return (
     <Card sx={{ width: "100%" }}>
       <CardActionArea component={Link} to={`/wiki/${wiki.id}`}>
-        {media && (
-          <CardMedia
-            component="img"
-            height="140"
-            image={media.uploadUrl}
-            alt="Imagen de la Wiki"
-          />
-        )}
+        <CardMedia
+          component="img"
+          height="140"
+          image={(media && media.uploadUrl) || defaultImageUrl}
+          alt="Imagen de la Wiki"
+        />
         <CardContent>
           <Typography gutterBottom variant="h5" component="div">
             {wiki.title}
