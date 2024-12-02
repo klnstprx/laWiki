@@ -130,10 +130,10 @@ function FormWikiPage() {
 
   const handleSubmit = async () => {
     try {
-      const mediaID = upload.id ? upload.id : null;
+      const mediaID = upload && upload.id ? upload.id : null;
       const wikiData = {
         ...wiki,
-        media_id: mediaID ? mediaID : null,
+        media_id: mediaID,
       };
 
       if (wikiId) {
