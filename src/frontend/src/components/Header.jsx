@@ -219,7 +219,12 @@ const Header = () => {
           </Popper>
         </Search>
 
-        <Button color="inherit" onClick={handleAdvancedSearch}>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleAdvancedSearch}
+          startIcon={<SearchIcon />}
+        >
           Búsqueda Avanzada
         </Button>
       </Toolbar>
