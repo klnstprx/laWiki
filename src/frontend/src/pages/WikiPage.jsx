@@ -92,10 +92,17 @@ function WikiPage() {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Breadcrumbs sx={{ mb: 2 }}>
-        <Typography color="textPrimary" component={Link} to="/" className="breadcrumb-link">
+        <Typography
+          color="textPrimary"
+          component={Link}
+          to="/"
+          className="breadcrumb-link"
+        >
           Inicio
         </Typography>
-        <Typography color="textPrimary" className="breadcrumb-active">{wiki.title}</Typography>
+        <Typography color="textPrimary" className="breadcrumb-active">
+          {wiki.title}
+        </Typography>
       </Breadcrumbs>
 
       {error && (
@@ -134,7 +141,7 @@ function WikiPage() {
             {selectedEntradas && selectedEntradas.length > 0 ? (
               <Grid container spacing={2}>
                 {selectedEntradas.map((entrada) => (
-                  <Grid item xs={12} sm={6} md={4} key={entrada.id}>
+                  <Grid xs={12} sm={6} md={4} key={entrada.id}>
                     <EntradaCard
                       id={entrada.id}
                       title={entrada.title}
