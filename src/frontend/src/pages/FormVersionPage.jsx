@@ -91,6 +91,7 @@ function FormVersionPage() {
       ...prevVersion,
       content: content,
     }));
+    formErrors.content = "";
   };
 
   // Handler for TextField change
@@ -99,6 +100,10 @@ function FormVersionPage() {
     setVersion((prevVersion) => ({
       ...prevVersion,
       [name]: value,
+    }));
+    setFormErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: "",
     }));
   };
 
@@ -237,7 +242,7 @@ function FormVersionPage() {
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
-                border: formErrors.content ? "1px solid red" : "1px solid #ccc",
+                border: formErrors.content ? "2px solid red" : "2px solid #ccc",
               }}
             />
             {formErrors.content && (
