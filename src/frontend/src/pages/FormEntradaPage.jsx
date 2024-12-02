@@ -165,6 +165,11 @@ function FormEntradaPage() {
           onChange={(e) => setTitle(e.target.value)}
           error={!!titleError}
           helperText={titleError}
+          slotProps={{
+            inputLabel: {
+              shrink: true,
+            },
+          }}
         />
         <Button component="label" sx={{ mt: 2 }} variant="outlined" color="primary">
           Añadir Imágenes

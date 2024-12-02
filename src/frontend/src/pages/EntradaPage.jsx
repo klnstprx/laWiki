@@ -446,6 +446,11 @@ function EntradaPage() {
                 required
                 fullWidth
                 rows={4}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
               />
             </Grid>
             <Grid xs={12} sm={6} md={4}>
@@ -461,6 +466,11 @@ function EntradaPage() {
                 label="Autor"
                 required
                 fullWidth
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
               />
             </Grid>
             <Grid xs={12} md={4}>
@@ -470,6 +480,11 @@ function EntradaPage() {
                 color="primary"
                 fullWidth
                 sx={{ height: "100%" }}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
               >
                 Enviar
               </Button>

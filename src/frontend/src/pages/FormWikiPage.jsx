@@ -171,12 +171,9 @@ function FormWikiPage() {
       <Typography variant="h4" gutterBottom>
         {wikiId ? "Editar Wiki" : "Crear Nueva Wiki"}
       </Typography>
-      {(error || Object.values(formErrors).some((e) => e)) && (
+      {(error) && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error ||
-            Object.values(formErrors)
-              .filter((e) => e)
-              .join(", ")}
+          {error.join(", ")}
         </Alert>
       )}
       <Box component="form" onSubmit={onSubmit} noValidate sx={{ mt: 1 }}>
@@ -192,6 +189,11 @@ function FormWikiPage() {
           variant="outlined"
           error={!!formErrors.title}
           helperText={formErrors.title}
+          slotProps={{
+            inputLabel: {
+              shrink: true,
+            },
+          }}
         />
         <TextField
           margin="normal"
@@ -207,6 +209,11 @@ function FormWikiPage() {
           rows={4}
           error={!!formErrors.description}
           helperText={formErrors.description}
+          slotProps={{
+            inputLabel: {
+              shrink: true,
+            },
+          }}
         />
         <TextField
           margin="normal"
@@ -220,6 +227,11 @@ function FormWikiPage() {
           variant="outlined"
           error={!!formErrors.category}
           helperText={formErrors.category}
+          slotProps={{
+            inputLabel: {
+              shrink: true,
+            },
+          }}
         />
         <Button variant="outlined" color="primary" component="label" sx={{ mt: 2 }}>
           Añadir Imagen
