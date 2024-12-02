@@ -49,7 +49,7 @@ const WikiCard = ({ wiki }) => {
         <CardMedia
           component="img"
           height="140"
-          image={(media && media.uploadUrl) || defaultImageUrl}
+          image={media ? media.uploadUrl : defaultImageUrl}
           alt="Imagen de la Wiki"
         />
         <CardContent>
