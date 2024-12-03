@@ -365,6 +365,7 @@ function EntradaPage() {
             entry_id={version.entry_id}
             address={version.address}
             coordinates={coordinates}
+            media_ids={version.media_ids}
           />
         )}
 
