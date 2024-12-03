@@ -305,25 +305,63 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var version model.Version
+	var newVersion model.Version
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&version); err != nil {
+	if err := decoder.Decode(&newVersion); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	version.UpdatedAt = time.Now().UTC()
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	var existingVersion model.Version
+	err = database.VersionCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&existingVersion)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Version not found")
+		http.Error(w, "Version not found", http.StatusNotFound)
+		return
+	}
+
+	// Identify media_ids to delete
+	mediaIDsToDelete := difference(existingVersion.MediaIDs, newVersion.MediaIDs)
+
+	// Delete unreferenced media files
+	client := &http.Client{Timeout: 5 * time.Second}
+	for _, mediaID := range mediaIDsToDelete {
+		mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.API_GATEWAY_URL, mediaID)
+		req, err := http.NewRequest("DELETE", mediaServiceURL, nil)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to create request to media service")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to send request to media service")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+			bodyBytes, _ := io.ReadAll(resp.Body)
+			bodyString := string(bodyBytes)
+			config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("Media service returned error")
+			http.Error(w, "Failed to delete associated media files", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	newVersion.UpdatedAt = time.Now().UTC()
+
 	update := bson.M{
 		"$set": bson.M{
-			"content":    version.Content,
-			"editor":     version.Editor,
-			"updated_at": version.UpdatedAt,
-			"address":    version.Address,
+			"content":    newVersion.Content,
+			"editor":     newVersion.Editor,
+			"updated_at": newVersion.UpdatedAt,
+			"address":    newVersion.Address,
+			"media_ids":  newVersion.MediaIDs,
 		},
 	}
 
@@ -340,7 +378,7 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve the updated document (optional)
-	err = database.VersionCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&version)
+	err = database.VersionCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&newVersion)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to retrieve updated version")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -348,11 +386,29 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(version); err != nil {
+	if err := json.NewEncoder(w).Encode(newVersion); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+}
+
+// Helper function to find the difference between two slices
+func difference(slice1, slice2 []string) []string {
+	var diff []string
+	m := make(map[string]bool)
+
+	for _, item := range slice2 {
+		m[item] = true
+	}
+
+	for _, item := range slice1 {
+		if _, found := m[item]; !found {
+			diff = append(diff, item)
+		}
+	}
+
+	return diff
 }
 
 // DeleteVersion godoc
@@ -393,7 +449,6 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Delete associated media files first
-
 	for _, mediaID := range version.MediaIDs {
 		mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.API_GATEWAY_URL, mediaID)
 		req, err := http.NewRequest("DELETE", mediaServiceURL, nil)
@@ -520,6 +575,36 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 	var versionIDs []string
 	for _, version := range versions {
 		versionIDs = append(versionIDs, version.ID)
+	}
+
+	//this is the client to send requests to the media service
+	client := &http.Client{Timeout: 5 * time.Second}
+
+	//delete associated media files
+	for _, version := range versions {
+		for _, mediaID := range version.MediaIDs {
+			mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.API_GATEWAY_URL, mediaID)
+			req, err := http.NewRequest("DELETE", mediaServiceURL, nil)
+			if err != nil {
+				config.App.Logger.Error().Err(err).Msg("Failed to create request to media service")
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				return
+			}
+			resp, err := client.Do(req)
+			if err != nil {
+				config.App.Logger.Error().Err(err).Msg("Failed to send request to media service")
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				return
+			}
+			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+				bodyBytes, _ := io.ReadAll(resp.Body)
+				bodyString := string(bodyBytes)
+				config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("Media service returned error")
+				http.Error(w, "Failed to delete associated media files", http.StatusInternalServerError)
+				return
+			}
+		}
 	}
 
 	// Delete associated comments for each versionID
