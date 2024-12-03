@@ -171,6 +171,7 @@ function FormEntradaPage() {
             },
           }}
         />
+        {/*
         <Button component="label" sx={{ mt: 2 }} variant="outlined" color="primary">
           Añadir Imágenes
           <input
@@ -182,6 +183,7 @@ function FormEntradaPage() {
             onChange={handleImageChange}
           />
         </Button>
+        */}
         {uploads.length > 0 && (
           <Box sx={{ mt: 2 }}>
             {uploads.map((upload, index) => (

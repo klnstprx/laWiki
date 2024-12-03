@@ -1,11 +1,39 @@
+import { useState, useEffect } from "react";
 import Paper from "@mui/material/Paper";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import PropTypes from "prop-types";
-import { Typography, Box, Divider, Stack } from "@mui/material";
+import { Typography, Box, Divider, Stack, CardMedia } from "@mui/material";
 import DOMPurify from "dompurify";
 import "leaflet/dist/leaflet.css";
+import "react-responsive-carousel/lib/styles/carousel.min.css";
+import { Carousel } from "react-responsive-carousel";
+import { getMedia } from "../api/MediaApi";
 
-const Version = ({ content, editor, created_at, address, coordinates }) => {
+const Version = ({ content, editor, created_at, address, coordinates, media_ids }) => {
+  const [medias, setMedias] = useState(null);
+  const [mediaError, setMediaError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMedia = async () => {
+      try {
+        const mediasData = await Promise.all(media_ids.map((id) => getMedia(id)));
+        setMedias(mediasData);
+      } catch (error) {
+        console.error("Error fetching media:", error);
+        setMediaError("Failed to load image.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (media_ids) {
+      fetchMedia();
+    } else {
+      setLoading(false);
+    }
+  }, [media_ids]);
+
   return (
     <div>
       {/* Content Section */}
@@ -45,6 +73,23 @@ const Version = ({ content, editor, created_at, address, coordinates }) => {
           Ubicación: {address || "No especificada"}
         </Typography>
       </Stack>
+
+      {// show a carousel with images if there are any}
+      medias && medias.length > 0 && (
+        <Paper elevation={3} sx={{ mt: 3 }}>
+          <Carousel showArrows={true} showThumbs={false}>
+            {medias.map((media) => (
+              <div key={media.id}>
+                <CardMedia
+                  component="img"
+                  image={media.uploadUrl}
+                  alt="Imagen de la Wiki"
+                />
+              </div>
+            ))}
+          </Carousel>
+        </Paper>
+      )}
 
       {/* Map Section */}
       {coordinates && (
@@ -86,6 +131,7 @@ Version.propTypes = {
     lat: PropTypes.number,
     lon: PropTypes.number,
   }),
+  media_ids: PropTypes.arrayOf(PropTypes.string),
 };
 
 export default Version;

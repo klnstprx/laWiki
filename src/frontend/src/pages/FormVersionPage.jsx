@@ -8,15 +8,18 @@ import {
   Button,
   TextField,
   Box,
+  IconButton,
+  Alert,
 } from "@mui/material";
 import Grid from "@mui/joy/Grid";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import ConfirmationModal from "../components/ConfirmationModal.jsx";
 import { Link } from "react-router-dom";
 import { Breadcrumbs } from "@mui/material";
 import { getEntry } from "../api/EntryApi.js";
 import { getWiki } from "../api/WikiApi.js";
+import { postMedia } from "../api/MediaApi";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 function FormVersionPage() {
   const { entryId, versionId } = useParams();
@@ -28,9 +31,13 @@ function FormVersionPage() {
     editor: "",
     content: "",
   });
+  const [uploads, setUploads] = useState([]); // Images state
+  const [error, setError] = useState(null);
   const formRef = useRef(null);
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false); // add state
+
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif"];
 
   // Fetch the version details
   useEffect(() => {
@@ -44,7 +51,7 @@ function FormVersionPage() {
           }
         })
         .catch(() =>
-          setVersionError("Se produjo un error al obtener la versión."),
+          setVersionError("Se produjo un error al obtener la versión.")
         );
     }
   }, [versionId]);
@@ -61,7 +68,7 @@ function FormVersionPage() {
           }
         })
         .catch(() =>
-          setVersionError("Se produjo un error al obtener la entrada."),
+          setVersionError("Se produjo un error al obtener la entrada.")
         );
     } else {
       setVersionError("No se proporcionó un ID de entrada válido.");
@@ -80,7 +87,7 @@ function FormVersionPage() {
           }
         })
         .catch(() =>
-          setVersionError("Se produjo un error al obtener la wiki asociada."),
+          setVersionError("Se produjo un error al obtener la wiki asociada.")
         );
     }
   }, [entry, entryId]);
@@ -107,6 +114,50 @@ function FormVersionPage() {
     }));
   };
 
+  // Handler for image upload
+  const handleImageChange = async (event) => {
+    const files = Array.from(event.target.files);
+    setError(null);
+
+    const validFiles = files.filter((file) => {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        setError(`Tipo de archivo no permitido: ${file.name}`);
+        return false;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        setError(`Archivo demasiado grande: ${file.name}`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) {
+      return;
+    }
+
+    const newUploads = [];
+
+    for (const file of validFiles) {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      try {
+        const response = await postMedia(formData);
+        newUploads.push({ file, id: response.id });
+      } catch (error) {
+        console.error(`Error uploading file ${file.name}:`, error);
+        setError(`Error uploading file ${file.name}`);
+      }
+    }
+
+    setUploads((prevUploads) => [...prevUploads, ...newUploads]);
+  };
+
+  // Handler for removing an image
+  const handleRemoveImage = (index) => {
+    setUploads((prevUploads) => prevUploads.filter((_, i) => i !== index));
+  };
+
   // Validation function
   const validate = () => {
     let isValid = true;
@@ -130,30 +181,26 @@ function FormVersionPage() {
   };
 
   // Handler to submit the version
-  async function handleSubmit(event) {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!validate()) {
+      return;
+    }
 
     const jsonData = {
       content: version.content,
       editor: version.editor,
       entry_id: entryId,
       address: version.address,
+      media_ids: uploads.map((upload) => upload.id), // Include image IDs
     };
-
-    console.log("Submitting version:", jsonData); // Debugging
 
     try {
       await postVersion(jsonData);
       navigate(`/entrada/${entryId}`);
     } catch (error) {
       console.error("Error posting version:", error);
-    }
-  }
-
-  const onSubmit = (event) => {
-    event.preventDefault();
-    if (validate()) {
-      setIsModalOpen(true);
     }
   };
 
@@ -180,8 +227,7 @@ function FormVersionPage() {
       </Breadcrumbs>
 
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4 }}>
-        <form id="miFormulario" ref={formRef} onSubmit={onSubmit}>
-          {/* Title and Editor input */}
+        <form id="miFormulario" ref={formRef} onSubmit={handleSubmit}>
           <Grid container spacing={2} alignItems="center">
             <Grid xs={12} sm={8}>
               <Typography variant="h4">Editar entrada</Typography>
@@ -240,17 +286,53 @@ function FormVersionPage() {
               onChange={handleEditorChange}
               style={{
                 height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                border: formErrors.content ? "2px solid red" : "2px solid #ccc",
               }}
             />
             {formErrors.content && (
-              <Typography variant="body2" color="error">
+              <Typography
+                variant="body2"
+                sx={{ color: "red", fontSize: "12px", mt: 1 }}
+              >
                 {formErrors.content}
               </Typography>
             )}
           </Box>
+          <br /> <br />
+          <Button
+            component="label"
+            sx={{ mt: 2 }}
+            variant="outlined"
+            color="primary"
+          >
+            Añadir Imágenes
+            <input
+              id="image-input"
+              type="file"
+              hidden
+              accept="image/*"
+              multiple
+              onChange={handleImageChange}
+            />
+          </Button>
+          {uploads.length > 0 && (
+            <Box sx={{ mt: 2 }}>
+              {uploads.map((upload, index) => (
+                <Box
+                  key={upload.id || index}
+                  sx={{ display: "flex", alignItems: "center", mt: 1 }}
+                >
+                  <Typography variant="body2">{upload.file.name}</Typography>
+                  <IconButton
+                    onClick={() => handleRemoveImage(index)}
+                    sx={{ ml: 1 }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              ))}
+            </Box>
+          )}
+          {error && <Alert severity="error">{error}</Alert>}
           <Box sx={{ mt: 5, pt: 1 }} display="flex" justifyContent="flex-end">
             <Button type="submit" variant="contained" color="primary">
               Enviar
@@ -258,14 +340,6 @@ function FormVersionPage() {
           </Box>
         </form>
       </Paper>
-      <ConfirmationModal
-        show={isModalOpen}
-        handleClose={() => setIsModalOpen(false)}
-        handleConfirm={handleSubmit}
-        message={`¿Estás seguro de que deseas ${
-          versionId ? "guardar los cambios" : "crear esta versión"
-        }?`}
-      />
     </Container>
   );
 }
