@@ -130,10 +130,10 @@ function FormWikiPage() {
 
   const handleSubmit = async () => {
     try {
-      const mediaID = upload.id ? upload.id : null;
+      const mediaID = upload && upload.id ? upload.id : null;
       const wikiData = {
         ...wiki,
-        media_id: mediaID ? mediaID : null,
+        media_id: mediaID,
       };
 
       if (wikiId) {
@@ -173,7 +173,7 @@ function FormWikiPage() {
       </Typography>
       {(error) && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error.join(", ")}
+          {error}
         </Alert>
       )}
       <Box component="form" onSubmit={onSubmit} noValidate sx={{ mt: 1 }}>
