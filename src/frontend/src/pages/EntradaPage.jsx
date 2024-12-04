@@ -1,27 +1,26 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  searchComments,
-  postComment,
   deleteComment,
+  postComment,
+  searchComments,
 } from "../api/CommentApi.js";
 import { getEntry } from "../api/EntryApi.js";
-import { getMedia } from "../api/MediaApi.js";
 import { getVersion, searchVersions } from "../api/VersionApi.js";
-import { useParams, Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
 import Version from "../components/Version.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import {
-  Stack,
+  Alert,
+  Breadcrumbs,
+  Button,
   Container,
   Paper,
-  Typography,
-  Button,
-  Alert,
-  TextField,
-  Breadcrumbs,
   Rating,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
 import { getWiki } from "../api/WikiApi.js";
 import HistoryIcon from "@mui/icons-material/History";
@@ -31,12 +30,10 @@ import Grid from "@mui/joy/Grid";
 
 function EntradaPage() {
   const { entryId, versionId } = useParams();
-  const [entry, setEntry] = useState({});
-  const [wiki, setWiki] = useState({});
-  const [version, setVersion] = useState({});
+  const [entry, setEntry] = useState(null);
+  const [wiki, setWiki] = useState(null);
+  const [version, setVersion] = useState(null);
   const [comments, setComments] = useState([]);
-  const [mediaList, setMediaList] = useState([]);
-  const [mediaError, setMediaError] = useState(null);
   const [entryError, setEntryError] = useState(null);
   const [commentsError, setCommentsError] = useState(null);
   const [versionError, setVersionError] = useState(null);
@@ -68,9 +65,11 @@ function EntradaPage() {
     }
 
     // Si no está en el cache, realiza la solicitud a la API
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-      address,
-    )}&format=json&addressdetails=1&limit=1`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${
+      encodeURIComponent(
+        address,
+      )
+    }&format=json&addressdetails=1&limit=1`;
 
     try {
       const response = await fetch(url);
@@ -116,8 +115,8 @@ function EntradaPage() {
     }
   };
 
-  const [showDeleteCommentModal, setShowDeleteCommentModal] = useState(false); // add state
-  const [commentToDelete, setCommentToDelete] = useState(null); // add state
+  const [showDeleteCommentModal, setShowDeleteCommentModal] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
 
   const handleDeleteComment = (commentId) => {
     setCommentToDelete(commentId);
@@ -127,7 +126,7 @@ function EntradaPage() {
   const confirmDeleteComment = async () => {
     await deleteComment(commentToDelete);
     setComments((prevComments) =>
-      prevComments.filter((comment) => comment.id !== commentToDelete),
+      prevComments.filter((comment) => comment.id !== commentToDelete)
     );
     setShowDeleteCommentModal(false);
     showToast("Comentario eliminado correctamente", "success");
@@ -140,13 +139,12 @@ function EntradaPage() {
         .then((data) => {
           if (data && Object.keys(data).length > 0) {
             setEntry(data);
-            fetchMedia(data.media_ids);
           } else {
             setEntryError("No se encontró la entrada solicitada.");
           }
         })
         .catch(() =>
-          setEntryError("Se produjo un error al obtener la entrada."),
+          setEntryError("Se produjo un error al obtener la entrada.")
         );
     } else {
       setEntryError("No se proporcionó un ID de entrada válido.");
@@ -155,7 +153,7 @@ function EntradaPage() {
 
   // Fetch the wiki details
   useEffect(() => {
-    if (entry && entry.wiki_id) {
+    if (entry?.wiki_id) {
       getWiki(entry.wiki_id)
         .then((data) => {
           if (data && Object.keys(data).length > 0) {
@@ -165,26 +163,10 @@ function EntradaPage() {
           }
         })
         .catch(() =>
-          setEntryError("Se produjo un error al obtener la wiki asociada."),
+          setEntryError("Se produjo un error al obtener la wiki asociada.")
         );
     }
-  }, [entry, entryId]);
-
-  //fetch media
-  const fetchMedia = async (mediaIdsArray) => {
-    if (!Array.isArray(mediaIdsArray) || mediaIdsArray.length === 0) {
-      console.log("No media IDs found or mediaIdsArray is not an array.");
-      return;
-    }
-    try {
-      const mediaPromises = mediaIdsArray.map((id) => getMedia(id));
-      const mediaResults = await Promise.all(mediaPromises);
-      setMediaList(mediaResults);
-    } catch (error) {
-      console.error("Error fetching media:", error);
-      setMediaError("Failed to fetch media");
-    }
-  };
+  }, [entry?.wiki_id]);
 
   // Fetch the version details
   useEffect(() => {
@@ -204,13 +186,10 @@ function EntradaPage() {
             setActualVersionId(latestVersion.id);
           } else {
             setLoadingVersion(false);
-            setVersionError(
-              "No se encontró ninguna versión para esta entrada.",
-            );
           }
         })
         .catch(() =>
-          setVersionError("Se produjo un error al obtener las versiones."),
+          setVersionError("Se produjo un error al obtener las versiones.")
         );
     }
   }, [entryId, versionId]);
@@ -220,22 +199,24 @@ function EntradaPage() {
   // Fetch the version data when actualVersionId changes
   useEffect(() => {
     if (actualVersionId) {
+      setLoadingVersion(true);
       getVersion(actualVersionId)
         .then(async (data) => {
           if (data && Object.keys(data).length > 0) {
             setVersion(data);
-            setLoadingVersion(false); // Data is now loaded
             if (data.address) {
               const coords = await fetchCoordinatesNominatim(data.address);
               setCoordinates(coords);
             }
           } else {
-            setVersionError("No se encontró la versión solicitada.");
             setLoadingVersion(false);
           }
         })
         .catch(() => {
           setVersionError("Se produjo un error al obtener la versión.");
+          setLoadingVersion(false);
+        })
+        .finally(() => {
           setLoadingVersion(false);
         });
 
@@ -249,10 +230,10 @@ function EntradaPage() {
           }
         })
         .catch(() =>
-          setCommentsError("Se produjo un error al obtener los comentarios."),
+          setCommentsError("Se produjo un error al obtener los comentarios.")
         );
     }
-  }, [actualVersionId, fetchCoordinatesNominatim]);
+  }, [actualVersionId]);
 
   // Handler to submit a new comment
   async function subirComentario(event) {
@@ -272,14 +253,30 @@ function EntradaPage() {
         <Typography className="breadcrumb-link" component={Link} to="/">
           Inicio
         </Typography>
-        <Typography
-          className="breadcrumb-link"
-          component={Link}
-          to={`/wiki/${wiki.id}`}
-        >
-          {wiki.title}
-        </Typography>
-        <Typography className="breadcrumb-active">{entry.title}</Typography>
+
+        {wiki
+          ? (
+            <Typography
+              className="breadcrumb-link"
+              component={Link}
+              to={`/wiki/${wiki.id}`}
+            >
+              {wiki.title}
+            </Typography>
+          )
+          : (
+            <Typography className="breadcrumb-link">
+              Cargando wiki...
+            </Typography>
+          )}
+
+        {entry
+          ? <Typography className="breadcrumb-active">{entry.title}</Typography>
+          : (
+            <Typography className="breadcrumb-active">
+              Cargando entrada...
+            </Typography>
+          )}
       </Breadcrumbs>
 
       {/* Entry Title */}
@@ -329,26 +326,30 @@ function EntradaPage() {
 
       {/* Version Content */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-        {loadingVersion ? (
-          <Typography variant="body1">Cargando versión...</Typography>
-        ) : versionError ? (
-          <Alert severity="error">{versionError}</Alert>
-        ) : (
-          <Version
-            content={version.content}
-            editor={version.editor}
-            created_at={version.created_at}
-            entry_id={version.entry_id}
-            address={version.address}
-            coordinates={coordinates}
-            media_ids={version.media_ids}
-          />
-        )}
+        {loadingVersion
+          ? <Typography variant="body1">Cargando versión...</Typography>
+          : versionError
+          ? <Alert severity="error">{versionError}</Alert>
+          : !version
+          ? (
+            <Alert serverity="info">
+              No se ha encontrado niguna version asignada a esta entrada.
+            </Alert>
+          )
+          : (
+            <Version
+              content={version.content}
+              editor={version.editor}
+              created_at={version.created_at}
+              entry_id={version.entry_id}
+              address={version.address}
+              coordinates={coordinates}
+              media_ids={version.media_ids}
+            />
+          )}
       </Paper>
 
-      {/* Media */}
       {entryError && <Alert severity="error">{entryError}</Alert>}
-      {mediaError && <Alert severity="error">{mediaError}</Alert>}
 
       {/* Comments */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
@@ -356,25 +357,27 @@ function EntradaPage() {
           Comentarios
         </Typography>
         {commentsError && <Alert severity="error">{commentsError}</Alert>}
-        {!commentsError && comments.length > 0 ? (
-          <Stack spacing={2} sx={{ mb: 2 }}>
-            {comments.map((comment) => (
-              <Comentario
-                key={comment.id}
-                id={comment.id}
-                content={comment.content}
-                rating={comment.rating}
-                created_at={comment.created_at}
-                author={comment.author}
-                onDelete={(id) => handleDeleteComment(id)}
-              />
-            ))}
-          </Stack>
-        ) : (
-          !commentsError && (
-            <Alert severity="info">No se encontraron comentarios.</Alert>
+        {!commentsError && comments.length > 0
+          ? (
+            <Stack spacing={2} sx={{ mb: 2 }}>
+              {comments.map((comment) => (
+                <Comentario
+                  key={comment.id}
+                  id={comment.id}
+                  content={comment.content}
+                  rating={comment.rating}
+                  created_at={comment.created_at}
+                  author={comment.author}
+                  onDelete={(id) => handleDeleteComment(id)}
+                />
+              ))}
+            </Stack>
           )
-        )}
+          : (
+            !commentsError && (
+              <Alert severity="info">No se encontraron comentarios.</Alert>
+            )
+          )}
       </Paper>
 
       {/* Form to Add Comment */}
