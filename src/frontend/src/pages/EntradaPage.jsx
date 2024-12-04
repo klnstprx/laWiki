@@ -20,20 +20,12 @@ import {
   Button,
   Alert,
   TextField,
-  Divider,
   Breadcrumbs,
   Rating,
-  Tooltip,
-  IconButton,
 } from "@mui/material";
-import { Carousel } from 'react-responsive-carousel';
-import 'react-responsive-carousel/lib/styles/carousel.min.css'; // Import the carousel styles
 import { getWiki } from "../api/WikiApi.js";
 import HistoryIcon from "@mui/icons-material/History";
 import EditIcon from "@mui/icons-material/Edit";
-import PersonIcon from "@mui/icons-material/Person";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import the carousel styles
 
 import Grid from "@mui/joy/Grid";
 
@@ -276,12 +268,15 @@ function EntradaPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-
       <Breadcrumbs sx={{ mb: 2 }}>
         <Typography className="breadcrumb-link" component={Link} to="/">
           Inicio
         </Typography>
-        <Typography className="breadcrumb-link" component={Link} to={`/wiki/${wiki.id}`}>
+        <Typography
+          className="breadcrumb-link"
+          component={Link}
+          to={`/wiki/${wiki.id}`}
+        >
           {wiki.title}
         </Typography>
         <Typography className="breadcrumb-active">{entry.title}</Typography>
@@ -291,63 +286,44 @@ function EntradaPage() {
       {!entryError && entry && (
         <Paper
           elevation={3}
-          sx={{ p: 2,  mb: 4, textAlign: "center", borderRadius: 1 }}
+          sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}
         >
-          <Typography variant="h3" component="h1" sx={{ m: 0 }}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="subtitle2">Autor: {entry.author}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {new Date(entry.created_at).toLocaleDateString()}
+            </Typography>
+          </Stack>
+          <Typography variant="h2" component="h1">
             {entry.title}
           </Typography>
-          <Tooltip
-              title={
-                <Typography variant="subtitle1">
-                  Autor: {entry.author}
-                </Typography>
-              }
-              arrow
+          <Stack
+            direction="row"
+            spacing={2}
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Button
+              variant="contained"
+              component={Link}
+              to={`/versiones/${entry.id}/`}
+              startIcon={<HistoryIcon />}
             >
-              <IconButton>
-                <PersonIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip
-              title={
-                <Typography variant="subtitle1">
-                  Fecha de creación:{" "}
-                  {new Date(entry.created_at).toLocaleString("es-ES", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </Typography>
-              }
-              arrow
-            >
-              <IconButton>
-                <CalendarTodayIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip 
-            title={
-            <Typography variant="subtitle1">
               Ver historial
-            </Typography>}
-             arrow>
-              <IconButton component={Link} to={`/versiones/${entry.id}/`}>
-                <HistoryIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip 
-            title={
-              <Typography variant="subtitle1">
-                Editar contenido
-              </Typography>
-            }
-             arrow>
-              <IconButton component={Link} to={`/version/form/${entry.id}/${actualVersionId || ""}`}>
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
+            </Button>
+            <Button
+              variant="contained"
+              component={Link}
+              to={`/version/form/${entry.id}/${actualVersionId || ""}`}
+              startIcon={<EditIcon />}
+            >
+              Editar contenido
+            </Button>
+          </Stack>
         </Paper>
       )}
 
@@ -368,41 +344,11 @@ function EntradaPage() {
             media_ids={version.media_ids}
           />
         )}
-
-        <Divider sx={{ my: 4 }} />
-
-        <Typography variant="subtitle1" gutterBottom sx={{ display: "flex", justifyContent: "space-around", width: "100%" }}>
-          <Link to={`/versiones/${entry.id}/`} sx={{ textDecoration: "none" }}>
-            Ver historial
-          </Link>
-          <Link to={`/version/form/${entry.id}/${actualVersionId || ""}`} sx={{ textDecoration: "none" }}>
-            Editar contenido
-          </Link>
-        </Typography>
-
       </Paper>
-
-      {/* Divider */}
-      <Divider sx={{ my: 4 }} />
 
       {/* Media */}
       {entryError && <Alert severity="error">{entryError}</Alert>}
       {mediaError && <Alert severity="error">{mediaError}</Alert>}
-      {mediaList.length > 0 && ( // Verifica si hay elementos en mediaList
-        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-          <Carousel showThumbs={false} infiniteLoop useKeyboardArrows>
-            {mediaList.map((media, index) => (
-              <div key={index}>
-                <img
-                  src={media.uploadUrl}
-                  alt={media.publicId}
-                  style={{ maxWidth: "33%" }}
-                />
-              </div>
-            ))}
-          </Carousel>
-        </Paper>
-      )}
 
       {/* Comments */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
@@ -455,12 +401,12 @@ function EntradaPage() {
               />
             </Grid>
             <Grid xs={12} sm={6} md={4}>
-              <Typography variant="subtitle1" gutterBottom>
+              <Typography variant="subtitle2" gutterBottom>
                 Valoración:
               </Typography>
               <Rating name="rating" id="rating" size="large" />
             </Grid>
-            <Grid xs={12} sm={6} md={4}>
+            <Grid xs={12} sm={6} md={4} alignContent="center">
               <TextField
                 id="author"
                 name="author"
@@ -481,11 +427,6 @@ function EntradaPage() {
                 color="primary"
                 fullWidth
                 sx={{ height: "100%" }}
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                  },
-                }}
               >
                 Enviar
               </Button>
