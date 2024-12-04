@@ -4,29 +4,29 @@ const theme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#52796f",
-      light: "#79a28f",
-      dark: "#2f5248",
+      main: "#52796f", // Teal Green
+      light: "#84a29d", // Lighter Teal Green
+      dark: "#36554a", // Darker Teal Green
       contrastText: "#ffffff",
     },
     secondary: {
-      main: "#C84630",
-      light: "#d9705a",
-      dark: "#912b1f",
+      main: "#355c7d", // Muted Blue (Analogous to Teal Green)
+      light: "#5d85a5", // Lighter Muted Blue
+      dark: "#1e3b54", // Darker Muted Blue
       contrastText: "#ffffff",
     },
     error: {
-      main: "#bc252a",
+      main: "#aa4465", // Muted Red-Purple (Complementary to Teal Green)
     },
     warning: {
-      main: "#FB5607",
+      main: "#e7a977", // Muted Orange (Harmonious with Teal and Blue)
     },
     success: {
-      main: "#6ea683",
+      main: "#6ea683", // Muted Green (Analogous to Teal Green)
     },
     background: {
-      default: "#F8F9FA",
-      paper: "#FFFFFF",
+      default: "#f5f7f6", // Very Light Teal Green Tint
+      paper: "#ffffff",
     },
   },
   components: {
@@ -39,12 +39,12 @@ const theme = createTheme({
         },
         containedPrimary: {
           "&:hover": {
-            backgroundColor: "#2f5248", // Darken primary color on hover
+            backgroundColor: "#36554a", // Darken primary color on hover
           },
         },
         containedSecondary: {
           "&:hover": {
-            backgroundColor: "#912b1f", // Darken secondary color on hover
+            backgroundColor: "#1e3b54", // Darken secondary color on hover
           },
         },
       },
@@ -53,13 +53,13 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           "&.Mui-selected": {
-            backgroundColor: "#79a28f", // Highlight selected items
+            backgroundColor: "#84a29d", // Highlight selected items
             "&:hover": {
-              backgroundColor: "#6a9481", // Darken on hover when selected
+              backgroundColor: "#6d8e89", // Darken on hover when selected
             },
           },
           "&:hover": {
-            backgroundColor: "#f0f0f0", // Light grey on hover
+            backgroundColor: "#eef1f0", // Light grey on hover
           },
         },
       },
@@ -76,14 +76,14 @@ const theme = createTheme({
         root: {
           "&.breadcrumb-link": {
             textDecoration: "none",
-            color: "black",
+            color: "#355c7d",
             fontWeight: 500,
             "&:hover": {
-              color: "#535bf2",
+              color: "#52796f",
             },
           },
           "&.breadcrumb-active": {
-            color: "black",
+            color: "#52796f",
             fontWeight: 500,
           },
         },
