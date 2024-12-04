@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { postEntry } from "../api/EntryApi";
-import { postMedia } from "../api/MediaApi";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useToast } from "../context/ToastContext.jsx";
 import { Breadcrumbs } from "@mui/material";
@@ -26,52 +25,7 @@ function FormEntradaPage() {
   const { showToast } = useToast();
   const [error, setError] = useState(null);
   const [titleError, setTitleError] = useState("");
-  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif"];
-
-  const handleImageChange = async (event) => {
-    const files = Array.from(event.target.files);
-    setError(null);
-    setUploading(true);
-
-    const validFiles = files.filter((file) => {
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        setError(`Tipo de archivo no permitido: ${file.name}`);
-        return false;
-      }
-      if (file.size > MAX_FILE_SIZE) {
-        setError(`Archivo demasiado grande: ${file.name}`);
-        return false;
-      }
-      return true;
-    });
-
-    if (validFiles.length === 0) {
-      setUploading(false);
-      return;
-    }
-
-    const newUploads = [];
-
-    for (const file of validFiles) {
-      const formData = new FormData();
-      formData.append("image", file);
-
-      try {
-        const response = await postMedia(formData);
-        newUploads.push({ file, id: response.id });
-      } catch (error) {
-        console.error(`Error uploading file ${file.name}:`, error);
-        setError(`Error uploading file ${file.name}`);
-      }
-    }
-
-    setUploads((prevUploads) => [...prevUploads, ...newUploads]);
-    setUploading(false);
-  };
 
   const handleRemoveImage = (index) => {
     setUploads((prevUploads) => prevUploads.filter((_, i) => i !== index));
@@ -207,9 +161,9 @@ function FormEntradaPage() {
             type="submit"
             variant="contained"
             color="primary"
-            disabled={uploading || loading}
+            disabled={loading}
           >
-            {uploading || loading ? "Creando..." : "Crear Entrada"}
+            {loading ? "Creando..." : "Crear Entrada"}
           </Button>
           <Button
             component={Link}
