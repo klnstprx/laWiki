@@ -22,8 +22,10 @@ import { Link } from "react-router-dom";
 import { Breadcrumbs } from "@mui/material";
 import { getEntry } from "../api/EntryApi.js";
 import { getWiki } from "../api/WikiApi.js";
-import { postMedia, deleteMedia, getMedia } from "../api/MediaApi";
+import { postMedia, getMedia} from "../api/MediaApi";
 import DeleteIcon from "@mui/icons-material/Delete";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 function FormVersionPage() {
@@ -36,8 +38,8 @@ function FormVersionPage() {
     editor: "",
     content: "",
   });
-  const [uploads, setUploads] = useState([]); // Images state
-  const [existingImages, setExistingImages] = useState([]); // Existing images state
+  const [uploads, setUploads] = useState([]); // Store selected files
+  const [existingImages, setExistingImages] = useState([]);
   const [error, setError] = useState(null);
   const formRef = useRef(null);
   const navigate = useNavigate();
@@ -106,10 +108,23 @@ function FormVersionPage() {
     try {
       const mediaPromises = mediaIds.map((id) => getMedia(id));
       const mediaResults = await Promise.all(mediaPromises);
-      setExistingImages(mediaResults);
+      const imagesWithVisibility = mediaResults.map((image) => ({
+        ...image,
+        isVisible: true,
+      }));
+      setExistingImages(imagesWithVisibility);
     } catch (error) {
       console.error("Error fetching existing images:", error);
     }
+  };
+
+  // Toggle visibility of existing images
+  const handleToggleVisibility = (index) => {
+    setExistingImages((prevImages) =>
+      prevImages.map((image, i) =>
+        i === index ? { ...image, isVisible: !image.isVisible } : image
+      )
+    );
   };
 
   // Handler for ReactQuill editor change
@@ -134,8 +149,8 @@ function FormVersionPage() {
     }));
   };
 
-  // Handler for image upload
-  const handleImageChange = async (event) => {
+  // Handler for image upload (store files without uploading)
+  const handleImageChange = (event) => {
     const files = Array.from(event.target.files);
     setError(null);
 
@@ -155,37 +170,15 @@ function FormVersionPage() {
       return;
     }
 
-    const newUploads = [];
-
-    for (const file of validFiles) {
-      const formData = new FormData();
-      formData.append("image", file);
-
-      try {
-        const response = await postMedia(formData);
-        newUploads.push({ file, id: response.id });
-      } catch (error) {
-        console.error(`Error uploading file ${file.name}:`, error);
-        setError(`Error uploading file ${file.name}`);
-      }
-    }
-
-    setUploads((prevUploads) => [...prevUploads, ...newUploads]);
+    setUploads((prevUploads) => [...prevUploads, ...validFiles]);
   };
 
   // Handler for removing an image
   const handleRemoveImage = (index, isExisting = false) => {
     if (isExisting) {
-      const imageToRemove = existingImages[index];
-      deleteMedia(imageToRemove.id)
-        .then(() => {
-          setExistingImages((prevImages) =>
-            prevImages.filter((_, i) => i !== index)
-          );
-        })
-        .catch((error) => {
-          console.error("Error deleting existing image:", error);
-        });
+      setExistingImages((prevImages) =>
+        prevImages.filter((_, i) => i !== index)
+      );
     } else {
       setUploads((prevUploads) => prevUploads.filter((_, i) => i !== index));
     }
@@ -221,15 +214,48 @@ function FormVersionPage() {
       return;
     }
 
+    let newMediaIds = [];
+
+    // Upload new images
+    if (uploads.length > 0) {
+      for (const file of uploads) {
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+          //search for the image in the existing images
+          // const existingImage = await searchMedia({ publicId: file.name }); //Quizá habría que buscar dentro de la entrada, para que se puedan subir imagenes en otras entradas con el mismo nombre.
+          // if (existingImage.length > 0) {
+          //   newMediaIds.push(existingImage[0].id);
+          //   continue;
+          // }
+          // else {
+          // const response = await postMedia(formData);
+          // newMediaIds.push(response.id);
+          // }
+
+          const response = await postMedia(formData);
+          newMediaIds.push(response.id);
+
+        } catch (error) {
+          console.error(`Error uploading file ${file.name}:`, error);
+          setError(`Error uploading file ${file.name}`);
+          return;
+        }
+      }
+    }
+
     const jsonData = {
       content: version.content,
       editor: version.editor,
       entry_id: entryId,
       address: version.address,
       media_ids: [
-        ...existingImages.map((image) => image.id),
-        ...uploads.map((upload) => upload.id),
-      ], // Include image IDs
+        ...existingImages
+          .filter((image) => image.isVisible)
+          .map((image) => image.id),
+        ...newMediaIds,
+      ],
     };
 
     try {
@@ -322,7 +348,11 @@ function FormVersionPage() {
               onChange={handleEditorChange}
               style={{
                 height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                border: formErrors.content ? "1px solid red" : "1px solid #ccc",
               }}
+              
             />
             {formErrors.content && (
               <Typography
@@ -355,12 +385,12 @@ function FormVersionPage() {
               <Divider sx={{ my: 2 }} />
               <Box sx={{ mt: 2 }}>
                 <Typography variant="subtitle1">Nuevas Imágenes:</Typography>
-                {uploads.map((upload, index) => (
+                {uploads.map((file, index) => (
                   <Box
-                    key={upload.id || index}
+                    key={index}
                     sx={{ display: "flex", alignItems: "center", mt: 1 }}
                   >
-                    <Typography variant="body2">{upload.file.name}</Typography>
+                    <Typography variant="body2">{file.name}</Typography>
                     <IconButton
                       onClick={() => handleRemoveImage(index)}
                       sx={{ ml: 1 }}
@@ -387,12 +417,20 @@ function FormVersionPage() {
                     key={image.id || index}
                     sx={{ display: "flex", alignItems: "center", mt: 1 }}
                   >
-                    <Typography variant="body2">{image.publicId}</Typography>
+                    <a href={image.uploadUrl} target="_blank" rel="noopener noreferrer">
+                      <Typography variant="body2" color="primary" sx={{ textDecoration: 'underline', cursor: 'pointer' }}>
+                        {image.publicId}
+                      </Typography>
+                    </a>
                     <IconButton
-                      onClick={() => handleRemoveImage(index, true)}
+                      onClick={() => handleToggleVisibility(index)}
                       sx={{ ml: 1 }}
                     >
-                      <DeleteIcon />
+                      {image.isVisible ? (
+                        <VisibilityIcon />
+                      ) : (
+                        <VisibilityOffIcon />
+                      )}
                     </IconButton>
                   </Box>
                 ))}
