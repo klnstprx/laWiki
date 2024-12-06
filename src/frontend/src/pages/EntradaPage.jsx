@@ -233,7 +233,7 @@ function EntradaPage() {
           setCommentsError("Se produjo un error al obtener los comentarios.")
         );
     }
-  }, [actualVersionId]);
+  }, [actualVersionId, fetchCoordinatesNominatim]);
 
   // Handler to submit a new comment
   async function subirComentario(event) {
