@@ -45,7 +45,7 @@ function FormVersionPage() {
   const [existingImages, setExistingImages] = useState([]);
   const [error, setError] = useState(null);
   const formRef = useRef(null);
-  const isNewEntry = wikiId;
+  const isNewEntry = wikiId ? true : false;
   const navigate = useNavigate();
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
