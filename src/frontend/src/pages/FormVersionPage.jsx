@@ -13,23 +13,25 @@ import {
   Divider,
   Accordion,
   AccordionSummary,
-  AccordionDetails,  
+  AccordionDetails,
 } from "@mui/material";
 import Grid from "@mui/joy/Grid";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Link } from "react-router-dom";
 import { Breadcrumbs } from "@mui/material";
-import { getEntry } from "../api/EntryApi.js";
+import { getEntry, postEntry } from "../api/EntryApi.js";
 import { getWiki } from "../api/WikiApi.js";
-import { postMedia, getMedia} from "../api/MediaApi";
+import { postMedia, getMedia } from "../api/MediaApi";
 import DeleteIcon from "@mui/icons-material/Delete";
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ConfirmationModal from "../components/ConfirmationModal.jsx";
+import theme from "../styles/theme.js";
 
 function FormVersionPage() {
-  const { entryId, versionId } = useParams();
+  const { entryId, versionId, wikiId } = useParams();
   const [entry, setEntry] = useState({});
   const [wiki, setWiki] = useState({});
   const [version, setVersion] = useState({});
@@ -37,59 +39,70 @@ function FormVersionPage() {
   const [formErrors, setFormErrors] = useState({
     editor: "",
     content: "",
+    author: "",
+    title: "",
   });
   const [uploads, setUploads] = useState([]); // Store selected files
   const [existingImages, setExistingImages] = useState([]);
   const [error, setError] = useState(null);
   const formRef = useRef(null);
+  const isNewEntry = wikiId ? true : false;
   const navigate = useNavigate();
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif"];
 
+  // State for the confirmation modal
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+
   // Fetch the version details
   useEffect(() => {
-    if (versionId) {
-      getVersion(versionId)
-        .then((data) => {
-          if (data && Object.keys(data).length > 0) {
-            setVersion(data);
-            if (data.media_ids) {
-              fetchExistingImages(data.media_ids);
+    if (!isNewEntry) {
+      if (versionId) {
+        getVersion(versionId)
+          .then((data) => {
+            if (data && Object.keys(data).length > 0) {
+              setVersion(data);
+              if (data.media_ids) {
+                fetchExistingImages(data.media_ids);
+              }
+            } else {
+              setVersionError("No se encontró la versión solicitada.");
             }
-          } else {
-            setVersionError("No se encontró la versión solicitada.");
-          }
-        })
-        .catch(() =>
-          setVersionError("Se produjo un error al obtener la versión.")
-        );
+          })
+          .catch(() =>
+            setVersionError("Se produjo un error al obtener la versión."),
+          );
+      }
     }
-  }, [versionId]);
+  }, [versionId, isNewEntry]);
 
   // Fetch the entry details
   useEffect(() => {
-    if (entryId) {
-      getEntry(entryId)
-        .then((data) => {
-          if (data && Object.keys(data).length > 0) {
-            setEntry(data);
-          } else {
-            setVersionError("No se encontró la entrada solicitada.");
-          }
-        })
-        .catch(() =>
-          setVersionError("Se produjo un error al obtener la entrada.")
-        );
-    } else {
-      setVersionError("No se proporcionó un ID de entrada válido.");
+    if (!isNewEntry) {
+      if (entryId) {
+        getEntry(entryId)
+          .then((data) => {
+            if (data && Object.keys(data).length > 0) {
+              setEntry(data);
+            } else {
+              setVersionError("No se encontró la entrada solicitada.");
+            }
+          })
+          .catch(() =>
+            setVersionError("Se produjo un error al obtener la entrada."),
+          );
+      } else {
+        setVersionError("No se proporcionó un ID de entrada válido.");
+      }
     }
-  }, [entryId]);
+  }, [entryId, isNewEntry]);
 
   // Fetch the wiki details
   useEffect(() => {
-    if (entry && entry.wiki_id) {
-      getWiki(entry.wiki_id)
+    if ((entry && entry.wiki_id) || wikiId) {
+      const id = wikiId || entry.wiki_id;
+      getWiki(id)
         .then((data) => {
           if (data && Object.keys(data).length > 0) {
             setWiki(data);
@@ -98,10 +111,10 @@ function FormVersionPage() {
           }
         })
         .catch(() =>
-          setVersionError("Se produjo un error al obtener la wiki asociada.")
+          setVersionError("Se produjo un error al obtener la wiki asociada."),
         );
     }
-  }, [entry, entryId]);
+  }, [entry, entryId, wikiId]);
 
   // Fetch existing images
   const fetchExistingImages = async (mediaIds) => {
@@ -122,8 +135,8 @@ function FormVersionPage() {
   const handleToggleVisibility = (index) => {
     setExistingImages((prevImages) =>
       prevImages.map((image, i) =>
-        i === index ? { ...image, isVisible: !image.isVisible } : image
-      )
+        i === index ? { ...image, isVisible: !image.isVisible } : image,
+      ),
     );
   };
 
@@ -137,10 +150,22 @@ function FormVersionPage() {
   };
 
   // Handler for TextField change
-  const handleChange = (event) => {
+  const handleVersionChange = (event) => {
     const { name, value } = event.target;
     setVersion((prevVersion) => ({
       ...prevVersion,
+      [name]: value,
+    }));
+    setFormErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: "",
+    }));
+  };
+
+  const handleEntryChange = (event) => {
+    const { name, value } = event.target;
+    setEntry((prevEntry) => ({
+      ...prevEntry,
       [name]: value,
     }));
     setFormErrors((prevErrors) => ({
@@ -177,7 +202,7 @@ function FormVersionPage() {
   const handleRemoveImage = (index, isExisting = false) => {
     if (isExisting) {
       setExistingImages((prevImages) =>
-        prevImages.filter((_, i) => i !== index)
+        prevImages.filter((_, i) => i !== index),
       );
     } else {
       setUploads((prevUploads) => prevUploads.filter((_, i) => i !== index));
@@ -191,7 +216,7 @@ function FormVersionPage() {
       editor: "",
       content: "",
     };
-    if (!version.editor) {
+    if (!version.editor && !isNewEntry) {
       errors.editor = "Introduzca un editor";
       isValid = false;
     }
@@ -202,19 +227,42 @@ function FormVersionPage() {
       errors.content = "Introduzca contenido";
       isValid = false;
     }
+    if (!entry.title) {
+      errors.title = "Introduzca un título";
+      isValid = false;
+    }
+    if (!entry.author) {
+      errors.author = "Introduzca un autor";
+      isValid = false;
+    }
     setFormErrors(errors);
     return isValid;
   };
 
-  // Handler to submit the version
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
+    if (validate()) {
+      // Open the confirmation modal
+      setOpenConfirmDialog(true);
+    }
+  };
+
+  const handleConfirmSubmit = async () => {
+    // Close the modal
+    setOpenConfirmDialog(false);
+    // Proceed with form submission logic
 
     if (!validate()) {
       return;
     }
 
     let newMediaIds = [];
+
+    const entryData = {
+      title: entry.title,
+      wiki_id: wikiId,
+      author: entry.author,
+    };
 
     // Upload new images
     if (uploads.length > 0) {
@@ -236,7 +284,6 @@ function FormVersionPage() {
 
           const response = await postMedia(formData);
           newMediaIds.push(response.id);
-
         } catch (error) {
           console.error(`Error uploading file ${file.name}:`, error);
           setError(`Error uploading file ${file.name}`);
@@ -245,9 +292,9 @@ function FormVersionPage() {
       }
     }
 
-    const jsonData = {
+    const versionData = {
       content: version.content,
-      editor: version.editor,
+      editor: version.editor ? version.editor : entry.author,
       entry_id: entryId,
       address: version.address,
       media_ids: [
@@ -259,11 +306,20 @@ function FormVersionPage() {
     };
 
     try {
-      await postVersion(jsonData);
-      navigate(`/entrada/${entryId}`);
+      if (isNewEntry) {
+        const newEntry = await postEntry(entryData);
+        versionData.entry_id = newEntry.id; // Set the new entry ID
+      }
+      await postVersion(versionData);
+      navigate(`/entrada/${versionData.entry_id}`);
     } catch (error) {
       console.error("Error posting version:", error);
     }
+  };
+
+  const handleCancelSubmit = () => {
+    // Close the modal without submitting
+    setOpenConfirmDialog(false);
   };
 
   return (
@@ -279,31 +335,35 @@ function FormVersionPage() {
         >
           {wiki.title}
         </Typography>
-        <Typography
-          className="breadcrumb-link"
-          component={Link}
-          to={`/entrada/${entry.id}`}
-        >
-          {entry.title}
-        </Typography>
+        {!isNewEntry && (
+          <Typography
+            className="breadcrumb-link"
+            component={Link}
+            to={`/entrada/${entry.id}`}
+          >
+            {entry.title}
+          </Typography>
+        )}
       </Breadcrumbs>
 
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4 }}>
         <form id="miFormulario" ref={formRef} onSubmit={handleSubmit}>
-          <Grid container spacing={2} alignItems="center">
+          <Grid container spacing={2}>
             <Grid xs={12} sm={8}>
-              <Typography variant="h4">Editar entrada</Typography>
+              <Typography variant="h4">
+                {isNewEntry ? "Crear Entrada" : "Editar entrada"}
+              </Typography>
             </Grid>
             <Grid xs={12} sm={4}>
               <TextField
-                id="editor"
-                name="editor"
-                label="Editor *"
-                value={version.editor || ""}
-                onChange={handleChange}
+                id={isNewEntry ? "author" : "editor"}
+                name={isNewEntry ? "author" : "editor"}
+                label={isNewEntry ? "Autor *" : "Editor *"}
+                value={isNewEntry ? entry.author || "" : version.editor || ""}
+                onChange={isNewEntry ? handleEntryChange : handleVersionChange}
                 variant="outlined"
-                error={!!formErrors.editor}
-                helperText={formErrors.editor}
+                error={isNewEntry ? !!formErrors.author : !!formErrors.editor}
+                helperText={isNewEntry ? formErrors.author : formErrors.editor}
                 fullWidth
                 slotProps={{
                   inputLabel: {
@@ -312,13 +372,33 @@ function FormVersionPage() {
                 }}
               />
             </Grid>
+            {isNewEntry && (
+              <Grid xs={12} sm={4}>
+                <TextField
+                  id="title"
+                  name="title"
+                  label="Título *"
+                  value={entry.title || ""}
+                  onChange={handleEntryChange}
+                  variant="outlined"
+                  error={!!formErrors.title}
+                  helperText={formErrors.title}
+                  fullWidth
+                  slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                    },
+                  }}
+                />
+              </Grid>
+            )}
             <Grid xs={12} sm={4}>
               <TextField
                 id="address"
                 name="address"
                 label="Ubicación (opcional)"
                 value={version.address || ""}
-                onChange={handleChange}
+                onChange={handleVersionChange}
                 variant="outlined"
                 fullWidth
                 slotProps={{
@@ -350,14 +430,19 @@ function FormVersionPage() {
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
-                border: formErrors.content ? "1px solid red" : "1px solid #ccc",
+                border: formErrors.content
+                  ? `1px solid ${theme.palette.error.main}`
+                  : "1px solid #ccc",
               }}
-              
             />
             {formErrors.content && (
               <Typography
                 variant="body2"
-                sx={{ color: "red", fontSize: "12px", mt: 1 }}
+                sx={{
+                  color: theme.palette.error.main,
+                  fontSize: "12px",
+                  mt: 1,
+                }}
               >
                 {formErrors.content}
               </Typography>
@@ -417,8 +502,16 @@ function FormVersionPage() {
                     key={image.id || index}
                     sx={{ display: "flex", alignItems: "center", mt: 1 }}
                   >
-                    <a href={image.uploadUrl} target="_blank" rel="noopener noreferrer">
-                      <Typography variant="body2" color="primary" sx={{ textDecoration: 'underline', cursor: 'pointer' }}>
+                    <a
+                      href={image.uploadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Typography
+                        variant="body2"
+                        color="primary"
+                        sx={{ textDecoration: "underline", cursor: "pointer" }}
+                      >
                         {image.publicId}
                       </Typography>
                     </a>
@@ -437,7 +530,6 @@ function FormVersionPage() {
               </AccordionDetails>
             </Accordion>
           )}
-
           {error && <Alert severity="error">{error}</Alert>}
           <Box sx={{ mt: 5, pt: 1 }} display="flex" justifyContent="flex-end">
             <Button type="submit" variant="contained" color="primary">
@@ -446,6 +538,13 @@ function FormVersionPage() {
           </Box>
         </form>
       </Paper>
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        show={openConfirmDialog}
+        handleClose={handleCancelSubmit}
+        handleConfirm={handleConfirmSubmit}
+        message="¿Está seguro de que desea enviar el formulario?"
+      />
     </Container>
   );
 }

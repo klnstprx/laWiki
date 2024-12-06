@@ -1,0 +1,85 @@
+services:
+  api-gateway:
+    build: ./src/backend/gateway
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+    volumes:
+      - ./src/backend/config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+    depends_on:
+      - wiki-service
+      - entry-service
+      - comment-service
+      - version-service
+      - media-service
+
+  wiki-service:
+    build: ./src/backend/wiki
+    networks:
+      - app-network
+    expose:
+      - "8001"
+    volumes:
+      - ./src/backend/config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+
+  entry-service:
+    build: ./src/backend/entry
+    networks:
+      - app-network
+    expose:
+      - "8002"
+    volumes:
+      - ./src/backend/config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+
+  comment-service:
+    build: ./src/backend/comment
+    networks:
+      - app-network
+    expose:
+      - "8003"
+    volumes:
+      - ./src/backend/config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+
+  version-service:
+    build: ./src/backend/version
+    networks:
+      - app-network
+    expose:
+      - "8005"
+    volumes:
+      - ./src/backend/config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+
+  media-service:
+    build: ./src/backend/media
+    networks:
+      - app-network
+    expose:
+      - "8081"
+    volumes:
+      - ./src/backend/config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+
+  lawiki-frontend:
+    build: ./src/frontend
+    ports:
+      - "5173:80"
+    networks:
+      - app-network
+    depends_on:
+      - api-gateway
+
+networks:
+  app-network:
+    driver: bridge
