@@ -332,7 +332,7 @@ function EntradaPage() {
           ? <Alert severity="error">{versionError}</Alert>
           : !version
           ? (
-            <Alert serverity="info">
+            <Alert severity="info">
               No se ha encontrado niguna version asignada a esta entrada.
             </Alert>
           )
