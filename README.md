@@ -1,5 +1,7 @@
 # Manual
 
+**Host de frontend por defecto: localhost:5713**
+
 ## Cómo ejecutar los microservicios de forma simultánea (docker + docker-compose)
 
 1. Tener docker instalado.
@@ -22,7 +24,7 @@
 
 **Si no funciona "docker compose" prueba con `docker-compose build` (con "-")**.
 
-## Cómo ejecutar backend sin docker:
+## Cómo ejecutar backend sin docker
 
 1. Tener go instalado.
 2. Copiar el contenido `default_config.toml` y pegarlo en un archivo llamado `config.toml`.
@@ -32,12 +34,12 @@
 
 **La diferencia entre config.toml y config.docker.toml es que en uno llamamos el host de cada microservio por "localhost" y en el otro por el nombre del servicio en docker-compose.**
 
-## Cómo ejecutar frontend sin docker:
+## Cómo ejecutar frontend sin docker
 
 1. Tener Node.js instalado
 2. Ejecutar 'npm install' en el directorio del frontend
 3. 'npm run dev'
-4. Navegar a http://localhost:5173/
+4. Navegar a <http://localhost:5173/>
 
 Estructura del repositorio:
 
