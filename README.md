@@ -6,20 +6,22 @@
 2. Abrir docker (para ejecutar la mv de docker).
 3. Copiar el contenido `default_config.docker.toml` y pegarlo en un archivo llamado `config.docker.toml`.
 4. Rellenar `config.docker.toml` con los datos necesarios. Por ejemplo: MONGODB_URI="mongodb+srv://username:password@cluster0.rfz8f.mongodb.net/".
-5. `docker-compose build`
-6. `docker-compose up`
+5. `docker compose build`
+6. `docker compose up`
+
+**Si no funciona "docker compose" prueba con `docker-compose build` (con "-")**.
 
 ## Cómo ejecutar el frontend con docker
 
 1. Tener docker instalado
 2. Abrir docker (para ejecutar la mv de docker).
 3. Navegar hacia el directorio del frontend del proyecto en un CLI.
-4. `docker-compose build`
-5. `docker-compose up`
+4. `docker compose build`
+5. `docker compose up`
 6. Abrir la app en localhost:5173
 
-**Si no funciona "docker-compose" prueba con `docker compose build` (sin "-")**.
-   
+**Si no funciona "docker compose" prueba con `docker-compose build` (con "-")**.
+
 ## Cómo ejecutar backend sin docker:
 
 1. Tener go instalado.
@@ -41,12 +43,16 @@ Estructura del repositorio:
 
 ```bash
 ├── clientexample
+├── docker-compose.yml
 ├── docs
 │   ├── component__Diagramas_de_Componentes.png
 │   ├── deployment__Diagrama_de_Despliegue.png
+│   ├── Gateway.postman_collection.json
 │   ├── ifml.json
 │   ├── UML.mdzip
 │   └── UML.mdzip.bak
+├── MEMORIA - PRÁCTICA 2.pdf
+├── MEMORIA - PRÁCTICA 3.pdf
 ├── README.md
 └── src
     ├── backend
@@ -69,8 +75,6 @@ Estructura del repositorio:
     │   │   └── router
     │   │       └── auth_router.go
     │   ├── comment
-    │   │   ├── comment-service
-    │   │   ├── comment-service.log
     │   │   ├── config
     │   │   │   └── comment_config.go
     │   │   ├── database
@@ -89,8 +93,6 @@ Estructura del repositorio:
     │   │   │   └── comment_model.go
     │   │   └── router
     │   │       └── comment_router.go
-    │   ├── config.docker.toml
-    │   ├── config.toml
     │   ├── default_config.docker.toml
     │   ├── default_config.toml
     │   ├── docker-compose.yml
@@ -104,9 +106,6 @@ Estructura del repositorio:
     │   │   │   ├── docs.go
     │   │   │   ├── swagger.json
     │   │   │   └── swagger.yaml
-    │   │   ├── entry-service
-    │   │   ├── entry-service.log
-    │   │   ├── entry-service.pid
     │   │   ├── go.mod
     │   │   ├── go.sum
     │   │   ├── handler
@@ -117,8 +116,6 @@ Estructura del repositorio:
     │   │   └── router
     │   │       └── entry_router.go
     │   ├── gateway
-    │   │   ├── api-gateway
-    │   │   ├── api-gateway.log
     │   │   ├── config
     │   │   │   └── gateway_config.go
     │   │   ├── Dockerfile
@@ -152,13 +149,10 @@ Estructura del repositorio:
     │   │   ├── handler
     │   │   │   └── media_handler.go
     │   │   ├── main.go
-    │   │   ├── media-service
-    │   │   ├── media-service.log
     │   │   ├── model
     │   │   │   └── model_media.go
     │   │   └── router
     │   │       └── media_router.go
-    │   ├── run-services.ps1
     │   ├── swagger-config.json
     │   ├── version
     │   │   ├── config
@@ -177,10 +171,8 @@ Estructura del repositorio:
     │   │   ├── main.go
     │   │   ├── model
     │   │   │   └── version_model.go
-    │   │   ├── router
-    │   │   │   └── version_router.go
-    │   │   ├── version-service
-    │   │   └── version-service.log
+    │   │   └── router
+    │   │       └── version_router.go
     │   └── wiki
     │       ├── config
     │       │   └── wiki_config.go
@@ -198,33 +190,54 @@ Estructura del repositorio:
     │       ├── main.go
     │       ├── model
     │       │   └── wiki_model.go
-    │       ├── router
-    │       │   └── wiki_router.go
-    │       ├── wiki-service
-    │       └── wiki-service.log
+    │       └── router
+    │           └── wiki_router.go
     └── frontend
         ├── deno.lock
-        ├── dist
-        │   ├── assets
-        │   │   ├── index-BPvgi06w.css
-        │   │   └── index-D1NZhrJd.js
-        │   ├── index.html
-        │   └── vite.svg
+        ├── docker-compose.yml
+        ├── Dockerfile
         ├── eslint.config.js
         ├── index.html
         ├── package.json
-        ├── package-lock.json
         ├── public
         │   └── vite.svg
         ├── src
-        │   ├── api.js
-        │   ├── App.css
+        │   ├── api
+        │   │   ├── Api.js
+        │   │   ├── CommentApi.js
+        │   │   ├── EntryApi.js
+        │   │   ├── MediaApi.js
+        │   │   ├── VersionApi.js
+        │   │   └── WikiApi.js
         │   ├── App.jsx
-        │   ├── index.css
+        │   ├── components
+        │   │   ├── Comentario.jsx
+        │   │   ├── ConfirmationModal.jsx
+        │   │   ├── EntradaCard.jsx
+        │   │   ├── Footer.jsx
+        │   │   ├── Header.jsx
+        │   │   ├── SearchResultsList.jsx
+        │   │   ├── ToastMessage.jsx
+        │   │   ├── VersionCard.jsx
+        │   │   ├── Version.jsx
+        │   │   └── WikiCard.jsx
+        │   ├── context
+        │   │   ├── ToastContext.jsx
+        │   │   └── ToastProvider.jsx
+        │   ├── layout
+        │   │   └── MainLayout.jsx
         │   ├── main.jsx
-        │   └── pages
-        │       └── Home.jsx
+        │   ├── pages
+        │   │   ├── AdvancedSearchPage.jsx
+        │   │   ├── EntradaPage.jsx
+        │   │   ├── FormVersionPage.jsx
+        │   │   ├── FormWikiPage.jsx
+        │   │   ├── HomePage.jsx
+        │   │   ├── VersionPage.jsx
+        │   │   └── WikiPage.jsx
+        │   └── styles
+        │       └── theme.js
         └── vite.config.js
 
-82 directories, 199 files
+85 directories, 207 files
 ```
