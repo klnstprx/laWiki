@@ -4,33 +4,32 @@ const theme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#52796f", // Teal Green
-      light: "#84a29d", // Lighter Teal Green
-      dark: "#36554a", // Darker Teal Green
+      main: "#52796f",
+      light: "#84a29d",
+      dark: "#36554a",
       contrastText: "#ffffff",
     },
     secondary: {
-      main: "#355c7d", // Muted Blue (Analogous to Teal Green)
-      light: "#5d85a5", // Lighter Muted Blue
-      dark: "#1e3b54", // Darker Muted Blue
+      main: "#355c7d",
+      light: "#5d85a5",
+      dark: "#1e3b54",
       contrastText: "#ffffff",
     },
     error: {
-      main: "#aa4465", // Muted Red-Purple (Complementary to Teal Green)
+      main: "#aa4465",
     },
     warning: {
-      main: "#e7a977", // Muted Orange (Harmonious with Teal and Blue)
+      main: "#e7a977",
     },
     success: {
-      main: "#6ea683", // Muted Green (Analogous to Teal Green)
+      main: "#6ea683",
     },
     background: {
-      default: "#f5f7f6", // Very Light Teal Green Tint
+      default: "#f5f7f6",
       paper: "#ffffff",
     },
   },
   components: {
-    // Style overrides for buttons
     MuiButton: {
       styleOverrides: {
         root: {
