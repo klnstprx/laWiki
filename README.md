@@ -9,9 +9,18 @@
 5. `docker-compose build`
 6. `docker-compose up`
 
-**Si no funciona "docker-compose" prueba con `docker compose build` (sin "-")**.
+## Cómo ejecutar el frontend con docker
 
-## Cómo ejecutar sin docker:
+1. Tener docker instalado
+2. Abrir docker (para ejecutar la mv de docker).
+3. Navegar hacia el directorio del frontend del proyecto en un CLI.
+4. `docker-compose build`
+5. `docker-compose up`
+6. Abrir la app en localhost:5173
+
+**Si no funciona "docker-compose" prueba con `docker compose build` (sin "-")**.
+   
+## Cómo ejecutar backend sin docker:
 
 1. Tener go instalado.
 2. Copiar el contenido `default_config.toml` y pegarlo en un archivo llamado `config.toml`.
@@ -20,6 +29,13 @@
 5. `go run main.go`
 
 **La diferencia entre config.toml y config.docker.toml es que en uno llamamos el host de cada microservio por "localhost" y en el otro por el nombre del servicio en docker-compose.**
+
+## Cómo ejecutar frontend sin docker:
+
+1. Tener Node.js instalado
+2. Ejecutar 'npm install' en el directorio del frontend
+3. 'npm run dev'
+4. Navegar a http://localhost:5173/
 
 Estructura del repositorio:
 
