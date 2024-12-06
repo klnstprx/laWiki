@@ -28,6 +28,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
+import theme from "../styles/theme.js";
 
 function FormVersionPage() {
   const { entryId, versionId, wikiId } = useParams();
@@ -70,7 +71,7 @@ function FormVersionPage() {
             }
           })
           .catch(() =>
-            setVersionError("Se produjo un error al obtener la versión.")
+            setVersionError("Se produjo un error al obtener la versión."),
           );
       }
     }
@@ -79,27 +80,27 @@ function FormVersionPage() {
   // Fetch the entry details
   useEffect(() => {
     if (!isNewEntry) {
-    if (entryId) {
-      getEntry(entryId)
-        .then((data) => {
-          if (data && Object.keys(data).length > 0) {
-            setEntry(data);
-          } else {
-            setVersionError("No se encontró la entrada solicitada.");
-          }
-        })
-        .catch(() =>
-          setVersionError("Se produjo un error al obtener la entrada.")
-        );
-    } else {
-      setVersionError("No se proporcionó un ID de entrada válido.");
+      if (entryId) {
+        getEntry(entryId)
+          .then((data) => {
+            if (data && Object.keys(data).length > 0) {
+              setEntry(data);
+            } else {
+              setVersionError("No se encontró la entrada solicitada.");
+            }
+          })
+          .catch(() =>
+            setVersionError("Se produjo un error al obtener la entrada."),
+          );
+      } else {
+        setVersionError("No se proporcionó un ID de entrada válido.");
+      }
     }
-  }
   }, [entryId, isNewEntry]);
 
   // Fetch the wiki details
   useEffect(() => {
-    if (entry && entry.wiki_id || wikiId) {
+    if ((entry && entry.wiki_id) || wikiId) {
       const id = wikiId || entry.wiki_id;
       getWiki(id)
         .then((data) => {
@@ -110,7 +111,7 @@ function FormVersionPage() {
           }
         })
         .catch(() =>
-          setVersionError("Se produjo un error al obtener la wiki asociada.")
+          setVersionError("Se produjo un error al obtener la wiki asociada."),
         );
     }
   }, [entry, entryId, wikiId]);
@@ -134,8 +135,8 @@ function FormVersionPage() {
   const handleToggleVisibility = (index) => {
     setExistingImages((prevImages) =>
       prevImages.map((image, i) =>
-        i === index ? { ...image, isVisible: !image.isVisible } : image
-      )
+        i === index ? { ...image, isVisible: !image.isVisible } : image,
+      ),
     );
   };
 
@@ -201,7 +202,7 @@ function FormVersionPage() {
   const handleRemoveImage = (index, isExisting = false) => {
     if (isExisting) {
       setExistingImages((prevImages) =>
-        prevImages.filter((_, i) => i !== index)
+        prevImages.filter((_, i) => i !== index),
       );
     } else {
       setUploads((prevUploads) => prevUploads.filter((_, i) => i !== index));
@@ -335,19 +336,19 @@ function FormVersionPage() {
           {wiki.title}
         </Typography>
         {!isNewEntry && (
-        <Typography
-          className="breadcrumb-link"
-          component={Link}
-          to={`/entrada/${entry.id}`}
-        >
-          {entry.title}
-        </Typography>
+          <Typography
+            className="breadcrumb-link"
+            component={Link}
+            to={`/entrada/${entry.id}`}
+          >
+            {entry.title}
+          </Typography>
         )}
       </Breadcrumbs>
 
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4 }}>
         <form id="miFormulario" ref={formRef} onSubmit={handleSubmit}>
-          <Grid container spacing={2} alignItems="center">
+          <Grid container spacing={2}>
             <Grid xs={12} sm={8}>
               <Typography variant="h4">
                 {isNewEntry ? "Crear Entrada" : "Editar entrada"}
@@ -408,12 +409,11 @@ function FormVersionPage() {
               />
             </Grid>
           </Grid>
-          {versionError &&
-            (
-              <Typography variant="body1" color="error" gutterBottom>
-                {versionError}
-              </Typography>
-            )}
+          {versionError && (
+            <Typography variant="body1" color="error" gutterBottom>
+              {versionError}
+            </Typography>
+          )}
           <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
             Contenido:
           </Typography>
@@ -430,13 +430,19 @@ function FormVersionPage() {
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
-                border: formErrors.content ? "1px solid red" : "1px solid #ccc",
+                border: formErrors.content
+                  ? `1px solid ${theme.palette.error.main}`
+                  : "1px solid #ccc",
               }}
             />
             {formErrors.content && (
               <Typography
                 variant="body2"
-                sx={{ color: "red", fontSize: "12px", mt: 1 }}
+                sx={{
+                  color: theme.palette.error.main,
+                  fontSize: "12px",
+                  mt: 1,
+                }}
               >
                 {formErrors.content}
               </Typography>
