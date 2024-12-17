@@ -15,8 +15,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-/* THIS SERVICE IS WIP - its not included in the gateway router*/
-
 // @title           Auth Service API
 // @version         1.0
 // @description     API documentation for the Auth Service. !!THIS SERVICE IS WIP!!

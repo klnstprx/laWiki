@@ -16,6 +16,8 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
+const FRONTEND_URL = "http://localhost:5173"
+
 // HealthCheck godoc
 // @Summary      Health Check
 // @Description  Checks if the service is up
@@ -35,7 +37,15 @@ func generateStateOauthCookie(w http.ResponseWriter) string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	state := base64.URLEncoding.EncodeToString(b)
-	cookie := http.Cookie{Name: "oauthstate", Value: state, Expires: expiration}
+
+	cookie := http.Cookie{
+		Name:     "oauthstate",
+		Value:    state,
+		Expires:  expiration,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	}
 	http.SetCookie(w, &cookie)
 	return state
 }
@@ -69,16 +79,28 @@ func Login(w http.ResponseWriter, r *http.Request) {
 // @Failure      500    {string}  string  "Could not create JWT"
 // @Router       /api/auth/callback [get]
 func Callback(w http.ResponseWriter, r *http.Request) {
+	// Validate 'state' and 'code' parameters
+	state := r.FormValue("state")
+	code := r.FormValue("code")
+	if state == "" || code == "" {
+		http.Error(w, "Missing 'state' or 'code' parameters", http.StatusBadRequest)
+		return
+	}
+
 	// Get state from the cookie
-	oauthState, _ := r.Cookie("oauthstate")
-	if r.FormValue("state") != oauthState.Value {
-		// Invalid state, possible CSRF attack
+	oauthState, err := r.Cookie("oauthstate")
+	if err != nil {
+		http.Error(w, "State cookie not found", http.StatusUnauthorized)
+		return
+	}
+
+	if state != oauthState.Value {
 		http.Error(w, "Invalid OAuth state", http.StatusUnauthorized)
 		return
 	}
 
 	// Exchange code for access token and retrieve user data
-	data, err := getUserDataFromGoogle(r.FormValue("code"))
+	data, err := getUserDataFromGoogle(code)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to get user data from Google")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
@@ -93,17 +115,18 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set the JWT token in a cookie
+	// Set the JWT token in a secure cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt_token",
 		Value:    jwtToken,
 		Expires:  time.Now().UTC().Add(24 * time.Hour),
 		HttpOnly: true,
 		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
 	})
 
-	// Redirect to home page or wherever you want
-	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	// Redirect to the frontend application
+	http.Redirect(w, r, FRONTEND_URL, http.StatusSeeOther)
 }
 
 // getUserDataFromGoogle exchanges the code for a token and gets user info from Google
@@ -140,13 +163,22 @@ func createJWTToken(data []byte) (string, error) {
 		return "", fmt.Errorf("failed to unmarshal user data: %v", err)
 	}
 
-	// Create the JWT claims, which includes the user information and standard claims
-	claims := jwt.MapClaims{}
-	claims["email"] = user.Email
-	claims["name"] = user.Name
-	claims["exp"] = time.Now().UTC().Add(time.Hour * 72).Unix()
+	// Validate or set user role
+	if user.Role == "" {
+		user.Role = "user" // Set a default role
+	}
 
-	// Create the token using the claims
+	// Create the JWT claims
+	claims := jwt.MapClaims{
+		"email": user.Email,
+		"name":  user.Name,
+		"role":  user.Role,
+		"exp":   time.Now().UTC().Add(time.Hour * 1).Unix(), // Token expires in 1 hour
+		"iat":   time.Now().UTC().Unix(),
+		"iss":   "auth_service", // Issuer identifier
+	}
+
+	// Create the token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Sign the token with the secret key
@@ -156,4 +188,71 @@ func createJWTToken(data []byte) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+// Logout godoc
+// @Summary      Logout
+// @Description  Clears the JWT token cookie
+// @Tags         Authentication
+// @Success      302  {string}  string  "Redirect after logout"
+// @Router       /api/auth/logout [get]
+func Logout(w http.ResponseWriter, r *http.Request) {
+	// Clear the jwt_token cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt_token",
+		Value:    "",
+		Expires:  time.Now().UTC().Add(-1 * time.Hour), // Set expiration in the past
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	// Redirect to the login page or home page
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+// UserInfo godoc
+// @Summary      Get User Info
+// @Description  Returns user information for the authenticated user
+// @Tags         Authentication
+// @Success      200  {object}  model.User
+// @Failure      401  {string}  string  "Unauthorized"
+// @Router       /api/auth/userinfo [get]
+func UserInfo(w http.ResponseWriter, r *http.Request) {
+	// Get the JWT token from the cookie
+	cookie, err := r.Cookie("jwt_token")
+	if err != nil {
+		http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
+		return
+	}
+
+	tokenString := cookie.Value
+
+	// Parse and validate the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Ensure the signing method is HMAC
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(config.App.JWTSecret), nil
+	})
+
+	if err != nil || !token.Valid {
+		http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	// Extract user claims
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		user := model.User{
+			Email: claims["email"].(string),
+			Name:  claims["name"].(string),
+			Role:  claims["role"].(string),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(user)
+	} else {
+		http.Error(w, "Unauthorized: invalid token claims", http.StatusUnauthorized)
+		return
+	}
 }
