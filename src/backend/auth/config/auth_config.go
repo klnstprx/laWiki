@@ -15,8 +15,9 @@ import (
 
 // GlobalConfig holds the configuration for the application
 type GlobalConfig struct {
-	PrettyLogs *bool `toml:"PRETTY_LOGS"`
-	Debug      *bool `toml:"DEBUG"`
+	PrettyLogs *bool  `toml:"PRETTY_LOGS"`
+	Debug      *bool  `toml:"DEBUG"`
+	JWTSecret  string `toml:"JWT_SECRET"`
 }
 
 // AuthConfig holds the configuration specific to the auth service
@@ -25,7 +26,6 @@ type AuthConfig struct {
 	GoogleOAuthClientID     string `toml:"GOOGLE_OAUTH_CLIENT_ID"`
 	GoogleOAuthClientSecret string `toml:"GOOGLE_OAUTH_CLIENT_SECRET"`
 	GoogleOAuthRedirectURL  string `toml:"GOOGLE_OAUTH_REDIRECT_URL"`
-	JWTSecret               string `toml:"JWT_SECRET"`
 }
 
 // Config represents the structure of the config.toml file
@@ -105,7 +105,7 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	if config.Auth.GoogleOAuthRedirectURL == "" {
 		missingVars = append(missingVars, "GOOGLE_OAUTH_REDIRECT_URL")
 	}
-	if config.Auth.JWTSecret == "" {
+	if config.Global.JWTSecret == "" {
 		missingVars = append(missingVars, "JWT_SECRET")
 	}
 
@@ -127,7 +127,7 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	}
 
 	// JWT Secret
-	cfg.JWTSecret = config.Auth.JWTSecret
+	cfg.JWTSecret = config.Global.JWTSecret
 }
 
 // Setups pretty logs and debug level

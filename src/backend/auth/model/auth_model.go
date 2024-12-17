@@ -9,4 +9,5 @@ type User struct {
 	Picture       string `json:"picture"`
 	Locale        string `json:"locale"`
 	VerifiedEmail bool   `json:"verified_email"`
+	Role          string `json:"role"`
 }

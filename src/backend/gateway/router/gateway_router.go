@@ -19,6 +19,7 @@ func NewRouter() http.Handler {
 	r.Use(middleware.Recoverer)
 	// Custom middleware for authentication, etc.
 	r.Use(custommw.RequestID)
+	r.Use(custommw.AuthMiddleware)
 	r.Use(custommw.LoggerMiddleware(config.App.Logger))
 	r.Use(cors.Handler(cors.Options{
 		// AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin hosts

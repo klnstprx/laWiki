@@ -10,11 +10,12 @@ import (
 func NewRouter() http.Handler {
 	r := chi.NewRouter()
 
+	// Public Routes
 	r.Get("/health", handler.HealthCheck)
-
 	r.Get("/login", handler.Login)
-
-	// Handle callback from Google
 	r.Get("/callback", handler.Callback)
+	r.Get("/logout", handler.Logout)
+	r.Get("/userinfo", handler.UserInfo)
+
 	return r
 }
