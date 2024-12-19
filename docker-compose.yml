@@ -74,7 +74,7 @@ services:
   lawiki-frontend:
     image: klnstprx/lawiki-frontend
     ports:
-      - "5173:80"
+      - "80:80"
     networks:
       - app-network
     depends_on:
