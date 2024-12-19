@@ -9,6 +9,7 @@ import FormVersionPage from "./pages/FormVersionPage.jsx";
 import AdvancedSearchPage from "./pages/AdvancedSearchPage.jsx";
 import FormWikiPage from "./pages/FormWikiPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           element={<FormVersionPage />}
         />
         <Route path="/advanced-search" element={<AdvancedSearchPage />} />
+        <Route path="/perfil" element={<ProfilePage />} />
         {/* <Route path="/about" element={<About />} /> */}
         {/* <Route path="/articles/:id" element={<Article />} /> */}
       </Route>
