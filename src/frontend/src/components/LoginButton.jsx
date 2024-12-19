@@ -29,7 +29,19 @@ const LoginButton = () => {
       sessionStorage.setItem("user", JSON.stringify(decodedUser));
       setUser(decodedUser);
 
-      // Aquí se debe añadir el usuario a la base de datos
+      /*
+
+      Se debe añadir usuario a la base de datos con los siguientes datos como mínimo:
+      Email         string  
+      Name          string
+      GivenName     string 
+      FamilyName    string 
+      Picture       string 
+      Role          string 
+      Valoration    double
+
+
+      */
 
     } catch (error) {
       console.error("Error al procesar las credenciales:", error);
