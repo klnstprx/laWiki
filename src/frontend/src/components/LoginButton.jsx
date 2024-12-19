@@ -6,9 +6,11 @@ import {
   Button,
   Box
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const LoginButton = () => {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Verifica si hay un usuario en la sesión al cargar el componente
@@ -26,6 +28,9 @@ const LoginButton = () => {
       // Guarda el usuario en la sesión y en el estado
       sessionStorage.setItem("user", JSON.stringify(decodedUser));
       setUser(decodedUser);
+
+      // Aquí se debe añadir el usuario a la base de datos
+
     } catch (error) {
       console.error("Error al procesar las credenciales:", error);
     }
@@ -42,18 +47,37 @@ const LoginButton = () => {
     setUser(null);
   };
 
+  const goToProfile = () => {
+    navigate("/perfil");
+  };
+
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
       {user ? (
         <>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={goToProfile}
+          >
+            Perfil
+          </Button>
           <Typography
             variant="body1"
             noWrap
-            sx={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
           >
             Bienvenido, {user.name}
           </Typography>
-          <Button variant="contained" color="secondary" onClick={handleLogout}>
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={handleLogout}
+          >
             Cerrar sesión
           </Button>
         </>
