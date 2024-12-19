@@ -1,6 +1,6 @@
 services:
-  api-gateway:
-    build: ./src/backend/gateway
+  gateway-service:
+    image: klnstprx/gateway-service
     ports:
       - "8000:8000"
     networks:
@@ -17,7 +17,7 @@ services:
       - media-service
 
   wiki-service:
-    build: ./src/backend/wiki
+    image: klnstprx/wiki-service
     networks:
       - app-network
     expose:
@@ -28,7 +28,7 @@ services:
       - DOCKER=true
 
   entry-service:
-    build: ./src/backend/entry
+    image: klnstprx/entry-service
     networks:
       - app-network
     expose:
@@ -39,7 +39,7 @@ services:
       - DOCKER=true
 
   comment-service:
-    build: ./src/backend/comment
+    image: klnstprx/comment-service
     networks:
       - app-network
     expose:
@@ -50,7 +50,7 @@ services:
       - DOCKER=true
 
   version-service:
-    build: ./src/backend/version
+    image: klnstprx/version-service
     networks:
       - app-network
     expose:
@@ -61,7 +61,7 @@ services:
       - DOCKER=true
 
   media-service:
-    build: ./src/backend/media
+    image: klnstprx/media-service
     networks:
       - app-network
     expose:
@@ -72,13 +72,13 @@ services:
       - DOCKER=true
 
   lawiki-frontend:
-    build: ./src/frontend
+    image: klnstprx/lawiki-frontend
     ports:
       - "5173:80"
     networks:
       - app-network
     depends_on:
-      - api-gateway
+      - gateway-service
 
 networks:
   app-network:
