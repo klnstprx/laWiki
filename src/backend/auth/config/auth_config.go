@@ -15,9 +15,12 @@ import (
 
 // GlobalConfig holds the configuration for the application
 type GlobalConfig struct {
-	PrettyLogs *bool  `toml:"PRETTY_LOGS"`
-	Debug      *bool  `toml:"DEBUG"`
-	JWTSecret  string `toml:"JWT_SECRET"`
+	PrettyLogs      *bool  `toml:"PRETTY_LOGS"`
+	Debug           *bool  `toml:"DEBUG"`
+	JWTSecret       string `toml:"JWT_SECRET"`
+	API_GATEWAY_URL string `toml:"API_GATEWAY_URL"`
+	MongoDBURI      string `toml:"MONGODB_URI"`
+	DBName          string `toml:"DB_NAME"`
 }
 
 // AuthConfig holds the configuration specific to the auth service
@@ -28,10 +31,16 @@ type AuthConfig struct {
 	GoogleOAuthRedirectURL  string `toml:"GOOGLE_OAUTH_REDIRECT_URL"`
 }
 
+type UsuarioConfig struct {
+	Port             int    `toml:"PORT"`
+	DBCollectionName string `toml:"DB_COLLECTION_NAME"`
+}
+
 // Config represents the structure of the config.toml file
 type Config struct {
-	Auth   AuthConfig   `toml:"auth"`
-	Global GlobalConfig `toml:"global"`
+	Auth    AuthConfig    `toml:"auth"`
+	Usuario UsuarioConfig `toml:"usuario"`
+	Global  GlobalConfig  `toml:"global"`
 }
 
 type AppConfig struct {
@@ -42,6 +51,11 @@ type AppConfig struct {
 
 	GoogleOAuthConfig *oauth2.Config
 	JWTSecret         string
+
+	MongoDBURI       string
+	DBCollectionName string
+	DBName           string
+	API_GATEWAY_URL  string
 }
 
 // App holds app configuration
@@ -93,6 +107,21 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	} else {
 		cfg.Debug = true // Default to true
 		log.Warn().Msg("DEBUG not set in config file. Using default 'true'.")
+	}
+
+	// DBNAME with default value
+	if config.Global.DBName != "" {
+		cfg.DBName = config.Global.DBName
+	} else {
+		cfg.DBName = "laWiki" // Default to "laWiki"
+		log.Warn().Msg("DBNAME not set in config file. Using default 'laWiki'.")
+	}
+	// DBCOLLECTIONNAME with default value
+	if config.Usuario.DBCollectionName != "" {
+		cfg.DBCollectionName = config.Usuario.DBCollectionName
+	} else {
+		cfg.DBCollectionName = "usuarios" // Default to "wikis"
+		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'wiki'.")
 	}
 
 	// Required variables
