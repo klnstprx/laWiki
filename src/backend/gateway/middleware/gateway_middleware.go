@@ -38,6 +38,13 @@ func RoleMiddleware(requiredRoles ...string) func(http.Handler) http.Handler {
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Skip authentication for auth routes and health check
+
+		//Para que lo skipee temporalmente
+		if true {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		if strings.HasPrefix(r.URL.Path, "/api/auth/") || r.URL.Path == "/health" {
 			next.ServeHTTP(w, r)
 			return
