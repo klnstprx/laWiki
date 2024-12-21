@@ -119,6 +119,14 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'usuarios'.")
 	}
 
+	// MONGODB_URI is required
+	if config.Global.MongoDBURI != "" {
+		cfg.MongoDBURI = config.Global.MongoDBURI
+	} else {
+		cfg.MongoDBURI = "mongodb://localhost:27017" // Default to locally hosted DB
+		log.Warn().Msg("DMONGODB_URI not set in config file. Using default 'mongodb://localhost:27017'.")
+	}
+
 	// Required variables
 	if config.Auth.GoogleOAuthClientID == "" {
 		missingVars = append(missingVars, "GOOGLE_OAUTH_CLIENT_ID")
