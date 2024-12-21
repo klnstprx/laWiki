@@ -29,18 +29,13 @@ type AuthConfig struct {
 	GoogleOAuthClientID     string `toml:"GOOGLE_OAUTH_CLIENT_ID"`
 	GoogleOAuthClientSecret string `toml:"GOOGLE_OAUTH_CLIENT_SECRET"`
 	GoogleOAuthRedirectURL  string `toml:"GOOGLE_OAUTH_REDIRECT_URL"`
-}
-
-type UsuarioConfig struct {
-	Port             int    `toml:"PORT"`
-	DBCollectionName string `toml:"DB_COLLECTION_NAME"`
+	DBCollectionName        string `toml:"DB_COLLECTION_NAME"`
 }
 
 // Config represents the structure of the config.toml file
 type Config struct {
-	Auth    AuthConfig    `toml:"auth"`
-	Usuario UsuarioConfig `toml:"usuario"`
-	Global  GlobalConfig  `toml:"global"`
+	Auth   AuthConfig   `toml:"auth"`
+	Global GlobalConfig `toml:"global"`
 }
 
 type AppConfig struct {
@@ -117,8 +112,8 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		log.Warn().Msg("DBNAME not set in config file. Using default 'laWiki'.")
 	}
 	// DBCOLLECTIONNAME with default value
-	if config.Usuario.DBCollectionName != "" {
-		cfg.DBCollectionName = config.Usuario.DBCollectionName
+	if config.Auth.DBCollectionName != "" {
+		cfg.DBCollectionName = config.Auth.DBCollectionName
 	} else {
 		cfg.DBCollectionName = "usuarios" // Default to "wikis"
 		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'usuarios'.")
@@ -133,6 +128,9 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	}
 	if config.Auth.GoogleOAuthRedirectURL == "" {
 		missingVars = append(missingVars, "GOOGLE_OAUTH_REDIRECT_URL")
+	}
+	if config.Auth.GoogleOAuthRedirectURL == "" {
+		missingVars = append(missingVars, "JWT_SECRET")
 	}
 
 	// If there are missing required variables, log them and exit
