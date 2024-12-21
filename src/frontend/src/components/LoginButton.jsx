@@ -7,6 +7,7 @@ import {
   Box
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { postUser } from "../api/AuthApi"
 
 const LoginButton = () => {
   const [user, setUser] = useState(null);
@@ -20,7 +21,7 @@ const LoginButton = () => {
     }
   }, []);
 
-  const handleLoginSuccess = (credentialResponse) => {
+  const handleLoginSuccess = async (credentialResponse) => {
     try {
       const decodedUser = jwtDecode(credentialResponse.credential);
       console.log("Usuario autenticado:", decodedUser);
@@ -43,6 +44,20 @@ const LoginButton = () => {
 
       */
 
+      const user = {
+        email: 'user@example.com',
+        name: 'John Doe',
+        givenName: 'John',
+        familyName: 'Doe',
+        picture: 'http://example.com/picture.jpg',
+        role: 'user',
+        valoration: 4.5,
+      };
+
+      const addedUser = await postUser(user);
+      console.log('User added:', addedUser);
+    
+      
     } catch (error) {
       console.error("Error al procesar las credenciales:", error);
     }

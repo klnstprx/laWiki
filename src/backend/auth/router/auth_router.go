@@ -18,9 +18,9 @@ func NewRouter() http.Handler {
 	r.Get("/userinfo", handler.UserInfo)
 
 	//Otras rutas para el nuevo manejo de la coleccion ususarios
-	r.Get("/users/", handler.GetUsers)
+	r.Get("/users", handler.GetUsers)
 	r.Get("/users/{id}", handler.GetUserByID)
-	r.Post("/users/", handler.PostUser)
+	r.Post("/users", handler.PostUser)
 	r.Put("/users/{id}", handler.PutUser)
 
 	return r
