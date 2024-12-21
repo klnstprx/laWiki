@@ -121,7 +121,7 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		cfg.DBCollectionName = config.Usuario.DBCollectionName
 	} else {
 		cfg.DBCollectionName = "usuarios" // Default to "wikis"
-		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'wiki'.")
+		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'usuarios'.")
 	}
 
 	// Required variables
@@ -133,9 +133,6 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	}
 	if config.Auth.GoogleOAuthRedirectURL == "" {
 		missingVars = append(missingVars, "GOOGLE_OAUTH_REDIRECT_URL")
-	}
-	if config.Global.JWTSecret == "" {
-		missingVars = append(missingVars, "JWT_SECRET")
 	}
 
 	// If there are missing required variables, log them and exit
