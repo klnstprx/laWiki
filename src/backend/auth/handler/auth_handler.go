@@ -255,4 +255,5 @@ func UserInfo(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized: invalid token claims", http.StatusUnauthorized)
 		return
 	}
+
 }

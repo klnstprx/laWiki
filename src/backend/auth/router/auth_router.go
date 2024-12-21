@@ -16,6 +16,7 @@ func NewRouter() http.Handler {
 	r.Get("/callback", handler.Callback)
 	r.Get("/logout", handler.Logout)
 	r.Get("/userinfo", handler.UserInfo)
+	//Otras rutas para el nuevo manejo
 
 	return r
 }
