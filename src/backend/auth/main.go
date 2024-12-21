@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/laWiki/auth/config"
+	"github.com/laWiki/auth/database"
 	"github.com/laWiki/auth/router"
 
 	"github.com/rs/zerolog/log"
@@ -43,6 +44,9 @@ func main() {
 	config.SetupLogger(config.App.PrettyLogs, config.App.Debug)
 	config.App.Logger = &log.Logger
 	xlog := config.App.Logger.With().Str("service", "auth").Logger()
+
+	xlog.Info().Msg("Connecting to the database...")
+	database.Connect()
 
 	// router setup
 	r := router.NewRouter()
