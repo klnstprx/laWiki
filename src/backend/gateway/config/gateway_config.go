@@ -141,6 +141,13 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		cfg.MediaServiceURL = config.Gateway.MediaServiceURL
 	}
 
+	// JWT_SECRET is required
+	if config.Global.JWTSecret == "" {
+		missingVars = append(missingVars, "JWT_SECRET")
+	} else {
+		cfg.JWTSecret = config.Global.JWTSecret
+	}
+
 	// If there are missing required variables, log them and exit
 	if len(missingVars) > 0 {
 		for _, v := range missingVars {
