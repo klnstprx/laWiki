@@ -31,7 +31,6 @@ const LoginButton = () => {
       setUser(decodedUser);
 
       /*
-
       Se debe añadir usuario a la base de datos con los siguientes datos como mínimo:
       Email         string  
       Name          string
@@ -40,18 +39,16 @@ const LoginButton = () => {
       Picture       string 
       Role          string 
       Valoration    double
-
-
       */
 
       const user = {
-        email: 'user@example.com',
-        name: 'John Doe',
-        givenName: 'John',
-        familyName: 'Doe',
-        picture: 'http://example.com/picture.jpg',
-        role: 'user',
-        valoration: 4.5,
+        email: decodedUser.email,
+        name: decodedUser.name,
+        givenName: decodedUser.given_name,
+        familyName: decodedUser.family_name,
+        picture: decodedUser.picture,
+        role: "user",
+        valoration: 0
       };
 
       const addedUser = await postUser(user);
