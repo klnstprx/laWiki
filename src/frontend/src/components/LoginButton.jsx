@@ -7,7 +7,7 @@ import {
   Box
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { postUser } from "../api/AuthApi"
+import { postUser, getAllUsers } from "../api/AuthApi"
 
 const LoginButton = () => {
   const [user, setUser] = useState(null);
@@ -52,11 +52,27 @@ const LoginButton = () => {
         valoration: 0
       };
 
-      const addedUser = await postUser(user);
-      setAddedUser(addedUser);
-      sessionStorage.setItem("id", addedUser.id);
-      console.log('User added:', addedUser);
-    
+
+      const users = await getAllUsers();
+
+      //verifica si el usuario ya existe
+      let userExists = false;
+      for (let i = 0; i < users.length; i++) {
+        if (users[i].email === user.email) {
+          console.log("User already registered");
+          sessionStorage.setItem("id", users[i].id);
+          userExists = true;
+          break;
+        }
+      }
+
+      if (!userExists) {
+        console.log("User not registered");
+        const addedUser = await postUser(user);
+        setAddedUser(addedUser);
+        sessionStorage.setItem("id", addedUser.id);
+        console.log('User added:', addedUser);
+      }
       
     } catch (error) {
       console.error("Error al procesar las credenciales:", error);
