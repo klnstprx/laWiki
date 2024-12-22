@@ -49,7 +49,7 @@ const LoginButton = () => {
         familyName: decodedUser.family_name,
         picture: decodedUser.picture,
         role: "user",
-        valoration: 0
+        valoration: []
       };
 
 
