@@ -10,18 +10,16 @@ import (
 func NewRouter() http.Handler {
 	r := chi.NewRouter()
 
-	// Public Routes
-	r.Get("/health", handler.HealthCheck)
-	r.Get("/login", handler.Login)
-	r.Get("/callback", handler.Callback)
-	r.Get("/logout", handler.Logout)
-	r.Get("/userinfo", handler.UserInfo)
+	r.Route("/", func(r chi.Router) {
+		r.Get("/", handler.GetUsers)
+		r.Post("/", handler.PostUser)
 
-	//Otras rutas para el nuevo manejo de la coleccion ususarios
-	r.Get("/users", handler.GetUsers)
-	r.Get("/users/{id}", handler.GetUserByID)
-	r.Post("/users", handler.PostUser)
-	r.Put("/users/{id}", handler.PutUser)
+		r.Route("/user", func(r chi.Router) {
+			r.Get("/", handler.GetUserByID)
+			r.Put("/", handler.PutUser)
+			r.Delete("/", handler.DeleteUser)
+		})
+	})
 
 	return r
 }

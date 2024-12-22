@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi"
 	"github.com/laWiki/auth/config"
 	"github.com/laWiki/auth/database"
 	"github.com/laWiki/auth/model"
@@ -329,29 +328,33 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 // @Failure      500   {string}  string  "Internal server error"
 // @Router       /api/versions/{id} [get]
 func GetUserByID(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing user ID", http.StatusBadRequest)
 		return
 	}
 
-	var usuario model.User
+	// Verifica si el ID es un ObjectID válido
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	var version model.User
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err = database.UsuarioCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&usuario)
+	err = database.UsuarioCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&version)
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("User not found")
-		http.Error(w, "User not found", http.StatusNotFound)
+		config.App.Logger.Error().Err(err).Msg("Version not found")
+		http.Error(w, "Version not found", http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(usuario); err != nil {
+	if err := json.NewEncoder(w).Encode(version); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
@@ -422,12 +425,16 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 // @Failure      500     {string}  string  "Internal server error"
 // @Router       /api/versions/{id} [put]
 func PutUser(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing user ID", http.StatusBadRequest)
+		return
+	}
 
+	// Verifica si el ID es un ObjectID válido
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
@@ -524,7 +531,18 @@ func difference(slice1, slice2 []string) []string {
 // @Failure      500 {string} string "Internal server error"
 // @Router       /api/versions/{id} [delete]
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing user ID", http.StatusBadRequest)
+		return
+	}
+
+	// Verifica si el ID es un ObjectID válido
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -532,12 +550,6 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	// Get the MediaIDs associated with the version
 
 	var usuario model.User
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Invalid ID format")
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
-		return
-	}
 
 	err = database.UsuarioCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&usuario)
 	if err != nil {

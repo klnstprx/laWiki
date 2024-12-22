@@ -2,18 +2,18 @@ import apiRequest from "./Api.js";
 
 
 export async function getAllUsers() {
-  return apiRequest("/auth/users");
+  return apiRequest("/auth");
 }
 
 export async function postUser(data) {
-  return apiRequest("/auth/users", {
+  return apiRequest("/auth", {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
 export async function getUser(id) {
-  return apiRequest(`/auth/users/${encodeURIComponent(id)}`);
+  return apiRequest(`/auth/user?id=${id}`);
 }
 
 export async function putUser(id, data) {
