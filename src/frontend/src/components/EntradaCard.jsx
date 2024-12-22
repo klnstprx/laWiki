@@ -62,12 +62,6 @@ const EntradaCard = ({
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid xs={6}>
               <Typography variant="subtitle1" color="textSecondary">
-                Autor
-              </Typography>
-              <Typography variant="body2"><a href={`/perfil/${usuario.id}`}>{usuario.name}</a></Typography>
-            </Grid>
-            <Grid xs={6}>
-              <Typography variant="subtitle1" color="textSecondary">
                 Creado
               </Typography>
               <Typography variant="body2">
@@ -83,6 +77,12 @@ const EntradaCard = ({
           </Grid>
         </CardContent>
       </CardActionArea>
+      <Grid xs={6}>
+              <Typography variant="subtitle1" color="textSecondary">
+                Autor
+              </Typography>
+              <Typography variant="body2"><a href={`/perfil/${usuario.id}`}>{usuario.name}</a></Typography>
+            </Grid>
       <Grid>
         <IconButton color="error" onClick={handleDelete}>
           <DeleteIcon />
