@@ -54,6 +54,7 @@ const LoginButton = () => {
 
       const addedUser = await postUser(user);
       setAddedUser(addedUser);
+      sessionStorage.setItem("id", addedUser.id);
       console.log('User added:', addedUser);
     
       
@@ -74,7 +75,7 @@ const LoginButton = () => {
   };
 
   const goToProfile = () => {
-    navigate("/perfil/" + addedUser.id);
+    navigate("/perfil/" + sessionStorage.getItem("id"));
   };
 
   return (
