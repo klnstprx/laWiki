@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Box, Avatar, Typography, Paper } from "@mui/material";
+import { useParams } from "react-router-dom";
+import { getUser } from "../api/AuthApi";
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
-
+  const { id } = useParams();
+  
+  //funcion para cargar el usuario con el id que se pasa por parametro
   useEffect(() => {
-    // Obtener información del usuario de la sesión
-    const savedUser = sessionStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
+    console.log(id);
+    getUser(id)
+      .then((data) => setUser(data))
+      .catch(() => setUser(null));  
+  } , [id]);
 
   if (!user) {
     return (

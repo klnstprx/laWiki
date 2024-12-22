@@ -28,7 +28,7 @@ function App() {
           element={<FormVersionPage />}
         />
         <Route path="/advanced-search" element={<AdvancedSearchPage />} />
-        <Route path="/perfil" element={<ProfilePage />} />
+        <Route path="/perfil/:id" element={<ProfilePage />} />
         {/* <Route path="/about" element={<About />} /> */}
         {/* <Route path="/articles/:id" element={<Article />} /> */}
       </Route>

@@ -11,6 +11,7 @@ import { postUser } from "../api/AuthApi"
 
 const LoginButton = () => {
   const [user, setUser] = useState(null);
+  const [addedUser, setAddedUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,6 +53,7 @@ const LoginButton = () => {
       };
 
       const addedUser = await postUser(user);
+      setAddedUser(addedUser);
       console.log('User added:', addedUser);
     
       
@@ -72,7 +74,7 @@ const LoginButton = () => {
   };
 
   const goToProfile = () => {
-    navigate("/perfil");
+    navigate("/perfil/" + addedUser.id);
   };
 
   return (
