@@ -306,6 +306,7 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 	var version struct {
 		ID      string `json:"id"`
 		EntryID string `json:"entry_id"`
+		Editor  string `json:"editor"`
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&version)
@@ -350,8 +351,8 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 	notifyEmail("Nuevo comentario recibido,",
 		"Se ha añadido un nuevo comentario a tu entrada.",
 		"Se ha añadido un nuevo comentario a tu entrada.",
-		"Jose",
-		"josefco_02@hotmail.com")
+		version.Editor,
+		version.Editor)
 }
 
 // PutComment godoc
