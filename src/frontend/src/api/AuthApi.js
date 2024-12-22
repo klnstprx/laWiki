@@ -17,7 +17,7 @@ export async function getUser(id) {
 }
 
 export async function putUser(id, data) {
-  return apiRequest(`/auth/users/${encodeURIComponent(id)}`, {
+  return apiRequest(`/auth/user?id=${id}`, {
     method: "PUT",
     body: JSON.stringify(data),
   });
