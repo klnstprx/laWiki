@@ -15,6 +15,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/mailersend/mailersend-go"
 )
 
 // HealthCheck godoc
@@ -280,6 +282,89 @@ func PostVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	config.App.Logger.Info().Interface("version", version).Msg("Added new version")
+
+	// Retrieve the entry from the entry service with the entry ID from the version
+	entryServiceURL := fmt.Sprintf("%s/api/entries/%s", config.App.API_GATEWAY_URL, version.EntryID)
+	req, err := http.NewRequest("GET", entryServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("Entry service returned error")
+		http.Error(w, "Failed to retrieve entry information", http.StatusInternalServerError)
+		return
+	}
+
+	var entry struct {
+		ID     string `json:"id"`
+		Author string `json:"author"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&entry); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode entry response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Retrieve the user from the user service with the author ID from the entry
+	userServiceURL := fmt.Sprintf("%s/api/auth/user?id=%s", config.App.API_GATEWAY_URL, entry.Author)
+	req, err = http.NewRequest("GET", userServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	resp, err = client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("User service returned error")
+		http.Error(w, "Failed to retrieve user information", http.StatusInternalServerError)
+		return
+	}
+
+	var user struct {
+		ID    string `json:"id"`
+		Name  string `json:"name"`
+		Email string `json:"email"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode user response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Send an email notification to the editor
+
+	notifyEmail("Nuevo comentario recibido,",
+		"Se ha añadido un nuevo comentario a tu entrada.",
+		"Se ha añadido un nuevo comentario a tu entrada.",
+		user.Name,
+		user.Email)
+
 }
 
 // PutVersion godoc
@@ -661,4 +746,53 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Int64("deletedCount", deleteResult.DeletedCount).Str("entryID", entryID).Msg("Versions deleted successfully")
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func notifyEmail(subject string, text string, html string, destinoNombre string, destinoEmail string) {
+	ms := mailersend.NewMailersend("mlsn.9938f4dc11ca834ac853af3f07c9d9552a39e8007391e356dfb28d76094516c8")
+
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	from := mailersend.From{
+		Name:  "laWiki",
+		Email: "laWiki@trial-x2p0347d0v94zdrn.mlsender.net",
+	}
+
+	recipients := []mailersend.Recipient{
+		{
+			Name:  destinoNombre,
+			Email: destinoEmail,
+		},
+	}
+
+	variables := []mailersend.Variables{
+		{
+			Email: destinoEmail,
+			Substitutions: []mailersend.Substitution{
+				{
+					Var:   "var",
+					Value: "varSustituida",
+				},
+			},
+		},
+	}
+
+	tags := []string{}
+
+	message := ms.Email.NewMessage()
+
+	message.SetFrom(from)
+	message.SetRecipients(recipients)
+	message.SetSubject(subject)
+	message.SetHTML(html)
+	message.SetText(text)
+	message.SetSubstitutions(variables)
+	message.SetTags(tags)
+
+	res, _ := ms.Email.Send(ctx, message)
+
+	fmt.Printf(res.Header.Get("X-Message-Id"))
+
 }
