@@ -15,6 +15,8 @@ import (
 	"github.com/laWiki/comment/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/mailersend/mailersend-go"
 )
 
 // HealthCheck godoc
@@ -344,6 +346,12 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	config.App.Logger.Info().Interface("comment", comment).Msg("Added new comment")
+
+	notifyEmail("Nuevo comentario recibido,",
+		"Se ha añadido un nuevo comentario a tu entrada.",
+		"Se ha añadido un nuevo comentario a tu entrada.",
+		"Jose",
+		"josefco_02@hotmail.com")
 }
 
 // PutComment godoc
@@ -480,4 +488,53 @@ func DeleteCommentsByVersionID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func notifyEmail(subject string, text string, html string, destinoNombre string, destinoEmail string) {
+	ms := mailersend.NewMailersend("mlsn.9938f4dc11ca834ac853af3f07c9d9552a39e8007391e356dfb28d76094516c8")
+
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	from := mailersend.From{
+		Name:  "laWiki",
+		Email: "laWiki@trial-x2p0347d0v94zdrn.mlsender.net",
+	}
+
+	recipients := []mailersend.Recipient{
+		{
+			Name:  destinoNombre,
+			Email: destinoEmail,
+		},
+	}
+
+	variables := []mailersend.Variables{
+		{
+			Email: destinoEmail,
+			Substitutions: []mailersend.Substitution{
+				{
+					Var:   "var",
+					Value: "varSustituida",
+				},
+			},
+		},
+	}
+
+	tags := []string{}
+
+	message := ms.Email.NewMessage()
+
+	message.SetFrom(from)
+	message.SetRecipients(recipients)
+	message.SetSubject(subject)
+	message.SetHTML(html)
+	message.SetText(text)
+	message.SetSubstitutions(variables)
+	message.SetTags(tags)
+
+	res, _ := ms.Email.Send(ctx, message)
+
+	fmt.Printf(res.Header.Get("X-Message-Id"))
+
 }
