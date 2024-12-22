@@ -11,6 +11,12 @@ require (
 )
 
 require (
+	github.com/golang/protobuf v1.5.0 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
+	google.golang.org/protobuf v1.30.0 // indirect
+)
+
+require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
@@ -19,6 +25,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/mailersend/mailersend-go v1.5.1
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
@@ -32,6 +39,7 @@ require (
 	golang.org/x/sys v0.27.0 // indirect
 	golang.org/x/text v0.20.0 // indirect
 	golang.org/x/tools v0.27.0 // indirect
+	google.golang.org/appengine/v2 v2.0.6
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
