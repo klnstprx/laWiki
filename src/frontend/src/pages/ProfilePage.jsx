@@ -18,17 +18,25 @@ const ProfilePage = () => {
     event.preventDefault();
     console.log("New Rating:", newRating);
     // Aquí podrías enviar los datos a tu API
-    putUser(id, { valoration: newRating })
+    const updatedValoration = user.valoration ? [...user.valoration, newRating] : [newRating];
+
+    putUser(id, { valoration: updatedValoration })
       .then(() => {
         console.log("Valoración enviada.");
         // Actualizar el estado de la valoración
-        setUser((prevUser) => ({ ...prevUser, valoration: newRating }));
+        setUser((prevUser) => ({ ...prevUser, valoration: updatedValoration }));
       })
       .catch(() => {
         console.error("Error al enviar la valoración.");
       });
 
     setNewRating(0);
+      //actualiza el campo setMediaRating
+      const sum = updatedValoration.reduce((acc, val) => acc + val, 0);
+      const media = sum / updatedValoration.length;
+      setMediaRating(media);
+      
+
   };
 
   useEffect(() => {
