@@ -25,6 +25,7 @@ import {
 import { getWiki } from "../api/WikiApi.js";
 import HistoryIcon from "@mui/icons-material/History";
 import EditIcon from "@mui/icons-material/Edit";
+import { getUser } from "../api/AuthApi.js";
 
 import Grid from "@mui/joy/Grid";
 
@@ -38,6 +39,7 @@ function EntradaPage() {
   const [commentsError, setCommentsError] = useState(null);
   const [versionError, setVersionError] = useState(null);
   const [coordinates, setCoordinates] = useState(null);
+  const [usuario, setUsuario] = useState({}); // add state
 
   const [showModal, setShowModal] = useState(false);
   const [pendingComment, setPendingComment] = useState(null);
@@ -139,6 +141,14 @@ function EntradaPage() {
         .then((data) => {
           if (data && Object.keys(data).length > 0) {
             setEntry(data);
+
+            //cargar usuario de la base de datos
+            getUser(data.author)
+              .then((user) => {
+                setUsuario(user);
+              })
+              .catch(() => setEntryError("No se pudo cargar el autor."));
+
           } else {
             setEntryError("No se encontró la entrada solicitada.");
           }
@@ -235,6 +245,8 @@ function EntradaPage() {
     }
   }, [actualVersionId]);
 
+ 
+
   // Handler to submit a new comment
   async function subirComentario(event) {
     event.preventDefault();
@@ -290,7 +302,7 @@ function EntradaPage() {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Typography variant="subtitle2">Autor: {entry.author}</Typography>
+            <Typography variant="subtitle2">Autor: <a href={`/perfil/${usuario.id}`}>{usuario.name}</a></Typography>
             <Typography variant="caption" color="text.secondary">
               {new Date(entry.created_at).toLocaleDateString()}
             </Typography>
