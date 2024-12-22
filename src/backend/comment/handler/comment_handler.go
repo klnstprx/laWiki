@@ -348,11 +348,53 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Interface("comment", comment).Msg("Added new comment")
 
+	// Retrieve the editor's email address from the user service with the editor ID from the version
+	userServiceURL := fmt.Sprintf("%s/api/auth/user?id=%s", config.App.API_GATEWAY_URL, version.Editor)
+	config.App.Logger.Info().Str("url", userServiceURL).Msg("Fetching User to get email")
+
+	req, err = http.NewRequest("GET", userServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
+		return
+	}
+
+	resp, err = client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", bodyString).
+			Msg("User service returned error")
+		return
+	}
+
+	var user struct {
+		ID    string `json:"id"`
+		Name  string `json:"name"`
+		Email string `json:"email"`
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&user)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode User data")
+		return
+	}
+
+	// Send an email notification to the editor
+
 	notifyEmail("Nuevo comentario recibido,",
 		"Se ha añadido un nuevo comentario a tu entrada.",
 		"Se ha añadido un nuevo comentario a tu entrada.",
-		version.Editor,
-		version.Editor)
+		user.Name,
+		user.Email)
+
 }
 
 // PutComment godoc
