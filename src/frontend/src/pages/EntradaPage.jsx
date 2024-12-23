@@ -256,6 +256,7 @@ function EntradaPage() {
     jsonData["version_id"] = actualVersionId;
     jsonData["entry_id"] = entryId;
     jsonData["rating"] = parseInt(jsonData["rating"], 10);
+    jsonData["author"] = sessionStorage.getItem("id");
     setPendingComment(jsonData);
     setShowModal(true);
   }
@@ -424,20 +425,6 @@ function EntradaPage() {
                 Valoración:
               </Typography>
               <Rating name="rating" id="rating" size="large" />
-            </Grid>
-            <Grid xs={12} sm={6} md={4} alignContent="center">
-              <TextField
-                id="author"
-                name="author"
-                label="Autor"
-                required
-                fullWidth
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                  },
-                }}
-              />
             </Grid>
             <Grid xs={12} md={4}>
               <Button
