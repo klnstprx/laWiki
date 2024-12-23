@@ -9,6 +9,7 @@ const ProfilePage = () => {
 
   const [newRating, setNewRating] = useState(0);
   const [mediaRating, setMediaRating] = useState(0);
+  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
 
   const handleRatingChange = (event, newValue) => {
     setNewRating(newValue);
@@ -120,9 +121,12 @@ const ProfilePage = () => {
             precision={0.5}
             readOnly
           />
+          ({user.valoration.length})
         </Box>
+        
 
         {/* Formulario para valorar */}
+        {isLoggedIn && (
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4 }}>
           <Typography variant="h6" gutterBottom>
             Valorar al usuario
@@ -138,6 +142,7 @@ const ProfilePage = () => {
             Enviar valoración
           </Button>
         </Box>
+        )}
       </Paper>
     </Box>
   );
