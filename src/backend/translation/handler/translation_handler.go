@@ -11,21 +11,17 @@ import (
 	"github.com/laWiki/translation/utils"
 )
 
-// TranslateHandler maneja las operaciones de traducción
-type TranslateHandler struct {
-	TranslationService *utils.TranslationService
-}
+// Health check
 
-// NewTranslateHandler crea una nueva instancia de TranslateHandler
-func NewTranslateHandler(cfg config.GlobalConfig) *TranslateHandler {
-	translationService := utils.NewTranslationService(cfg)
-	return &TranslateHandler{
-		TranslationService: translationService,
-	}
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
 
 // Translate solicita la traducción de un texto dado un idioma objetivo
-func (h *TranslateHandler) Translate(w http.ResponseWriter, r *http.Request) {
+func Translate(w http.ResponseWriter, r *http.Request) {
+
+	var TranslationService = utils.NewTranslationService(config.GlobalConfig{})
+
 	var request struct {
 		SourceID   string `json:"sourceId"`
 		SourceLang string `json:"sourceLang"`
@@ -46,7 +42,7 @@ func (h *TranslateHandler) Translate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Traducir el texto utilizando el servicio de traducción
-	translatedText, err := h.TranslationService.TranslateText(request.SourceText, request.TargetLang)
+	translatedText, err := TranslationService.TranslateText(request.SourceText, request.TargetLang)
 	if err != nil {
 		http.Error(w, "Error al traducir el texto", http.StatusInternalServerError)
 		return

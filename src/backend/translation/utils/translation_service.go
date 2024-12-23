@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -19,7 +19,7 @@ type TranslationService struct {
 // NewTranslationService crea una nueva instancia de TranslationService
 func NewTranslationService(cfg config.GlobalConfig) *TranslationService {
 	return &TranslationService{
-		APIKey: cfg.DeepLAPIKey,
+		APIKey: cfg.DeepLKey,
 	}
 }
 
@@ -37,7 +37,7 @@ func (ts *TranslationService) TranslateText(text, targetLang string) (string, er
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}

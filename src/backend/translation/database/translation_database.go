@@ -20,7 +20,7 @@ func Connect(cfg config.GlobalConfig) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	clientOptions := options.Client().ApplyURI(cfg.MongoURI)
+	clientOptions := options.Client().ApplyURI(cfg.MongoDBURI)
 	var err error
 	Client, err = mongo.Connect(ctx, clientOptions)
 	if err != nil {

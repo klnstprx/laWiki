@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/laWiki/translation/config"
 	"github.com/laWiki/translation/handler"
 )
 
@@ -12,10 +11,9 @@ import (
 func NewRouter() http.Handler {
 	r := chi.NewRouter()
 
-	translateHandler := handler.NewTranslateHandler(config.LoadConfig())
-
 	r.Route("/", func(r chi.Router) {
-		r.Post("/translate", translateHandler.Translate)
+		r.Get("/health", handler.HealthCheck)
+		r.Post("/translate", handler.Translate)
 	})
 
 	return r
