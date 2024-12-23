@@ -17,7 +17,6 @@ type GlobalConfig struct {
 	Debug           *bool  `toml:"DEBUG"`
 	MongoDBURI      string `toml:"MONGODB_URI"`
 	DBName          string `toml:"DB_NAME"`
-	DeepLKey        string `toml:"DEEPL_KEY"`
 }
 
 // WikiConfig holds the configuration specific to the wiki service
@@ -124,14 +123,6 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	} else {
 		log.Warn().Msg("API_GATEWAY_URL not set in config file.")
 		missingVars = append(missingVars, "API_GATEWAY_URL")
-	}
-
-	// DEEPL_KEY is required
-	if config.Global.DeepLKey != "" {
-		cfg.DeepLKey = config.Global.DeepLKey
-	} else {
-		log.Warn().Msg("DEEPL_KEY not set in config file.")
-		missingVars = append(missingVars, "DEEPL_KEY")
 	}
 
 	// If there are missing required variables, log them and exit
