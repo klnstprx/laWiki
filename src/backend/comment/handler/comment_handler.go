@@ -348,6 +348,44 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Interface("comment", comment).Msg("Added new comment")
 
+	// Retrieve the entry title from the entry service with the entryID from the comment
+	entryServiceURL := fmt.Sprintf("%s/api/entries/%s", config.App.API_GATEWAY_URL, comment.EntryID)
+	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Fetching Entry to get title")
+
+	req, err = http.NewRequest("GET", entryServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to entry service")
+		return
+	}
+
+	resp, err = client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to entry service")
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", bodyString).
+			Msg("Entry service returned error")
+		return
+	}
+
+	var entry struct {
+		ID    string `json:"id"`
+		Title string `json:"title"`
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&entry)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode Entry data")
+		return
+	}
+
 	// Retrieve the editor's email address from the user service with the editor ID from the version
 	userServiceURL := fmt.Sprintf("%s/api/auth/user?id=%s", config.App.API_GATEWAY_URL, version.Editor)
 	config.App.Logger.Info().Str("url", userServiceURL).Msg("Fetching User to get email")
@@ -389,11 +427,12 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 
 	// Send an email notification to the editor
 
-	notifyEmail("Nuevo comentario recibido,",
-		"Se ha añadido un nuevo comentario a tu entrada.",
-		"Se ha añadido un nuevo comentario a tu entrada.",
+	notifyEmail("Nuevo comentario recibido",
+		"Hola {{ nombre }},\nSe ha añadido un nuevo comentario a tu entrada \"{{ entrada }}\".",
+		"<p> Hola {{ nombre }},</p><p>Se ha añadido un nuevo comentario a tu entrada \"{{ entrada }}\".</p>",
 		user.Name,
-		user.Email)
+		user.Email,
+		entry.Title)
 
 }
 
@@ -533,7 +572,7 @@ func DeleteCommentsByVersionID(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func notifyEmail(subject string, text string, html string, destinoNombre string, destinoEmail string) {
+func notifyEmail(subject string, text string, html string, destinoNombre string, destinoEmail string, entryTitle string) {
 	ms := mailersend.NewMailersend("mlsn.9938f4dc11ca834ac853af3f07c9d9552a39e8007391e356dfb28d76094516c8")
 
 	ctx := context.Background()
@@ -552,14 +591,12 @@ func notifyEmail(subject string, text string, html string, destinoNombre string,
 		},
 	}
 
-	variables := []mailersend.Variables{
+	personalization := []mailersend.Personalization{
 		{
 			Email: destinoEmail,
-			Substitutions: []mailersend.Substitution{
-				{
-					Var:   "var",
-					Value: "varSustituida",
-				},
+			Data: map[string]interface{}{
+				"nombre":  destinoNombre,
+				"entrada": entryTitle,
 			},
 		},
 	}
@@ -573,11 +610,10 @@ func notifyEmail(subject string, text string, html string, destinoNombre string,
 	message.SetSubject(subject)
 	message.SetHTML(html)
 	message.SetText(text)
-	message.SetSubstitutions(variables)
 	message.SetTags(tags)
+	message.SetPersonalization(personalization)
 
 	res, _ := ms.Email.Send(ctx, message)
 
 	fmt.Printf(res.Header.Get("X-Message-Id"))
-
 }

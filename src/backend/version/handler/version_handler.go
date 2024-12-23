@@ -312,6 +312,7 @@ func PostVersion(w http.ResponseWriter, r *http.Request) {
 	var entry struct {
 		ID     string `json:"id"`
 		Author string `json:"author"`
+		Title  string `json:"title"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&entry); err != nil {
@@ -357,14 +358,14 @@ func PostVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send an email notification to the editor
+	// Send an email notification to the entry author
 
-	notifyEmail("Nuevo comentario recibido,",
-		"Se ha añadido un nuevo comentario a tu entrada.",
-		"Se ha añadido un nuevo comentario a tu entrada.",
+	notifyEmail("Tu entrada ha sido modificada",
+		"Hola {{ nombre }},\nTu entrada \"{{ entrada }}\" ha sido modificada.",
+		"<p> Hola {{ nombre }},</p><p>Tu entrada \"{{ entrada }}\" ha sido modificada.</p>",
 		user.Name,
-		user.Email)
-
+		user.Email,
+		entry.Title)
 }
 
 // PutVersion godoc
@@ -610,6 +611,89 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Str("versionID", id).Msg("Version and associated comments deleted successfully")
 	w.WriteHeader(http.StatusNoContent)
+
+	// Retrieve the entry from the entry service with the entry ID from the version
+	entryServiceURL := fmt.Sprintf("%s/api/entries/%s", config.App.API_GATEWAY_URL, version.EntryID)
+	req, err = http.NewRequest("GET", entryServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	resp, err = client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("Entry service returned error")
+		http.Error(w, "Failed to retrieve entry information", http.StatusInternalServerError)
+		return
+	}
+
+	var entry struct {
+		ID     string `json:"id"`
+		Author string `json:"author"`
+		Title  string `json:"title"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&entry); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode entry response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Retrieve the user from the user service with the editor ID from the version
+	userServiceURL := fmt.Sprintf("%s/api/auth/user?id=%s", config.App.API_GATEWAY_URL, version.Editor)
+	req, err = http.NewRequest("GET", userServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	resp, err = client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("User service returned error")
+		http.Error(w, "Failed to retrieve user information", http.StatusInternalServerError)
+		return
+	}
+
+	var user struct {
+		ID    string `json:"id"`
+		Name  string `json:"name"`
+		Email string `json:"email"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode user response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Send an email notification to the editor
+
+	notifyEmail("Tu modificación ha sido eliminada",
+		"Hola {{ nombre }},\nTu versión de la entrada \"{{ entrada }}\" ha sido eliminada.",
+		"<p> Hola {{ nombre }},</p><p>Tu versión de la entrada \"{{ entrada }}\" ha sido eliminada.</p>",
+		user.Name,
+		user.Email,
+		entry.Title)
 }
 
 // DeleteVersionsByEntryID godoc
@@ -748,7 +832,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func notifyEmail(subject string, text string, html string, destinoNombre string, destinoEmail string) {
+func notifyEmail(subject string, text string, html string, destinoNombre string, destinoEmail string, entryTitle string) {
 	ms := mailersend.NewMailersend("mlsn.9938f4dc11ca834ac853af3f07c9d9552a39e8007391e356dfb28d76094516c8")
 
 	ctx := context.Background()
@@ -767,14 +851,12 @@ func notifyEmail(subject string, text string, html string, destinoNombre string,
 		},
 	}
 
-	variables := []mailersend.Variables{
+	personalization := []mailersend.Personalization{
 		{
 			Email: destinoEmail,
-			Substitutions: []mailersend.Substitution{
-				{
-					Var:   "var",
-					Value: "varSustituida",
-				},
+			Data: map[string]interface{}{
+				"nombre":  destinoNombre,
+				"entrada": entryTitle,
 			},
 		},
 	}
@@ -788,11 +870,10 @@ func notifyEmail(subject string, text string, html string, destinoNombre string,
 	message.SetSubject(subject)
 	message.SetHTML(html)
 	message.SetText(text)
-	message.SetSubstitutions(variables)
 	message.SetTags(tags)
+	message.SetPersonalization(personalization)
 
 	res, _ := ms.Email.Send(ctx, message)
 
 	fmt.Printf(res.Header.Get("X-Message-Id"))
-
 }
