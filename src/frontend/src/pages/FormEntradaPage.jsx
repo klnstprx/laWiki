@@ -18,16 +18,15 @@ function FormEntradaPage() {
   const { id: wikiId } = useParams();
   const [wiki, setWiki] = useState({});
   const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [error, setError] = useState(null);
   const [titleError, setTitleError] = useState("");
-  const [authorError, setAuthorError] = useState("");
   const isLoggedIn = !!sessionStorage.getItem('user'); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const idAutor = sessionStorage.getItem("id"); // Obtén el ID del usuario desde sessionStorage
     setError(null);
 
     let isValid = true;
@@ -39,19 +38,12 @@ function FormEntradaPage() {
       setTitleError("");
     }
 
-    if (!author.trim()) {
-      setAuthorError("Introduzca el autor");
-      isValid = false;
-    } else {
-      setAuthorError("");
-    }
-
     if (!isValid) return;
 
     const entryData = {
       title,
       wiki_id: wikiId,
-      author,
+      author: idAutor
     };
 
     try {
@@ -129,24 +121,6 @@ function FormEntradaPage() {
           onChange={(e) => setTitle(e.target.value)}
           error={!!titleError}
           helperText={titleError}
-          slotProps={{
-            inputLabel: {
-              shrink: true,
-            },
-          }}
-        />
-        <TextField
-          margin="normal"
-          fullWidth
-          id="author"
-          label="Autor"
-          name="author"
-          autoComplete="off"
-          autoFocus
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          error={!!authorError}
-          helperText={authorError}
           slotProps={{
             inputLabel: {
               shrink: true,
