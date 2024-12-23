@@ -19,17 +19,13 @@ type GlobalConfig struct {
 	Debug           *bool  `toml:"DEBUG"`
 	MongoDBURI      string `toml:"MONGODB_URI"`
 	DBName          string `toml:"DB_NAME"`
-	DeepLKey        string `toml:"DEEPL_KEY"`
 }
 
 // TranslationConfig holds the configuration specific to the Translation service
 type TranslationConfig struct {
-	Port                int    `toml:"PORT"`
-	CLOUDIFY_CLOUD_NAME string `toml:"CLOUDIFY_CLOUD_NAME"`
-	CLOUDIFY_API_KEY    string `toml:"CLOUDIFY_API_KEY"`
-	CLOUDIFY_API_SECRET string `toml:"CLOUDIFY_API_SECRET"`
-	DBCollectionName    string `toml:"DB_COLLECTION_NAME"`
-	MB_LIMIT            int64  `toml:"MB_LIMIT"`
+	DeepLKey         string `toml:"DEEPL_KEY"`
+	Port             int    `toml:"PORT"`
+	DBCollectionName string `toml:"DB_COLLECTION_NAME"`
 }
 
 // Config represents the structure of the config.toml file
@@ -77,8 +73,8 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 
 	// PORT with default value
 	if config.Translation.Port == 0 {
-		cfg.Port = ":8002" // Default port
-		log.Warn().Msg("PORT not set in config file. Using default ':8002'.")
+		cfg.Port = ":8082" // Default port
+		log.Warn().Msg("PORT not set in config file. Using default ':8082'.")
 	} else {
 		cfg.Port = fmt.Sprintf(":%d", config.Translation.Port)
 	}
@@ -120,39 +116,6 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	} else {
 		cfg.MongoDBURI = "mongodb://localhost:27017" // Default to locally hosted DB
 		log.Warn().Msg("DMONGODB_URI not set in config file. Using default 'mongodb://localhost:27017'.")
-	}
-
-	// Initialize Cloudinary
-	if config.Translation.CLOUDIFY_CLOUD_NAME != "" && config.Translation.CLOUDIFY_API_KEY != "" && config.Translation.CLOUDIFY_API_SECRET != "" {
-		var err error
-		cfg.Cld, err = cloudinary.NewFromParams(config.Translation.CLOUDIFY_CLOUD_NAME, config.Translation.CLOUDIFY_API_KEY, config.Translation.CLOUDIFY_API_SECRET)
-		if err != nil {
-			log.Error().Msgf("Failed to initialize Cloudinary: %v", err)
-		}
-	} else {
-
-		// CLOUDIFY_CLOUD_NAME is required
-		if config.Translation.CLOUDIFY_CLOUD_NAME == "" {
-			missingVars = append(missingVars, "CLOUDIFY_CLOUD_NAME")
-			log.Warn().Msg("CLOUDIFY_CLOUD_NAME not set in config file.")
-		}
-		// CLOUDIFY_API_KEY is required
-		if config.Translation.CLOUDIFY_API_KEY == "" {
-			missingVars = append(missingVars, "CLOUDIFY_API_KEY")
-			log.Warn().Msg("CLOUDIFY_API_KEY not set in config file.")
-		}
-		// CLOUDIFY_API_SECRET is required
-		if config.Translation.CLOUDIFY_API_SECRET == "" {
-			missingVars = append(missingVars, "CLOUDIFY_API_SECRET")
-			log.Warn().Msg("CLOUDIFY_API_SECRET not set in config file.")
-		}
-	}
-
-	if config.Translation.MB_LIMIT == 0 {
-		cfg.MB_LIMIT = 5 // Default to 5 MB
-		log.Warn().Msg("MB_LIMIT not set in config file. Using default '5'.")
-	} else {
-		cfg.MB_LIMIT = config.Translation.MB_LIMIT
 	}
 
 	// If there are missing required variables, log them and exit

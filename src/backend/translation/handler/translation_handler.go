@@ -20,7 +20,7 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 // Translate solicita la traducción de un texto dado un idioma objetivo
 func Translate(w http.ResponseWriter, r *http.Request) {
 
-	var TranslationService = utils.NewTranslationService(config.GlobalConfig{})
+	var TranslationService = utils.NewTranslationService(config.App)
 
 	var request struct {
 		SourceID   string `json:"sourceId"`
