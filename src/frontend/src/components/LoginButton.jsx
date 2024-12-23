@@ -73,6 +73,11 @@ const LoginButton = () => {
         sessionStorage.setItem("id", addedUser.id);
         console.log('User added:', addedUser);
       }
+
+      //Recarga todas las paginas cuando alguien inicia sesion
+      window.location.reload();
+      
+
       
     } catch (error) {
       console.error("Error al procesar las credenciales:", error);
@@ -88,6 +93,7 @@ const LoginButton = () => {
     // Elimina el usuario de la sesión y actualiza el estado
     sessionStorage.removeItem("user");
     setUser(null);
+    window.location.reload();
   };
 
   const goToProfile = () => {

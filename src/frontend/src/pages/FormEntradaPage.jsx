@@ -24,6 +24,7 @@ function FormEntradaPage() {
   const [error, setError] = useState(null);
   const [titleError, setTitleError] = useState("");
   const [authorError, setAuthorError] = useState("");
+  const isLoggedIn = !!sessionStorage.getItem('user'); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -65,6 +66,12 @@ function FormEntradaPage() {
     }
   };
 
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/login');
+    }
+  }, [isLoggedIn, navigate]);
+
   // Fetch the wiki details
   useEffect(() => {
     if (wikiId) {
@@ -81,6 +88,10 @@ function FormEntradaPage() {
         );
     }
   }, [wikiId]);
+
+  if (!isLoggedIn) {
+    return null; // O puedes mostrar un mensaje de carga o redirección
+  }
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>

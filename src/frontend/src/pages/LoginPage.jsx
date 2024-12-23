@@ -1,4 +1,5 @@
 import { useState } from "react";
+import LoginButton from "../components/LoginButton";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -14,9 +15,7 @@ function LoginPage() {
 
   return (
     <div>
-      <h1>Login</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <button onClick={handleLogin}>Login with Google</button>
+      <h1>Debes haber iniciado session.</h1>
     </div>
   );
 }

@@ -46,6 +46,13 @@ function FormVersionPage() {
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif"];
+  const isLoggedIn = !!sessionStorage.getItem('user'); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/login');
+    }
+  }, [isLoggedIn, navigate]);
 
   // Fetch the version details
   useEffect(() => {
@@ -265,6 +272,10 @@ function FormVersionPage() {
       console.error("Error posting version:", error);
     }
   };
+
+  if (!isLoggedIn) {
+    return null; // O puedes mostrar un mensaje de carga o redirección
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>

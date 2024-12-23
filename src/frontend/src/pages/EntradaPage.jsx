@@ -47,6 +47,7 @@ function EntradaPage() {
   const formRef = useRef(null);
 
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
+  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
 
   const geoCacheRef = useRef(
     JSON.parse(sessionStorage.getItem("geoCache")) || {},
@@ -310,6 +311,7 @@ function EntradaPage() {
           <Typography variant="h2" component="h1">
             {entry.title}
           </Typography>
+          {isLoggedIn && (
           <Stack
             direction="row"
             spacing={2}
@@ -333,6 +335,7 @@ function EntradaPage() {
               Editar contenido
             </Button>
           </Stack>
+          )}
         </Paper>
       )}
 
@@ -391,8 +394,9 @@ function EntradaPage() {
             )
           )}
       </Paper>
-
+      
       {/* Form to Add Comment */}
+      {isLoggedIn && ( 
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
         <Typography variant="h5" gutterBottom>
           Añadir comentario
@@ -449,6 +453,7 @@ function EntradaPage() {
           </Grid>
         </form>
       </Paper>
+      )}
 
       <ConfirmationModal
         message="¿Estás seguro de que quieres crear este comentario?"
