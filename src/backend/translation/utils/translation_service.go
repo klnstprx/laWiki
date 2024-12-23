@@ -17,7 +17,7 @@ type TranslationService struct {
 }
 
 // NewTranslationService crea una nueva instancia de TranslationService
-func NewTranslationService(cfg config.GlobalConfig) *TranslationService {
+func NewTranslationService(cfg config.AppConfig) *TranslationService {
 	return &TranslationService{
 		APIKey: cfg.DeepLKey,
 	}
