@@ -40,6 +40,7 @@ function WikiPage() {
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
 
   useEffect(() => {
     getWiki(id)
@@ -164,6 +165,7 @@ function WikiPage() {
           </Paper>
 
           {/* Buttons */}
+          {isLoggedIn && (
           <Box sx={{ display: "flex", justifyContent: "space-between" }}>
             <Button
               component={Link}
@@ -195,6 +197,7 @@ function WikiPage() {
               </Button>
             </Box>
           </Box>
+          )}
 
           {/* Confirmation Modal */}
           <ConfirmationModal

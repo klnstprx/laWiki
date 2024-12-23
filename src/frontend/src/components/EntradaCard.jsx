@@ -29,6 +29,7 @@ const EntradaCard = ({
 
   const [showDeleteModal, setShowDeleteModal] = useState(false); // add state
   const [usuario, setUsuario] = useState({}); // add state
+  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
 
   //cargar usuario de la base de datos
   useEffect(() => {
@@ -83,11 +84,13 @@ const EntradaCard = ({
               </Typography>
               <Typography variant="body2"><a href={`/perfil/${usuario.id}`}>{usuario.name}</a></Typography>
             </Grid>
+      {isLoggedIn && (      
       <Grid>
         <IconButton color="error" onClick={handleDelete}>
           <DeleteIcon />
         </IconButton>
       </Grid>
+      )}
       <ConfirmationModal
         show={showDeleteModal}
         handleClose={() => setShowDeleteModal(false)}
