@@ -47,6 +47,7 @@ function FormVersionPage() {
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif"];
   const isLoggedIn = !!sessionStorage.getItem('user'); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
+  const id = sessionStorage.getItem('id'); // Suponiendo que guardas el id del usuario en sessionStorage
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -198,10 +199,6 @@ function FormVersionPage() {
       editor: "",
       content: "",
     };
-    if (!version.editor) {
-      errors.editor = "Introduzca un editor";
-      isValid = false;
-    }
     if (
       !version.content ||
       version.content.replace(/<[^>]+>/g, "").trim().length === 0
@@ -254,7 +251,7 @@ function FormVersionPage() {
 
     const jsonData = {
       content: version.content,
-      editor: version.editor,
+      editor: id,
       entry_id: entryId,
       address: version.address,
       media_ids: [
@@ -304,24 +301,6 @@ function FormVersionPage() {
           <Grid container spacing={2} alignItems="center">
             <Grid xs={12} sm={8}>
               <Typography variant="h4">Editar entrada</Typography>
-            </Grid>
-            <Grid xs={12} sm={4}>
-              <TextField
-                id="editor"
-                name="editor"
-                label="Editor *"
-                value={version.editor || ""}
-                onChange={handleChange}
-                variant="outlined"
-                error={!!formErrors.editor}
-                helperText={formErrors.editor}
-                fullWidth
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                  },
-                }}
-              />
             </Grid>
             <Grid xs={12} sm={4}>
               <TextField
