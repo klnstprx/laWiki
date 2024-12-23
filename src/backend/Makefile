@@ -56,6 +56,14 @@ run-auth-service:
 		echo $$! > auth-service.pid \
 	)
 
+run-translation-service: 
+	@echo "Running translation-service..."
+	cd translation && ( \
+		go build -o translation-service . && \
+		./translation-service > translation-service.log 2>&1 & \
+		echo $$! > translation-service.pid \
+	)
+
 run-all: clean run-wiki-service run-entry-service run-comment-service run-version-service run-media-service run-api-gateway
 
 clean:
