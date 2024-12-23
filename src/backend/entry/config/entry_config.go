@@ -18,6 +18,7 @@ type GlobalConfig struct {
 	Debug           *bool  `toml:"DEBUG"`
 	DBName          string `toml:"DB_NAME"`
 	MongoDBURI      string `toml:"MONGODB_URI"`
+	DeepLKey        string `toml:"DEEPL_KEY"`
 }
 
 // EntryConfig holds the configuration specific to the entry service
@@ -40,6 +41,7 @@ type AppConfig struct {
 	DBCollectionName string
 	DBName           string
 	API_GATEWAY_URL  string
+	DeepLKey         string
 }
 
 // App holds app configuration
@@ -119,6 +121,14 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		cfg.API_GATEWAY_URL = config.Global.API_GATEWAY_URL
 	} else {
 		missingVars = append(missingVars, "API_GATEWAY_URL")
+	}
+
+	// DEEPL_KEY is required
+	if config.Global.DeepLKey != "" {
+		cfg.DeepLKey = config.Global.DeepLKey
+	} else {
+		log.Warn().Msg("DEEPL_KEY not set in config file.")
+		missingVars = append(missingVars, "DEEPL_KEY")
 	}
 
 	// If there are missing required variables, log them and exit
