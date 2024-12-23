@@ -72,10 +72,10 @@ function WikiPage() {
       setEntradas((prevEntries) =>
         prevEntries.filter((entry) => entry.id !== entryID),
       );
-      showToast("Comentario eliminado correctamente", "success");
+      showToast("Entrada eliminada correctamente", "success");
     } catch (error) {
-      console.error("Error al eliminar el comentario:", error);
-      showToast("Error al eliminar el comentario", "error");
+      console.error("Error al eliminar la entrada:", error);
+      showToast("Error al eliminar la entrada", "error");
     }
   };
 
