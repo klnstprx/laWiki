@@ -11,4 +11,5 @@ type User struct {
 	VerifiedEmail bool      `json:"verified_email" bson:"verified_email"`
 	Role          string    `json:"role" bson:"role"`
 	Valoration    []float64 `json:"valoration" bson:"valoration"`
+	Notifications []string  `json:"notifications" bson:"notifications"`
 }
