@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -426,13 +427,59 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send an email notification to the editor
-
-	notifyEmail("Nuevo comentario recibido",
-		"Hola {{ nombre }},\nSe ha añadido un nuevo comentario a tu entrada \"{{ entrada }}\".",
-		"<p> Hola {{ nombre }},</p><p>Se ha añadido un nuevo comentario a tu entrada \"{{ entrada }}\".</p>",
+	/*
+		notifyEmail("Nuevo comentario recibido",
+			"Hola {{ nombre }},\nSe ha añadido un nuevo comentario a tu entrada \"{{ entrada }}\".",
+			"<p> Hola {{ nombre }},</p><p>Se ha añadido un nuevo comentario a tu entrada \"{{ entrada }}\".</p>",
+			user.Name,
+			user.Email,
+			entry.Title)
+	*/
+	// Crear el mensaje de notificación
+	notificationMessage := fmt.Sprintf(
+		"Hola %s, se ha añadido un nuevo comentario a tu entrada: %s.",
 		user.Name,
-		user.Email,
-		entry.Title)
+		entry.Title,
+	)
+
+	// Construir la URL del servicio de usuarios con query string
+	userServiceURL = fmt.Sprintf("%s/api/auth/notifications?id=%s", config.App.API_GATEWAY_URL, version.Editor)
+
+	// Crear el cuerpo de la solicitud array con la cadena
+	notificationPayload := map[string]string{
+		"notification": notificationMessage,
+	}
+
+	payloadBytes, _ := json.Marshal(notificationPayload)
+
+	req, err = http.NewRequest("POST", userServiceURL, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Enviar la solicitud
+	resp, err = client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", bodyString).
+			Msg("User service returned error")
+		return
+	}
+
+	config.App.Logger.Info().
+		Str("userId", version.Editor).
+		Msg("Notification sent to user service")
 
 }
 

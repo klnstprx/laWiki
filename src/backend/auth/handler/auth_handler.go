@@ -573,3 +573,59 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	config.App.Logger.Info().Str("usuarioID", id).Msg("User deleted successfully")
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func AddUserNotification(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing user ID", http.StatusBadRequest)
+		return
+	}
+
+	// Verifica si el ID es un ObjectID válido
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	var body struct {
+		Notification string `json:"notification"`
+	}
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&body); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var existingUser model.User
+	err = database.UsuarioCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&existingUser)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("User not found")
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	//Hago que solo se pueda actualizar el rol y la valoracion del usuario(por ahora no queremos otro)
+	update := bson.M{
+		"$set": bson.M{
+			"notifications": append(existingUser.Notifications, body.Notification),
+		},
+	}
+
+	result, err := database.UsuarioCollection.UpdateOne(ctx, bson.M{"_id": objID}, update)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if result.MatchedCount == 0 {
+		config.App.Logger.Warn().Str("id", id).Msg("User not found for update")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+}

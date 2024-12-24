@@ -4,7 +4,11 @@ import {jwtDecode} from "jwt-decode";
 import {
   Typography,
   Button,
-  Box
+  Box,
+  Popover,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { postUser, getAllUsers } from "../api/AuthApi"
@@ -13,6 +17,10 @@ const LoginButton = () => {
   const [user, setUser] = useState(null);
   const [addedUser, setAddedUser] = useState(null);
   const navigate = useNavigate();
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const notifications = ["Notificación 1", "Notificación 2", "Notificación 3"];
 
   useEffect(() => {
     // Verifica si hay un usuario en la sesión al cargar el componente
@@ -100,17 +108,43 @@ const LoginButton = () => {
     navigate("/perfil/" + sessionStorage.getItem("id"));
   };
 
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
       {user ? (
         <>
           <Button
             variant="contained"
-            color="success"
-            onClick={goToProfile}
+            color="info"
+            onClick={handleClick}
           >
-            Perfil
+            Notificaciones
           </Button>
+          <Popover
+            open={open}
+            anchorEl={anchorEl}
+            onClose={handleClose}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+          >
+            <List>
+              {notifications.map((notification, index) => (
+                <ListItem key={index}>
+                  <ListItemText primary={notification} />
+                </ListItem>
+              ))}
+            </List>
+          </Popover>
+          
           <Typography
             variant="body1"
             noWrap
@@ -122,6 +156,15 @@ const LoginButton = () => {
           >
             Bienvenido, {user.name}
           </Typography>
+          
+          <Button
+            variant="contained"
+            color="success"
+            onClick={goToProfile}
+          >
+            Perfil
+          </Button>
+          
           <Button
             variant="contained"
             color="warning"

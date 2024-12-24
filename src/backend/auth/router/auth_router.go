@@ -19,6 +19,10 @@ func NewRouter() http.Handler {
 			r.Put("/", handler.PutUser)
 			r.Delete("/", handler.DeleteUser)
 		})
+
+		r.Route("/notifications", func(r chi.Router) {
+			r.Post("/", handler.AddUserNotification)
+		})
 	})
 
 	return r
