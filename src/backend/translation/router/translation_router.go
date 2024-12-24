@@ -13,7 +13,7 @@ func NewRouter() http.Handler {
 
 	r.Route("/", func(r chi.Router) {
 		r.Get("/health", handler.HealthCheck)
-		r.Post("/translate", handler.Translate)
+		r.Get("/translate", handler.Translate)
 	})
 
 	return r
