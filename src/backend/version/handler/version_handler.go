@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -360,12 +361,16 @@ func PostVersion(w http.ResponseWriter, r *http.Request) {
 
 	// Send an email notification to the entry author
 
-	notifyEmail("Tu entrada ha sido modificada",
-		"Hola {{ nombre }},\nTu entrada \"{{ entrada }}\" ha sido modificada.",
-		"<p> Hola {{ nombre }},</p><p>Tu entrada \"{{ entrada }}\" ha sido modificada.</p>",
-		user.Name,
-		user.Email,
-		entry.Title)
+	/*
+		notifyEmail("Tu entrada ha sido modificada",
+			"Hola {{ nombre }},\nTu entrada \"{{ entrada }}\" ha sido modificada.",
+			"<p> Hola {{ nombre }},</p><p>Tu entrada \"{{ entrada }}\" ha sido modificada.</p>",
+			user.Name,
+			user.Email,
+			entry.Title)
+	*/
+
+	notifyInterno("Tu entrada "+entry.Title+" ha sido modificada", entry.Author)
 }
 
 // PutVersion godoc
@@ -687,13 +692,15 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send an email notification to the editor
-
-	notifyEmail("Tu modificación ha sido eliminada",
-		"Hola {{ nombre }},\nTu versión de la entrada \"{{ entrada }}\" ha sido eliminada.",
-		"<p> Hola {{ nombre }},</p><p>Tu versión de la entrada \"{{ entrada }}\" ha sido eliminada.</p>",
-		user.Name,
-		user.Email,
-		entry.Title)
+	/*
+		notifyEmail("Tu modificación ha sido eliminada",
+			"Hola {{ nombre }},\nTu versión de la entrada \"{{ entrada }}\" ha sido eliminada.",
+			"<p> Hola {{ nombre }},</p><p>Tu versión de la entrada \"{{ entrada }}\" ha sido eliminada.</p>",
+			user.Name,
+			user.Email,
+			entry.Title)
+	*/
+	notifyInterno("Tu versión de la entrada "+entry.Title+" ha sido eliminada", version.Editor)
 }
 
 // DeleteVersionsByEntryID godoc
@@ -876,4 +883,53 @@ func notifyEmail(subject string, text string, html string, destinoNombre string,
 	res, _ := ms.Email.Send(ctx, message)
 
 	fmt.Printf(res.Header.Get("X-Message-Id"))
+}
+
+func notifyInterno(mensaje string, autor string) {
+	notificationMessage := fmt.Sprintf(
+		mensaje,
+	)
+
+	// Construir la URL del servicio de usuarios con query string
+	userServiceURL := fmt.Sprintf("%s/api/auth/notifications?id=%s", config.App.API_GATEWAY_URL, autor)
+
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	// Crear el cuerpo de la solicitud array con la cadena
+	notificationPayload := map[string]string{
+		"notification": notificationMessage,
+	}
+
+	payloadBytes, _ := json.Marshal(notificationPayload)
+
+	req, err := http.NewRequest("POST", userServiceURL, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Enviar la solicitud
+	resp, err := client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", bodyString).
+			Msg("User service returned error")
+		return
+	}
+
+	config.App.Logger.Info().
+		Str("userId", autor).
+		Msg("Notification sent to user service")
 }

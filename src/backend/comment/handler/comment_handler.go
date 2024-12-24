@@ -436,50 +436,7 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 			entry.Title)
 	*/
 	// Crear el mensaje de notificación
-	notificationMessage := fmt.Sprintf(
-		"Hola %s, se ha añadido un nuevo comentario a tu entrada: %s.",
-		user.Name,
-		entry.Title,
-	)
-
-	// Construir la URL del servicio de usuarios con query string
-	userServiceURL = fmt.Sprintf("%s/api/auth/notifications?id=%s", config.App.API_GATEWAY_URL, version.Editor)
-
-	// Crear el cuerpo de la solicitud array con la cadena
-	notificationPayload := map[string]string{
-		"notification": notificationMessage,
-	}
-
-	payloadBytes, _ := json.Marshal(notificationPayload)
-
-	req, err = http.NewRequest("POST", userServiceURL, bytes.NewBuffer(payloadBytes))
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
-		return
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	// Enviar la solicitud
-	resp, err = client.Do(req)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		bodyString := string(bodyBytes)
-		config.App.Logger.Error().
-			Int("status", resp.StatusCode).
-			Str("body", bodyString).
-			Msg("User service returned error")
-		return
-	}
-
-	config.App.Logger.Info().
-		Str("userId", version.Editor).
-		Msg("Notification sent to user service")
+	notifyInterno("Se ha añadido un nuevo comentario a tu entrada: "+entry.Title, version.Editor)
 
 }
 
@@ -663,4 +620,53 @@ func notifyEmail(subject string, text string, html string, destinoNombre string,
 	res, _ := ms.Email.Send(ctx, message)
 
 	fmt.Printf(res.Header.Get("X-Message-Id"))
+}
+
+func notifyInterno(mensaje string, editor string) {
+	notificationMessage := fmt.Sprintf(
+		mensaje,
+	)
+
+	// Construir la URL del servicio de usuarios con query string
+	userServiceURL := fmt.Sprintf("%s/api/auth/notifications?id=%s", config.App.API_GATEWAY_URL, editor)
+
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	// Crear el cuerpo de la solicitud array con la cadena
+	notificationPayload := map[string]string{
+		"notification": notificationMessage,
+	}
+
+	payloadBytes, _ := json.Marshal(notificationPayload)
+
+	req, err := http.NewRequest("POST", userServiceURL, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Enviar la solicitud
+	resp, err := client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", bodyString).
+			Msg("User service returned error")
+		return
+	}
+
+	config.App.Logger.Info().
+		Str("userId", editor).
+		Msg("Notification sent to user service")
 }
