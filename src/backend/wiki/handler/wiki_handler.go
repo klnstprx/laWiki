@@ -1,16 +1,19 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/laWiki/wiki/config"
 	"github.com/laWiki/wiki/database"
+	"github.com/laWiki/wiki/dto"
 	"github.com/laWiki/wiki/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -458,4 +461,231 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Str("wikiID", wikiID).Msg("Wiki and associated entries deleted successfully")
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// TranslationRequest represents the request payload for translation.
+type TranslationRequest struct {
+	Fields     map[string]string `json:"fields"`
+	TargetLang string            `json:"targetLang"`
+}
+
+// TranslationResponse represents the response payload with translated fields and detected source language.
+type TranslationResponse struct {
+	TranslatedFields       map[string]string `json:"translatedFields"`
+	DetectedSourceLanguage string            `json:"detectedSourceLanguage"`
+}
+
+// SearchEntriesResponse represents the response from the searchEntries endpoint.
+type SearchEntriesResponse struct {
+	Entries []dto.EntryDTO `json:"entries"`
+}
+
+// TranslateWiki translates the 'title' and 'description' fields of a Wiki object.
+// It ensures that existing translations are preserved and translates all associated Entries.
+func TranslateWiki(w http.ResponseWriter, r *http.Request) {
+	// Parse the Wiki object from the request body
+	var wiki model.Wiki
+	if err := json.NewDecoder(r.Body).Decode(&wiki); err != nil {
+		config.App.Logger.Warn().Err(err).Msg("Failed to decode Wiki object from request body")
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	// Get the target language from query parameters
+	targetLang := r.URL.Query().Get("targetLang")
+	if targetLang == "" {
+		config.App.Logger.Warn().Msg("TranslateWiki called without targetLang parameter")
+		http.Error(w, "missing targetLang param", http.StatusBadRequest)
+		return
+	}
+
+	// Initialize TranslatedFields map if nil
+	if wiki.TranslatedFields == nil {
+		wiki.TranslatedFields = make(map[string]map[string]string)
+	}
+
+	// Check if 'title' and 'description' are already translated to the target language
+	alreadyTranslated := true
+	fieldsToTranslate := make(map[string]string)
+
+	if translatedTitle, exists := wiki.TranslatedFields[targetLang]["title"]; !exists || translatedTitle == "" {
+		fieldsToTranslate["title"] = wiki.Title
+		alreadyTranslated = false
+	}
+
+	if translatedDescription, exists := wiki.TranslatedFields[targetLang]["description"]; !exists || translatedDescription == "" {
+		fieldsToTranslate["description"] = wiki.Description
+		alreadyTranslated = false
+	}
+
+	if alreadyTranslated {
+		// Log a warning and skip translation
+		config.App.Logger.Warn().
+			Str("wikiID", wiki.ID).
+			Str("targetLang", targetLang).
+			Msg("Title and Description are already translated to the target language, skipping translation")
+
+		// Return the existing Wiki object with existing translations
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(wiki)
+		return
+	}
+
+	// Prepare the translation request only with fields that need translation
+	translationReq := TranslationRequest{
+		Fields:     fieldsToTranslate,
+		TargetLang: targetLang,
+	}
+
+	// Marshal the translation request to JSON
+	reqBody, err := json.Marshal(translationReq)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to marshal TranslationRequest")
+		http.Error(w, "Failed to marshal translation request", http.StatusInternalServerError)
+		return
+	}
+
+	// Define the translation service URL
+	translationURL := "http://translation-service:8082/translate" // Replace with actual URL if different
+
+	// Create an HTTP client with timeout
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	// Make the HTTP POST request to the translation service
+	resp, err := client.Post(translationURL, "application/json", bytes.NewBuffer(reqBody))
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to call translation service")
+		http.Error(w, "Failed to call translation service", http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Check if the translation service responded with success
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", string(body)).
+			Msg("Translation service returned error")
+		http.Error(w, "Translation service error: "+string(body), resp.StatusCode)
+		return
+	}
+
+	// Decode the translation response
+	var translationResp TranslationResponse
+	if err := json.NewDecoder(resp.Body).Decode(&translationResp); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode TranslationResponse")
+		http.Error(w, "Failed to decode translation response", http.StatusInternalServerError)
+		return
+	}
+
+	// Check if detected source language matches target language
+	if strings.EqualFold(translationResp.DetectedSourceLanguage, targetLang) {
+		config.App.Logger.Warn().
+			Str("wikiID", wiki.ID).
+			Str("sourceLang", translationResp.DetectedSourceLanguage).
+			Str("targetLang", targetLang).
+			Msg("Source language matches target language, translation skipped")
+
+		http.Error(w, "Source language is the same as target language", http.StatusBadRequest)
+		return
+	}
+
+	// Assign translated fields for the target language
+	wiki.TranslatedFields[targetLang] = translationResp.TranslatedFields
+
+	// Save the detected source language
+	wiki.SourceLang = translationResp.DetectedSourceLanguage
+
+	// Update the wiki in the database with translated fields and source language
+	filter := bson.M{"_id": wiki.ID}
+	update := bson.M{
+		"$set": bson.M{
+			"translatedFields." + targetLang + ".title":       translationResp.TranslatedFields["title"],
+			"translatedFields." + targetLang + ".description": translationResp.TranslatedFields["description"],
+			"sourceLang": wiki.SourceLang,
+		},
+	}
+	_, err = database.WikiCollection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to update translated wiki in database")
+		http.Error(w, "Failed to update translated wiki in database", http.StatusInternalServerError)
+		return
+	}
+
+	// Cascade Translation: Translate all associated Entries via HTTP
+	go func(wikiID string, targetLang string) {
+		entries, err := fetchEntries(wikiID)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Str("wikiID", wikiID).Msg("Failed to fetch entries for translation")
+			return
+		}
+
+		for _, entry := range entries {
+			// Prepare TranslateEntry request URL
+			translateEntryURL := fmt.Sprintf("http://entry-service:8002/api/entries/%s/translate?targetLang=%s", entry.ID, targetLang)
+
+			// Create an empty POST request to TranslateEntry
+			req, err := http.NewRequest("POST", translateEntryURL, nil)
+			if err != nil {
+				config.App.Logger.Error().Err(err).Str("entryID", entry.ID).Msg("Failed to create TranslateEntry request")
+				continue
+			}
+
+			// Send the request
+			resp, err := client.Do(req)
+			if err != nil {
+				config.App.Logger.Error().Err(err).Str("entryID", entry.ID).Msg("Failed to send TranslateEntry request")
+				continue
+			}
+			resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				config.App.Logger.Warn().
+					Int("status", resp.StatusCode).
+					Str("entryID", entry.ID).
+					Msg("TranslateEntry returned non-OK status")
+				continue
+			}
+
+			config.App.Logger.Info().
+				Str("entryID", entry.ID).
+				Str("targetLang", targetLang).
+				Msg("Successfully initiated translation for Entry")
+		}
+	}(wiki.ID, targetLang)
+
+	// Log successful translation
+	config.App.Logger.Info().
+		Str("wikiID", wiki.ID).
+		Str("targetLang", targetLang).
+		Msg("Successfully translated wiki and initiated translation for associated entries")
+
+	// Return the updated Wiki object as JSON
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(wiki)
+}
+
+// Fetch Entries via HTTP
+func fetchEntries(wikiID string) ([]dto.EntryDTO, error) {
+	url := fmt.Sprintf("http://entry-service:8002/api/entries/search?wikiID=%s", wikiID)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to fetch entries: %s", resp.Status)
+	}
+
+	var searchResp SearchEntriesResponse
+	if err := json.NewDecoder(resp.Body).Decode(&searchResp); err != nil {
+		return nil, err
+	}
+
+	return searchResp.Entries, nil
 }

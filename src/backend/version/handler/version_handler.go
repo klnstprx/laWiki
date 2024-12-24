@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -661,4 +663,158 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Int64("deletedCount", deleteResult.DeletedCount).Str("entryID", entryID).Msg("Versions deleted successfully")
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// TranslationRequest represents the request payload for translation.
+type TranslationRequest struct {
+	Fields     map[string]string `json:"fields"`
+	TargetLang string            `json:"targetLang"`
+}
+
+// TranslationResponse represents the response payload with translated fields and detected source language.
+type TranslationResponse struct {
+	TranslatedFields       map[string]string `json:"translatedFields"`
+	DetectedSourceLanguage string            `json:"detectedSourceLanguage"`
+}
+
+// TranslateVersion translates the 'content' field of a Version object.
+// It ensures that existing translations in other languages are preserved and skips already translated fields.
+func TranslateVersion(w http.ResponseWriter, r *http.Request) {
+	// Parse the Version object from the request body
+	var version model.Version
+	if err := json.NewDecoder(r.Body).Decode(&version); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		config.App.Logger.Warn().Err(err).Msg("Failed to decode Version object from request body")
+		return
+	}
+	defer r.Body.Close()
+
+	// Get the target language from query parameters
+	targetLang := r.URL.Query().Get("targetLang")
+	if targetLang == "" {
+		http.Error(w, "missing targetLang param", http.StatusBadRequest)
+		config.App.Logger.Warn().Msg("TranslateVersion called without targetLang parameter")
+		return
+	}
+
+	// Initialize TranslatedFields map if nil
+	if version.TranslatedFields == nil {
+		version.TranslatedFields = make(map[string]map[string]string)
+	}
+
+	// Check if 'content' is already translated to the target language
+	if translatedContent, exists := version.TranslatedFields[targetLang]["content"]; exists && translatedContent != "" {
+		// Log a warning and skip translation
+		config.App.Logger.Warn().
+			Str("versionID", version.ID).
+			Str("targetLang", targetLang).
+			Msg("Content is already translated to the target language, skipping translation")
+
+		// Optionally, set SourceLang if it's not already set
+		if version.SourceLang == "" {
+			version.SourceLang = "unknown" // or fetch from existing data if available
+		}
+
+		// Return the existing Version object with existing translations
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(version)
+		return
+	}
+
+	// Prepare the translation request with fields that need translation
+	fieldsToTranslate := make(map[string]string)
+	// Add 'content' field for translation
+	fieldsToTranslate["content"] = version.Content
+
+	translationReq := TranslationRequest{
+		Fields:     fieldsToTranslate,
+		TargetLang: targetLang,
+	}
+
+	// Marshal the translation request to JSON
+	reqBody, err := json.Marshal(translationReq)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to marshal TranslationRequest")
+		http.Error(w, "Failed to marshal translation request", http.StatusInternalServerError)
+		return
+	}
+
+	// Define the translation service URL
+	translationURL := "http://translation-service:8083/translate" // Replace with actual URL if different
+
+	// Create an HTTP client with timeout
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	// Make the HTTP POST request to the translation service
+	resp, err := client.Post(translationURL, "application/json", bytes.NewBuffer(reqBody))
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to call translation service")
+		http.Error(w, "Failed to call translation service", http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Check if the translation service responded with success
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", string(body)).
+			Msg("Translation service returned error")
+		http.Error(w, "Translation service error: "+string(body), resp.StatusCode)
+		return
+	}
+
+	// Decode the translation response
+	var translationResp TranslationResponse
+	if err := json.NewDecoder(resp.Body).Decode(&translationResp); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode TranslationResponse")
+		http.Error(w, "Failed to decode translation response", http.StatusInternalServerError)
+		return
+	}
+
+	// Check if detected source language matches target language
+	if strings.EqualFold(translationResp.DetectedSourceLanguage, targetLang) {
+		config.App.Logger.Warn().
+			Str("versionID", version.ID).
+			Str("sourceLang", translationResp.DetectedSourceLanguage).
+			Str("targetLang", targetLang).
+			Msg("Source language matches target language, translation skipped")
+
+		http.Error(w, "Source language is the same as target language", http.StatusBadRequest)
+		return
+	}
+
+	// Directly assign translated fields for the target language
+	version.TranslatedFields[targetLang] = translationResp.TranslatedFields
+
+	// Save the detected source language
+	version.SourceLang = translationResp.DetectedSourceLanguage
+
+	// Update the version in the database with translated fields and source language
+	filter := bson.M{"_id": version.ID}
+	update := bson.M{
+		"$set": bson.M{
+			"translatedFields." + targetLang + ".content": translationResp.TranslatedFields["content"],
+			"sourceLang": version.SourceLang,
+		},
+	}
+	_, err = database.VersionCollection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to update translated content in database")
+		http.Error(w, "Failed to update translated content in database", http.StatusInternalServerError)
+		return
+	}
+
+	// Log successful translation
+	config.App.Logger.Info().
+		Str("versionID", version.ID).
+		Str("targetLang", targetLang).
+		Msg("Successfully translated content")
+
+	// Return the updated Version object as JSON
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(version)
 }
