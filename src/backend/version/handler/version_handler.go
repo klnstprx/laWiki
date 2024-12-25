@@ -740,7 +740,7 @@ func TranslateVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Define the translation service URL
-	translationURL := "http://translation-service:8083/translate" // Replace with actual URL if different
+	translationURL := fmt.Sprintf("%s/api/translate", config.App.API_GATEWAY_URL)
 
 	// Create an HTTP client with timeout
 	client := &http.Client{
