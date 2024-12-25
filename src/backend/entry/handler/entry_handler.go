@@ -600,7 +600,52 @@ func TranslateEntry(w http.ResponseWriter, r *http.Request) {
 			Str("targetLang", targetLang).
 			Msg("Title is already translated to the target language, skipping translation")
 
-		// Return the existing Entry object with existing translations
+		// Continue translating versions even if title is already translated
+		go func(entryID string, targetLang string) {
+			versions, err := fetchVersions(entryID)
+			if err != nil {
+				config.App.Logger.Error().Err(err).Str("entryID", entryID).Msg("Failed to fetch versions for translation")
+				return
+			}
+
+			for _, version := range versions {
+				// Prepare TranslateVersion request URL
+				translateVersionURL := fmt.Sprintf("%s/api/versions/%s/translate?targetLang=%s", config.App.API_GATEWAY_URL, version.ID, targetLang)
+
+				// Create an empty POST request to TranslateVersion
+				req, err := http.NewRequest("POST", translateVersionURL, nil)
+				if err != nil {
+					config.App.Logger.Error().Err(err).Str("versionID", version.ID).Msg("Failed to create TranslateVersion request")
+					continue
+				}
+
+				client := &http.Client{
+					Timeout: 5 * time.Second,
+				}
+
+				// Send the request
+				resp, err := client.Do(req)
+				if err != nil {
+					config.App.Logger.Error().Err(err).Str("versionID", version.ID).Msg("Failed to send TranslateVersion request")
+					continue
+				}
+				resp.Body.Close()
+
+				if resp.StatusCode != http.StatusOK {
+					config.App.Logger.Warn().
+						Int("status", resp.StatusCode).
+						Str("versionID", version.ID).
+						Msg("TranslateVersion returned non-OK status")
+					continue
+				}
+
+				config.App.Logger.Info().
+					Str("versionID", version.ID).
+					Str("targetLang", targetLang).
+					Msg("Successfully initiated translation for Version")
+			}
+		}(entry.ID, targetLang)
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(entry)
 		return
@@ -669,6 +714,7 @@ func TranslateEntry(w http.ResponseWriter, r *http.Request) {
 			Msg("Source language matches target language, translation skipped")
 
 		http.Error(w, "Source language is the same as target language", http.StatusBadRequest)
+		TranslateAssociatedVersions(entry.ID, targetLang) //The associated versions are translated even if the source language of the entry itself is the same as the target language
 		return
 	}
 
@@ -693,47 +739,7 @@ func TranslateEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Cascade Translation: Translate all associated Versions via HTTP
-	go func(entryID string, targetLang string) {
-		versions, err := fetchVersions(entryID)
-		if err != nil {
-			config.App.Logger.Error().Err(err).Str("entryID", entryID).Msg("Failed to fetch versions for translation")
-			return
-		}
-
-		for _, version := range versions {
-			// Prepare TranslateVersion request URL
-			translateVersionURL := fmt.Sprintf("%s/api/versions/%s/translate?targetLang=%s", config.App.API_GATEWAY_URL, version.ID, targetLang)
-
-			// Create an empty POST request to TranslateVersion
-			req, err := http.NewRequest("POST", translateVersionURL, nil)
-			if err != nil {
-				config.App.Logger.Error().Err(err).Str("versionID", version.ID).Msg("Failed to create TranslateVersion request")
-				continue
-			}
-
-			// Send the request
-			resp, err := client.Do(req)
-			if err != nil {
-				config.App.Logger.Error().Err(err).Str("versionID", version.ID).Msg("Failed to send TranslateVersion request")
-				continue
-			}
-			resp.Body.Close()
-
-			if resp.StatusCode != http.StatusOK {
-				config.App.Logger.Warn().
-					Int("status", resp.StatusCode).
-					Str("versionID", version.ID).
-					Msg("TranslateVersion returned non-OK status")
-				continue
-			}
-
-			config.App.Logger.Info().
-				Str("versionID", version.ID).
-				Str("targetLang", targetLang).
-				Msg("Successfully initiated translation for Version")
-		}
-	}(entry.ID, targetLang)
+	TranslateAssociatedVersions(entry.ID, targetLang)
 
 	// Log successful translation
 	config.App.Logger.Info().
@@ -771,4 +777,50 @@ func fetchVersions(entryID string) ([]dto.VersionDTO, error) {
 	}
 
 	return versions, nil
+}
+
+// Cascade Translation: Translate all associated Versions via HTTP
+func TranslateAssociatedVersions(entryID string, targetLang string) {
+	versions, err := fetchVersions(entryID)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Str("entryID", entryID).Msg("Failed to fetch versions for translation")
+		return
+	}
+
+	for _, version := range versions {
+		// Prepare TranslateVersion request URL
+		translateVersionURL := fmt.Sprintf("%s/api/versions/%s/translate?targetLang=%s", config.App.API_GATEWAY_URL, version.ID, targetLang)
+
+		// Create an empty POST request to TranslateVersion
+		req, err := http.NewRequest("POST", translateVersionURL, nil)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Str("versionID", version.ID).Msg("Failed to create TranslateVersion request")
+			continue
+		}
+
+		client := &http.Client{
+			Timeout: 5 * time.Second,
+		}
+
+		// Send the request
+		resp, err := client.Do(req)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Str("versionID", version.ID).Msg("Failed to send TranslateVersion request")
+			continue
+		}
+		resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			config.App.Logger.Warn().
+				Int("status", resp.StatusCode).
+				Str("versionID", version.ID).
+				Msg("TranslateVersion returned non-OK status")
+			continue
+		}
+
+		config.App.Logger.Info().
+			Str("versionID", version.ID).
+			Str("targetLang", targetLang).
+			Msg("Successfully initiated translation for Version")
+	}
 }

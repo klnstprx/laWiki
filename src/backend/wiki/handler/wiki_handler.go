@@ -539,13 +539,57 @@ func TranslateWiki(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if alreadyTranslated {
-		// Log a warning and skip translation
 		config.App.Logger.Warn().
 			Str("wikiID", wiki.ID).
 			Str("targetLang", targetLang).
 			Msg("Title, Description, and Category are already translated to the target language, skipping translation")
 
-		// Return the existing Wiki object with existing translations
+		// Cascade translation for entries even if wiki is already translated
+		go func(wikiID string, targetLang string) {
+			entries, err := fetchEntries(wikiID)
+			if err != nil {
+				config.App.Logger.Error().Err(err).Str("wikiID", wikiID).Msg("Failed to fetch entries for translation")
+				return
+			}
+
+			for _, entry := range entries {
+				// Prepare TranslateEntry request URL
+				translateEntryURL := fmt.Sprintf("%s/api/entries/%s/translate?targetLang=%s", config.App.API_GATEWAY_URL, entry.ID, targetLang)
+
+				// Create an empty POST request to TranslateEntry
+				req, err := http.NewRequest("POST", translateEntryURL, nil)
+				if err != nil {
+					config.App.Logger.Error().Err(err).Str("entryID", entry.ID).Msg("Failed to create TranslateEntry request")
+					continue
+				}
+
+				client := &http.Client{
+					Timeout: 10 * time.Second,
+				}
+
+				// Send the request
+				resp, err := client.Do(req)
+				if err != nil {
+					config.App.Logger.Error().Err(err).Str("entryID", entry.ID).Msg("Failed to send TranslateEntry request")
+					continue
+				}
+				resp.Body.Close()
+
+				if resp.StatusCode != http.StatusOK {
+					config.App.Logger.Warn().
+						Int("status", resp.StatusCode).
+						Str("entryID", entry.ID).
+						Msg("TranslateEntry returned non-OK status")
+					continue
+				}
+
+				config.App.Logger.Info().
+					Str("entryID", entry.ID).
+					Str("targetLang", targetLang).
+					Msg("Successfully initiated translation for Entry")
+			}
+		}(wiki.ID, targetLang)
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(wiki)
 		return
@@ -610,6 +654,8 @@ func TranslateWiki(w http.ResponseWriter, r *http.Request) {
 			Msg("Source language matches target language, translation skipped")
 
 		http.Error(w, "Source language is the same as target language", http.StatusBadRequest)
+
+		TranslateAssociatedEntries(wiki.ID, targetLang) // Cascade translation for entries, even if wiki is in target language
 		return
 	}
 
@@ -641,47 +687,7 @@ func TranslateWiki(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Cascade Translation: Translate all associated Entries via HTTP
-	go func(wikiID string, targetLang string) {
-		entries, err := fetchEntries(wikiID)
-		if err != nil {
-			config.App.Logger.Error().Err(err).Str("wikiID", wikiID).Msg("Failed to fetch entries for translation")
-			return
-		}
-
-		for _, entry := range entries {
-			// Prepare TranslateEntry request URL
-			translateEntryURL := fmt.Sprintf("%s/api/entries/%s/translate?targetLang=%s", config.App.API_GATEWAY_URL, entry.ID, targetLang)
-
-			// Create an empty POST request to TranslateEntry
-			req, err := http.NewRequest("POST", translateEntryURL, nil)
-			if err != nil {
-				config.App.Logger.Error().Err(err).Str("entryID", entry.ID).Msg("Failed to create TranslateEntry request")
-				continue
-			}
-
-			// Send the request
-			resp, err := client.Do(req)
-			if err != nil {
-				config.App.Logger.Error().Err(err).Str("entryID", entry.ID).Msg("Failed to send TranslateEntry request")
-				continue
-			}
-			resp.Body.Close()
-
-			if resp.StatusCode != http.StatusOK {
-				config.App.Logger.Warn().
-					Int("status", resp.StatusCode).
-					Str("entryID", entry.ID).
-					Msg("TranslateEntry returned non-OK status")
-				continue
-			}
-
-			config.App.Logger.Info().
-				Str("entryID", entry.ID).
-				Str("targetLang", targetLang).
-				Msg("Successfully initiated translation for Entry")
-		}
-	}(wiki.ID, targetLang)
+	TranslateAssociatedEntries(wiki.ID, targetLang)
 
 	// Log successful translation
 	config.App.Logger.Info().
@@ -714,4 +720,50 @@ func fetchEntries(wikiID string) ([]dto.EntryDTO, error) {
 	}
 
 	return entries, nil
+}
+
+// Cascade Translation: Translate all associated Entries via HTTP
+func TranslateAssociatedEntries(wikiID string, targetLang string) {
+	entries, err := fetchEntries(wikiID)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Str("wikiID", wikiID).Msg("Failed to fetch entries for translation")
+		return
+	}
+
+	for _, entry := range entries {
+		// Prepare TranslateEntry request URL
+		translateEntryURL := fmt.Sprintf("%s/api/entries/%s/translate?targetLang=%s", config.App.API_GATEWAY_URL, entry.ID, targetLang)
+
+		// Create an empty POST request to TranslateEntry
+		req, err := http.NewRequest("POST", translateEntryURL, nil)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Str("entryID", entry.ID).Msg("Failed to create TranslateEntry request")
+			continue
+		}
+
+		client := &http.Client{
+			Timeout: 10 * time.Second,
+		}
+
+		// Send the request
+		resp, err := client.Do(req)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Str("entryID", entry.ID).Msg("Failed to send TranslateEntry request")
+			continue
+		}
+		resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			config.App.Logger.Warn().
+				Int("status", resp.StatusCode).
+				Str("entryID", entry.ID).
+				Msg("TranslateEntry returned non-OK status")
+			continue
+		}
+
+		config.App.Logger.Info().
+			Str("entryID", entry.ID).
+			Str("targetLang", targetLang).
+			Msg("Successfully initiated translation for Entry")
+	}
 }
