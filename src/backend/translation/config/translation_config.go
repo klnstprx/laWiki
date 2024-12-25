@@ -118,6 +118,13 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		log.Warn().Msg("DMONGODB_URI not set in config file. Using default 'mongodb://localhost:27017'.")
 	}
 
+	// DEEPL_KEY is required
+	if config.Translation.DeepLKey != "" {
+		cfg.DeepLKey = config.Translation.DeepLKey
+	} else {
+		missingVars = append(missingVars, "DEEPL_KEY")
+	}
+
 	// If there are missing required variables, log them and exit
 	if len(missingVars) > 0 {
 		for _, v := range missingVars {

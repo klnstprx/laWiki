@@ -78,6 +78,17 @@ services:
     environment:
       - DOCKER=true
 
+  translation-service:
+    build: ./translation
+    networks:
+      - app-network
+    expose:
+      - "8082"
+    volumes:
+      - ./config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+
 networks:
   app-network:
     driver: bridge

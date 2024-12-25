@@ -21,6 +21,6 @@ WORKDIR /app
 
 COPY --from=builder /app/translation-service .
 
-EXPOSE 8080
+EXPOSE 8082
 
 CMD ["./translation-service"]

@@ -39,12 +39,12 @@ func Translate(w http.ResponseWriter, r *http.Request) {
 
 	if req.TargetLang == "" {
 		http.Error(w, "missing targetLang param", http.StatusBadRequest)
-		return
+		return // Added return
 	}
 
 	if len(req.Fields) == 0 {
 		http.Error(w, "no fields to translate", http.StatusBadRequest)
-		return
+		return // Added return
 	}
 
 	// Collect texts and corresponding field names
@@ -56,64 +56,64 @@ func Translate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Prepare DeepL API request with source_lang set to 'auto' for detection
-	apiURL := "https://api.deepl.com/v2/translate"
+	apiURL := "https://api-free.deepl.com/v2/translate"
 	data := url.Values{}
 	data.Set("auth_key", config.App.DeepLKey)
 	data.Set("target_lang", strings.ToUpper(req.TargetLang))
-	data.Set("source_lang", "auto")  // Enable source language detection
 	data.Set("tag_handling", "html") // Preserve HTML tags in translation
+
 	for _, text := range texts {
 		data.Add("text", text)
 	}
 
-	resp, err := http.Post(apiURL, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+	// Make the HTTP POST request to DeepL API
+	resp, err := http.PostForm(apiURL, data)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to call DeepL API", http.StatusInternalServerError)
 		return
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	// Check if DeepL API responded with success
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		http.Error(w, "DeepL API error: "+string(body), resp.StatusCode)
 		return
 	}
 
-	type deepLResp struct {
+	// Decode DeepL API response
+	var deepLResp struct {
 		Translations []struct {
-			Text string `json:"text"`
+			DetectedSourceLanguage string `json:"detected_source_language"`
+			Text                   string `json:"text"`
 		} `json:"translations"`
-		DetectedSourceLanguage string `json:"detected_source_language"`
 	}
-	var result deepLResp
-	if err := json.Unmarshal(bodyBytes, &result); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+	if err := json.NewDecoder(resp.Body).Decode(&deepLResp); err != nil {
+		http.Error(w, "Failed to decode DeepL API response", http.StatusInternalServerError)
 		return
 	}
 
-	if len(result.Translations) != len(texts) {
-		http.Error(w, "translation count mismatch", http.StatusInternalServerError)
-		return
+	// Prepare the TranslationResponse
+	translationResp := TranslationResponse{
+		TranslatedFields:       make(map[string]string),
+		DetectedSourceLanguage: "",
 	}
 
-	// Check if detected source language matches target language
-	if strings.EqualFold(result.DetectedSourceLanguage, req.TargetLang) {
-		http.Error(w, "source language is the same as target language", http.StatusBadRequest)
-		return
+	for i, translation := range deepLResp.Translations {
+		field := fieldNames[i]
+		translationResp.TranslatedFields[field] = translation.Text
+
+		// Assuming all fields have the same source language
+		if translationResp.DetectedSourceLanguage == "" {
+			translationResp.DetectedSourceLanguage = translation.DetectedSourceLanguage
+		}
 	}
 
-	// Map translations back to field names
-	translated := make(map[string]string)
-	for i, translation := range result.Translations {
-		translated[fieldNames[i]] = translation.Text
-	}
-
-	// Prepare and send response
-	respBody := TranslationResponse{
-		TranslatedFields:       translated,
-		DetectedSourceLanguage: result.DetectedSourceLanguage,
-	}
-
+	// Encode and send the response
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(respBody)
+	if err := json.NewEncoder(w).Encode(translationResp); err != nil {
+		http.Error(w, "Failed to encode translation response", http.StatusInternalServerError)
+		return
+	}
 }
