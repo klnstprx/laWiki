@@ -572,7 +572,14 @@ func TranslateEntry(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	err := database.EntryCollection.FindOne(ctx, bson.M{"_id": entryID}).Decode(&entry)
+	objID, err := primitive.ObjectIDFromHex(entryID)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Str("entryID", entryID).Msg("Invalid entry ID format")
+		http.Error(w, "Invalid entry ID", http.StatusBadRequest)
+		return
+	}
+
+	err = database.EntryCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&entry)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Str("entryID", entryID).Msg("Entry not found")
 		http.Error(w, "Entry not found", http.StatusNotFound)
@@ -672,7 +679,7 @@ func TranslateEntry(w http.ResponseWriter, r *http.Request) {
 	entry.SourceLang = translationResp.DetectedSourceLanguage
 
 	// Update the Entry in the database with translated fields and source language
-	filter := bson.M{"_id": entry.ID}
+	filter := bson.M{"_id": objID}
 	update := bson.M{
 		"$set": bson.M{
 			"translatedFields." + targetLang + ".title": translationResp.TranslatedFields["title"],
@@ -757,10 +764,11 @@ func fetchVersions(entryID string) ([]dto.VersionDTO, error) {
 		return nil, fmt.Errorf("failed to fetch versions: %s", resp.Status)
 	}
 
-	var searchResp SearchVersionsResponse
-	if err := json.NewDecoder(resp.Body).Decode(&searchResp); err != nil {
+	// Decode directly into a slice
+	var versions []dto.VersionDTO
+	if err := json.NewDecoder(resp.Body).Decode(&versions); err != nil {
 		return nil, err
 	}
 
-	return searchResp.Versions, nil
+	return versions, nil
 }

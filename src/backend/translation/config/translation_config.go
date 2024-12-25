@@ -23,9 +23,8 @@ type GlobalConfig struct {
 
 // TranslationConfig holds the configuration specific to the Translation service
 type TranslationConfig struct {
-	DeepLKey         string `toml:"DEEPL_KEY"`
-	Port             int    `toml:"PORT"`
-	DBCollectionName string `toml:"DB_COLLECTION_NAME"`
+	DeepLKey string `toml:"DEEPL_KEY"`
+	Port     int    `toml:"PORT"`
 }
 
 // Config represents the structure of the config.toml file
@@ -101,13 +100,6 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	} else {
 		cfg.DBName = "laWiki" // Default to "laWiki"
 		log.Warn().Msg("DBNAME not set in config file. Using default 'laWiki'.")
-	}
-	// DBCOLLECTIONNAME with default value
-	if config.Translation.DBCollectionName != "" {
-		cfg.DBCollectionName = config.Translation.DBCollectionName
-	} else {
-		cfg.DBCollectionName = "translation" // Default to "wikis"
-		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'translation'.")
 	}
 
 	// MONGODB_URI is required

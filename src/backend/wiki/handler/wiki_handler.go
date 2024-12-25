@@ -480,17 +480,31 @@ type SearchEntriesResponse struct {
 	Entries []dto.EntryDTO `json:"entries"`
 }
 
-// TranslateWiki translates the 'title' and 'description' fields of a Wiki object.
+// TranslateWiki translates the 'title', 'description', and 'category' fields of a Wiki object.
 // It ensures that existing translations are preserved and translates all associated Entries.
 func TranslateWiki(w http.ResponseWriter, r *http.Request) {
-	// Parse the Wiki object from the request body
-	var wiki model.Wiki
-	if err := json.NewDecoder(r.Body).Decode(&wiki); err != nil {
-		config.App.Logger.Warn().Err(err).Msg("Failed to decode Wiki object from request body")
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+	// Get the wiki ID from URL parameters
+	wikiID := chi.URLParam(r, "id")
+
+	// Convert wikiID to ObjectID
+	objID, err := primitive.ObjectIDFromHex(wikiID)
+	if err != nil {
+		config.App.Logger.Warn().Err(err).Msg("Invalid wiki ID")
+		http.Error(w, "Invalid wiki ID", http.StatusBadRequest)
 		return
 	}
-	defer r.Body.Close()
+
+	// Fetch the Wiki from the database
+	var wiki model.Wiki
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = database.WikiCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&wiki)
+	if err != nil {
+		config.App.Logger.Warn().Err(err).Msg("Wiki not found")
+		http.Error(w, "Wiki not found", http.StatusNotFound)
+		return
+	}
 
 	// Get the target language from query parameters
 	targetLang := r.URL.Query().Get("targetLang")
@@ -505,7 +519,7 @@ func TranslateWiki(w http.ResponseWriter, r *http.Request) {
 		wiki.TranslatedFields = make(map[string]map[string]string)
 	}
 
-	// Check if 'title' and 'description' are already translated to the target language
+	// Check if 'title', 'description', and 'category' are already translated to the target language
 	alreadyTranslated := true
 	fieldsToTranslate := make(map[string]string)
 
@@ -519,12 +533,17 @@ func TranslateWiki(w http.ResponseWriter, r *http.Request) {
 		alreadyTranslated = false
 	}
 
+	if translatedCategory, exists := wiki.TranslatedFields[targetLang]["category"]; !exists || translatedCategory == "" {
+		fieldsToTranslate["category"] = wiki.Category
+		alreadyTranslated = false
+	}
+
 	if alreadyTranslated {
 		// Log a warning and skip translation
 		config.App.Logger.Warn().
 			Str("wikiID", wiki.ID).
 			Str("targetLang", targetLang).
-			Msg("Title and Description are already translated to the target language, skipping translation")
+			Msg("Title, Description, and Category are already translated to the target language, skipping translation")
 
 		// Return the existing Wiki object with existing translations
 		w.Header().Set("Content-Type", "application/json")
@@ -547,7 +566,7 @@ func TranslateWiki(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Define the translation service URL
-	translationURL := fmt.Sprintf("%s/api/translate/", config.App.API_GATEWAY_URL) // Replace with actual URL if different
+	translationURL := fmt.Sprintf("%s/api/translate", config.App.API_GATEWAY_URL) // Removed trailing slash
 
 	// Create an HTTP client with timeout
 	client := &http.Client{
@@ -595,17 +614,23 @@ func TranslateWiki(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Assign translated fields for the target language
-	wiki.TranslatedFields[targetLang] = translationResp.TranslatedFields
+	if wiki.TranslatedFields[targetLang] == nil {
+		wiki.TranslatedFields[targetLang] = make(map[string]string)
+	}
+	for field, translatedText := range translationResp.TranslatedFields {
+		wiki.TranslatedFields[targetLang][field] = translatedText
+	}
 
 	// Save the detected source language
 	wiki.SourceLang = translationResp.DetectedSourceLanguage
 
 	// Update the wiki in the database with translated fields and source language
-	filter := bson.M{"_id": wiki.ID}
+	filter := bson.M{"_id": objID}
 	update := bson.M{
 		"$set": bson.M{
 			"translatedFields." + targetLang + ".title":       translationResp.TranslatedFields["title"],
 			"translatedFields." + targetLang + ".description": translationResp.TranslatedFields["description"],
+			"translatedFields." + targetLang + ".category":    translationResp.TranslatedFields["category"],
 			"sourceLang": wiki.SourceLang,
 		},
 	}
@@ -682,10 +707,11 @@ func fetchEntries(wikiID string) ([]dto.EntryDTO, error) {
 		return nil, fmt.Errorf("failed to fetch entries: %s", resp.Status)
 	}
 
-	var searchResp SearchEntriesResponse
-	if err := json.NewDecoder(resp.Body).Decode(&searchResp); err != nil {
+	// Decode directly into a slice of EntryDTO
+	var entries []dto.EntryDTO
+	if err := json.NewDecoder(resp.Body).Decode(&entries); err != nil {
 		return nil, err
 	}
 
-	return searchResp.Entries, nil
+	return entries, nil
 }
