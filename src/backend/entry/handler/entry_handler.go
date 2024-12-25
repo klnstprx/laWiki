@@ -618,7 +618,7 @@ func TranslateEntry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Define the translation service URL
-	translationURL := "http://translation-service:8082/translate" // Replace with actual URL if different
+	translationURL := fmt.Sprintf("%s/api/translate/", config.App.API_GATEWAY_URL) // Replace with actual URL if different
 
 	// Create an HTTP client with timeout
 	client := &http.Client{
@@ -696,7 +696,7 @@ func TranslateEntry(w http.ResponseWriter, r *http.Request) {
 
 		for _, version := range versions {
 			// Prepare TranslateVersion request URL
-			translateVersionURL := fmt.Sprintf("http://version-service:8005/api/versions/%s/translate?targetLang=%s", version.ID, targetLang)
+			translateVersionURL := fmt.Sprintf("%s/api/versions/%s/translate?targetLang=%s", config.App.API_GATEWAY_URL, version.ID, targetLang)
 
 			// Create an empty POST request to TranslateVersion
 			req, err := http.NewRequest("POST", translateVersionURL, nil)
@@ -746,7 +746,7 @@ type SearchVersionsResponse struct {
 
 // fetchVersions retrieves Versions associated with an Entry via HTTP.
 func fetchVersions(entryID string) ([]dto.VersionDTO, error) {
-	url := fmt.Sprintf("http://version-service:8005/api/versions/search?entryID=%s", entryID)
+	url := fmt.Sprintf("%s/api/versions/search?entryID=%s", config.App.API_GATEWAY_URL, entryID)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err

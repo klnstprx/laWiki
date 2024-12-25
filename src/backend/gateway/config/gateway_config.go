@@ -19,13 +19,14 @@ type GlobalConfig struct {
 
 // GatewayConfig holds the configuration specific to the gateway service
 type GatewayConfig struct {
-	Port              int    `toml:"PORT"`
-	WikiServiceURL    string `toml:"WIKI_SERVICE_URL"`
-	EntryServiceURL   string `toml:"ENTRY_SERVICE_URL"`
-	AuthServiceURL    string `toml:"AUTH_SERVICE_URL"`
-	VersionServiceURL string `toml:"VERSION_SERVICE_URL"`
-	CommentServiceURL string `toml:"COMMENT_SERVICE_URL"`
-	MediaServiceURL   string `toml:"MEDIA_SERVICE_URL"`
+	Port                  int    `toml:"PORT"`
+	WikiServiceURL        string `toml:"WIKI_SERVICE_URL"`
+	EntryServiceURL       string `toml:"ENTRY_SERVICE_URL"`
+	AuthServiceURL        string `toml:"AUTH_SERVICE_URL"`
+	VersionServiceURL     string `toml:"VERSION_SERVICE_URL"`
+	CommentServiceURL     string `toml:"COMMENT_SERVICE_URL"`
+	MediaServiceURL       string `toml:"MEDIA_SERVICE_URL"`
+	TranslationServiceURL string `toml:"TRANSLATION_SERVICE_URL"`
 }
 
 // Config represents the structure of the config.toml file
@@ -35,16 +36,17 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Logger            *zerolog.Logger
-	Port              string
-	PrettyLogs        bool
-	Debug             bool
-	WikiServiceURL    string
-	EntryServiceURL   string
-	AuthServiceURL    string
-	VersionServiceURL string
-	CommentServiceURL string
-	MediaServiceURL   string
+	Logger                *zerolog.Logger
+	Port                  string
+	PrettyLogs            bool
+	Debug                 bool
+	WikiServiceURL        string
+	EntryServiceURL       string
+	AuthServiceURL        string
+	VersionServiceURL     string
+	CommentServiceURL     string
+	MediaServiceURL       string
+	TranslationServiceURL string
 }
 
 // App holds app configuration
@@ -137,6 +139,13 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		missingVars = append(missingVars, "MEDIA_SERVICE_URL")
 	} else {
 		cfg.MediaServiceURL = config.Gateway.MediaServiceURL
+	}
+
+	// TRANSLATION_SERVICE_URL is required
+	if config.Gateway.TranslationServiceURL == "" {
+		missingVars = append(missingVars, "TRANSLATION_SERVICE_URL")
+	} else {
+		cfg.TranslationServiceURL = config.Gateway.TranslationServiceURL
 	}
 
 	// If there are missing required variables, log them and exit

@@ -62,6 +62,9 @@ func NewRouter() http.Handler {
 
 		// Media Service Routes
 		r.Mount("/media", proxyHandler(config.App.MediaServiceURL, "/api/media"))
+
+		// Translation Service Routes
+		r.Mount("/translate", proxyHandler(config.App.TranslationServiceURL, "/api/translate"))
 	})
 
 	return r
