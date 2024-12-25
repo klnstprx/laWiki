@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gorilla/handlers" // Importamos el paquete gorilla/handlers para manejar CORS
+	// Importamos el paquete gorilla/handlers para manejar CORS
 	"github.com/laWiki/gateway/config"
 	"github.com/laWiki/gateway/router"
 	"github.com/rs/zerolog/log"
@@ -40,14 +40,9 @@ func main() {
 	r := router.NewRouter()
 
 	// CORS Configuration: Allow all origins (replace '*' with specific URLs for production)
-	corsObj := handlers.AllowedOrigins([]string{"http://localhost:5173"})
+
 	// O puedes restringir a dominios específicos, por ejemplo:
 	// corsObj := handlers.AllowedOrigins([]string{"http://localhost:3000"})
-
-	// Configuración de métodos y cabeceras permitidos
-	allowedMethods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
-	allowedHeaders := handlers.AllowedHeaders([]string{"Content-Type", "Authorization"})
-	allowCredentials := handlers.AllowCredentials()
 
 	// Contexto para apagado suave
 	ctx, cancel := context.WithCancel(context.Background())
@@ -72,7 +67,7 @@ func main() {
 	// Server setup
 	httpServer := http.Server{
 		Addr:    config.App.Port,
-		Handler: handlers.CORS(corsObj, allowedMethods, allowedHeaders, allowCredentials)(r), // Aquí aplicamos CORS al router
+		Handler: r,
 	}
 
 	// Iniciamos el servidor HTTP en un go routine para no bloquear el hilo principal

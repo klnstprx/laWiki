@@ -44,18 +44,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 
-		//Asi para que a las solicitudes get no se les pida autenticacion
-		if strings.HasPrefix(r.URL.Path, "/api/auth/") || r.URL.Path == "/health" || r.Method == http.MethodGet {
-			next.ServeHTTP(w, r)
-			return
-		}
-
 		// Si es una solicitud OPTIONS, respondemos inmediatamente
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
+		//Asi para que a las solicitudes get no se les pida autenticacion
 		if strings.HasPrefix(r.URL.Path, "/api/auth/") || r.URL.Path == "/health" {
 			next.ServeHTTP(w, r)
 			return

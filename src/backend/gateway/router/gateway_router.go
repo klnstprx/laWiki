@@ -23,7 +23,7 @@ func NewRouter() http.Handler {
 	r.Use(custommw.LoggerMiddleware(config.App.Logger))
 	r.Use(cors.Handler(cors.Options{
 		// AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin hosts
-		AllowedOrigins:   []string{"*"}, // Use this to allow all origins
+		AllowedOrigins:   []string{"http://localhost:5173"}, // Use this to allow all origins
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
