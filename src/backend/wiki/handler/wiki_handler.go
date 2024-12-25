@@ -547,7 +547,7 @@ func TranslateWiki(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Define the translation service URL
-	translationURL := "http://translation-service:8082/translate" // Replace with actual URL if different
+	translationURL := fmt.Sprintf("%s/api/translate/", config.App.API_GATEWAY_URL) // Replace with actual URL if different
 
 	// Create an HTTP client with timeout
 	client := &http.Client{
@@ -626,7 +626,7 @@ func TranslateWiki(w http.ResponseWriter, r *http.Request) {
 
 		for _, entry := range entries {
 			// Prepare TranslateEntry request URL
-			translateEntryURL := fmt.Sprintf("http://entry-service:8002/api/entries/%s/translate?targetLang=%s", entry.ID, targetLang)
+			translateEntryURL := fmt.Sprintf("%s/api/entries/%s/translate?targetLang=%s", config.App.API_GATEWAY_URL, entry.ID, targetLang)
 
 			// Create an empty POST request to TranslateEntry
 			req, err := http.NewRequest("POST", translateEntryURL, nil)
@@ -671,7 +671,7 @@ func TranslateWiki(w http.ResponseWriter, r *http.Request) {
 
 // Fetch Entries via HTTP
 func fetchEntries(wikiID string) ([]dto.EntryDTO, error) {
-	url := fmt.Sprintf("http://entry-service:8002/api/entries/search?wikiID=%s", wikiID)
+	url := fmt.Sprintf("%s/api/entries/search?wikiID=%s", config.App.API_GATEWAY_URL, wikiID)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
