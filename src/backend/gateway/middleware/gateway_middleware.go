@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
-	"strings"
 	"time"
 
-	"github.com/laWiki/gateway/config"
+	"strings"
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
+	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/rs/zerolog"
 )
 
@@ -39,9 +39,20 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Skip authentication for auth routes and health check
 
-		//Para que lo skipee temporalmente
-		if true {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173") // Reemplaza con el dominio del frontend
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		//Asi para que a las solicitudes get no se les pida autenticacion
+		if strings.HasPrefix(r.URL.Path, "/api/auth/") || r.URL.Path == "/health" || r.Method == http.MethodGet {
 			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Si es una solicitud OPTIONS, respondemos inmediatamente
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
 			return
 		}
 
@@ -59,17 +70,42 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		tokenString := cookie.Value
 
-		// Parse and validate the token
+		// Parse and validate the token using RS256 and public key
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			// Ensure the signing method is HMAC
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			// Ensure the signing method is RS256
+			if token.Method.Alg() != jwt.SigningMethodRS256.Alg() {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Method.Alg())
 			}
-			// Use the same secret key used to sign the token in the auth service
-			return []byte(config.App.JWTSecret), nil
+
+			// Get the public key from JWKS
+			jwksURL := "https://www.googleapis.com/oauth2/v3/certs" // URL del JWKS de Google, cambia si es otro proveedor
+			keySet, err := jwk.Fetch(r.Context(), jwksURL)
+			if err != nil {
+				return nil, fmt.Errorf("failed to fetch public keys: %v", err)
+			}
+
+			// Find the key with the appropriate kid (Key ID) from the token header
+			kid := token.Header["kid"].(string)
+			key, ok := keySet.LookupKeyID(kid)
+			if !ok {
+				return nil, fmt.Errorf("unable to find appropriate key")
+			}
+
+			// Return the public key to verify the token
+			var pubKey interface{}
+			err = key.Raw(&pubKey)
+			if err != nil {
+				return nil, fmt.Errorf("failed to extract key: %v", err)
+			}
+			return pubKey, nil
 		})
 
-		if err != nil || !token.Valid {
+		if err != nil {
+			http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		if !token.Valid {
 			http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
 			return
 		}

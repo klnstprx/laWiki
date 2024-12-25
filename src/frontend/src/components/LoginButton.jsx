@@ -39,6 +39,10 @@ const LoginButton = () => {
       sessionStorage.setItem("user", JSON.stringify(decodedUser));
       setUser(decodedUser);
 
+      //carga credentialResponse en las cookies con dominio localhost
+      document.cookie = `jwt_token=${credentialResponse.credential}; domain=localhost:8000; path=/, SameSite=None; Secure`;
+
+
       /*
       Se debe añadir usuario a la base de datos con los siguientes datos como mínimo:
       Email         string  

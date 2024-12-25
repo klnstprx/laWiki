@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gorilla/handlers" // Importamos el paquete gorilla/handlers para manejar CORS
 	"github.com/laWiki/gateway/config"
 	"github.com/laWiki/gateway/router"
-
 	"github.com/rs/zerolog/log"
 )
 
@@ -39,12 +39,22 @@ func main() {
 	// r setup
 	r := router.NewRouter()
 
-	// context for graceful shutdown
+	// CORS Configuration: Allow all origins (replace '*' with specific URLs for production)
+	corsObj := handlers.AllowedOrigins([]string{"http://localhost:5173"})
+	// O puedes restringir a dominios específicos, por ejemplo:
+	// corsObj := handlers.AllowedOrigins([]string{"http://localhost:3000"})
+
+	// Configuración de métodos y cabeceras permitidos
+	allowedMethods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
+	allowedHeaders := handlers.AllowedHeaders([]string{"Content-Type", "Authorization"})
+	allowCredentials := handlers.AllowCredentials()
+
+	// Contexto para apagado suave
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// graceful shutdown logic
-	// esto no es muy importante, pero es bueno tenerlo
+	// Lógica de apagado suave
+	// Esto no es crucial, pero es útil tenerlo para una salida ordenada
 	signalCaught := false
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
@@ -59,14 +69,13 @@ func main() {
 		cancel()
 	}()
 
-	// server starts here
-	// starts in a go routine so it doesn't block the main thread
+	// Server setup
 	httpServer := http.Server{
 		Addr:    config.App.Port,
-		Handler: r,
+		Handler: handlers.CORS(corsObj, allowedMethods, allowedHeaders, allowCredentials)(r), // Aquí aplicamos CORS al router
 	}
 
-	// lo arrancamos en un go routine para que no bloquee el main thread
+	// Iniciamos el servidor HTTP en un go routine para no bloquear el hilo principal
 	go func() {
 		err := httpServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -74,9 +83,11 @@ func main() {
 		}
 	}()
 	xlog.Info().Str("Port", config.App.Port).Msg("HTTP server started")
-	// Block until context is canceled (waiting for the shutdown signal).
+
+	// Bloqueamos hasta que se reciba una señal de cancelación
 	<-ctx.Done()
-	// Shutdown logic
+
+	// Lógica de apagado del servidor
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer shutdownCancel()
 	if err := httpServer.Shutdown(shutdownCtx); err != nil {
