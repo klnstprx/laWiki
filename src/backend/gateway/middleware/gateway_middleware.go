@@ -44,8 +44,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 
+		// Si es una petición interna, omitir la autenticación
 		if r.Header.Get("X-Internal-Request") == "true" {
-			// Si es una petición interna, omitir la autenticación
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -56,7 +56,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		//Asi para que a las solicitudes get no se les pida autenticacion
+		//Asi para que a las solicitudes get(y otras) no se les pida autenticacion
 		if strings.HasPrefix(r.URL.Path, "/api/auth/") || r.URL.Path == "/health" || r.Method == http.MethodGet {
 			next.ServeHTTP(w, r)
 			return
