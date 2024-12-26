@@ -44,6 +44,12 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 
+		if r.Header.Get("X-Internal-Request") == "true" {
+			// Si es una petición interna, omitir la autenticación
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		// Si es una solicitud OPTIONS, respondemos inmediatamente
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)

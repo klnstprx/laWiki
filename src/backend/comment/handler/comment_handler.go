@@ -358,7 +358,7 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 		config.App.Logger.Error().Err(err).Msg("Failed to create request to entry service")
 		return
 	}
-
+	req.Header.Set("X-Internal-Request", "true")
 	resp, err = client.Do(req)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to send request to entry service")
@@ -396,7 +396,7 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
 		return
 	}
-
+	req.Header.Set("X-Internal-Request", "true")
 	resp, err = client.Do(req)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
@@ -647,6 +647,7 @@ func notifyInterno(mensaje string, editor string) {
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Internal-Request", "true")
 
 	// Enviar la solicitud
 	resp, err := client.Do(req)
