@@ -52,7 +52,7 @@ const LoginButton = () => {
         picture: decodedUser.picture,
         locale: decodedUser.locale,
         email_verified: decodedUser.email_verified,
-        role: "user",
+        role: "redactor",
         valoration: [],
         notifications: [],
         enable_emails: false,
@@ -60,6 +60,8 @@ const LoginButton = () => {
 
       const users = await getAllUsers();
 
+      if (users != null) {
+      
       // Verifica si el usuario ya existe
       let userExists = false;
       for (let i = 0; i < users.length; i++) {
@@ -68,6 +70,7 @@ const LoginButton = () => {
           sessionStorage.setItem("id", users[i].id);
           setUsuario(users[i]); // Actualiza el estado con el usuario existente
           sessionStorage.setItem("usuario", JSON.stringify(users[i]));
+          document.cookie = `role=${users[i].role}; domain=localhost; path=/`;
           userExists = true;
           break;
         }
@@ -79,7 +82,27 @@ const LoginButton = () => {
         sessionStorage.setItem("id", addedUser.id);
         setUsuario(addedUser); // Actualiza el estado con el nuevo usuario
         sessionStorage.setItem("usuario", JSON.stringify(addedUser));
+        document.cookie = `role=${addedUser.role}; domain=localhost; path=/`;
       }
+
+
+    } else {
+      console.log("User not registered");
+      const addedUser = await postUser(user);
+      sessionStorage.setItem("id", addedUser.id);
+      setUsuario(addedUser); // Actualiza el estado con el nuevo usuario
+      sessionStorage.setItem("usuario", JSON.stringify(addedUser));
+      document.cookie = `role=${addedUser.role}; domain=localhost; path=/`;
+    }
+
+    //si la direccion actual es /login, recarga la pagina
+    if (window.location.pathname === "/login") {
+      window.location.href = "/";
+    } else {
+      window.location.reload();
+    }
+
+
     } catch (error) {
       console.error("Error al procesar las credenciales:", error);
     }

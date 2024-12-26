@@ -26,7 +26,7 @@ export default async function apiRequest(endpoint, options = {}) {
     document.cookie = `jwt_token=; domain=localhost; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC`;
     return;
   }
-
+    
   // Comprobamos si la respuesta fue correcta (status 200-299)
   if (!response.ok) {
     let errorMessage = `HTTP error! status: ${response.status}`;
