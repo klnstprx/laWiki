@@ -67,7 +67,6 @@ const ProfilePage = () => {
         console.error("Error al enviar la configuración.");
       });
 
-    setNewEnableMails(false);
   }
 
   useEffect(() => {
@@ -80,6 +79,12 @@ const ProfilePage = () => {
           const media = sum / data.valoration.length;
           setMediaRating(media);
         }
+
+        // Inicializa el estado `newEnableMails` con el valor actual del usuario
+        if (data && typeof data.enable_mails === "boolean") {
+          setNewEnableMails(data.enable_mails);
+        }
+
       })
       .catch(() => setUser(null));
   }, [id]);

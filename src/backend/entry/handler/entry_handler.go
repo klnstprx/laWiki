@@ -475,9 +475,10 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user struct {
-		ID    string `json:"id"`
-		Name  string `json:"name"`
-		Email string `json:"email"`
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		Email       string `json:"email"`
+		EnableMails bool   `json:"enable_mails"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
@@ -485,16 +486,18 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send email notification to the entry author
-	/*
+	if user.EnableMails {
+		// email notification al autor de la entrada
 		notifyEmail("Tu entrada ha sido eliminada",
 			"Hola {{ nombre }},\nTu entrada \"{{ entrada }}\" ha sido eliminada.",
 			"<p> Hola {{ nombre }},</p><p>Tu entrada \"{{ entrada }}\" ha sido eliminada.</p>",
 			user.Name,
 			user.Email,
 			entry.Title)
-	*/
-	notifyInterno("Tu entrada "+entry.Title+" ha sido eliminada", entry.Author)
+	} else {
+		// notificacion interna al autor de la entrada
+		notifyInterno("Tu entrada "+entry.Title+" ha sido eliminada", entry.Author)
+	}
 }
 
 // DeleteEntriesByWikiID godoc

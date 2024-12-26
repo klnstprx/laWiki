@@ -139,25 +139,29 @@ const LoginButton = () => {
 
   const clearNotifications = () => {
     const updatedUsuario = { ...usuario, notifications: [] };
+
+    // Actualiza de inmediato en el estado y sessionStorage para mejorar la percepción del usuario.
     setUsuario(updatedUsuario);
     sessionStorage.setItem("usuario", JSON.stringify(updatedUsuario));
 
+    // Llama a la API para actualizar en la base de datos
     putUser(sessionStorage.getItem("id"), { notifications: [] })
-          .then(() => {
-            console.log("Notificaciones eliminadas.");
-            setUser((prevUser) => ({ ...prevUser, notifications: [] }));
-            
-          })
-          .catch(() => {
-            console.error("Error al enviar la configuración.");
-          });
+      .then(() => {
+        console.log("Notificaciones eliminadas en la base de datos.");
+      })
+      .catch((error) => {
+        console.error("Error al eliminar notificaciones en la base de datos:", error);
+        // Opcional: restaurar notificaciones locales si ocurre un error
+        setUsuario(usuario);
+        sessionStorage.setItem("usuario", JSON.stringify(usuario));
+      });
   };
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
       {user ? (
         <>
-          <Button variant="contained" color="info" onClick={handleClick}>
+          <Button variant="contained" color="secondary" onClick={handleClick}>
             Notificaciones
           </Button>
           <Notificaciones
@@ -180,11 +184,11 @@ const LoginButton = () => {
             Bienvenido, {user.name}
           </Typography>
 
-          <Button variant="contained" color="success" onClick={goToProfile}>
+          <Button variant="contained" color="info" onClick={goToProfile}>
             Perfil
           </Button>
 
-          <Button variant="contained" color="warning" onClick={handleLogout}>
+          <Button variant="contained" color="error" onClick={handleLogout}>
             Cerrar sesión
           </Button>
         </>
