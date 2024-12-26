@@ -118,9 +118,11 @@ const LoginButton = () => {
     sessionStorage.removeItem("usuario");
     sessionStorage.removeItem("id");
     //Elimina el token de las cookies
-    document.cookie = `jwt_token=; domain=localhost; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC`;
+    document.cookie = `jwt_token=; domain=localhost; path=/;`;
+    document.cookie = `role=; domain=localhost; path=/;`;
     setUser(null);
     setUsuario({ notifications: [] });
+    window.location.reload();
   };
 
   const goToProfile = () => {
