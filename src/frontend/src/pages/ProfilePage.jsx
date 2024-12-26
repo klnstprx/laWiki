@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Box, Avatar, Typography, Paper, Rating, TextField, Button, Checkbox } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { getUser, putUser } from "../api/AuthApi";
+import { useToast } from "../context/ToastContext.jsx";
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
   const { id } = useParams();
+  const { showToast } = useToast();
 
   const [newRating, setNewRating] = useState(0);
   const [newEnableMails, setNewEnableMails] = useState(false);
@@ -38,6 +40,7 @@ const ProfilePage = () => {
         // Actualizar el estado de la valoración
         setUser((prevUser) => ({ ...prevUser, valoration: updatedValoration }));
         setShowRatingForm(false);
+        showToast("Valoración enviada");
       })
       .catch(() => {
         console.error("Error al enviar la valoración.");
@@ -61,6 +64,7 @@ const ProfilePage = () => {
         console.log("Configuración enviada.");
         // Actualizar el estado de las notificaciones por correo
         setUser((prevUser) => ({ ...prevUser, enable_mails: newEnableMails }));
+        showToast("Configuración actualizada");
         
       })
       .catch(() => {
