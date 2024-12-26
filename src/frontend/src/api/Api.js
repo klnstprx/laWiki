@@ -23,7 +23,8 @@ export default async function apiRequest(endpoint, options = {}) {
     //cerrar sesion ususario
     sessionStorage.removeItem("user");
     //Elimina el token de las cookies
-    document.cookie = `jwt_token=; domain=localhost; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC`;
+    document.cookie = `jwt_token=; domain=localhost; path=/;`;
+    document.cookie = `role=; domain=localhost; path=/;`;
     return;
   }
     
