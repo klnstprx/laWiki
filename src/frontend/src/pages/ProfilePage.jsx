@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Avatar, Typography, Paper, Rating, TextField, Button } from "@mui/material";
+import { Box, Avatar, Typography, Paper, Rating, TextField, Button, Checkbox } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { getUser, putUser } from "../api/AuthApi";
 
@@ -8,6 +8,7 @@ const ProfilePage = () => {
   const { id } = useParams();
 
   const [newRating, setNewRating] = useState(0);
+  const [newEnableMails, setNewEnableMails] = useState(false);
   const [mediaRating, setMediaRating] = useState(0);
   const [showRatingForm, setShowRatingForm] = useState(true); // Estado para controlar la visibilidad del formulario
   const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
@@ -19,10 +20,16 @@ const ProfilePage = () => {
     setNewRating(newValue);
   };
 
+  const handleEnableMailsChange = (event, newValue) => {
+    console.log("onchange del checkbox")
+    setNewEnableMails(newValue);
+    console.log("New Rating:", newRating);
+  }
+
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log("New Rating:", newRating);
-    // Aquí podrías enviar los datos a tu API
+
     const updatedValoration = user.valoration ? [...user.valoration, newRating] : [newRating];
 
     putUser(id, { valoration: updatedValoration })
@@ -44,6 +51,24 @@ const ProfilePage = () => {
       
 
   };
+
+  const handleSubmitEnableMails = (event) => {
+    event.preventDefault();
+    console.log("EnableMails:", newEnableMails);
+
+    putUser(id, { enable_mails: newEnableMails })
+      .then(() => {
+        console.log("Configuración enviada.");
+        // Actualizar el estado de las notificaciones por correo
+        setUser((prevUser) => ({ ...prevUser, enable_mails: newEnableMails }));
+        
+      })
+      .catch(() => {
+        console.error("Error al enviar la configuración.");
+      });
+
+    setNewEnableMails(false);
+  }
 
   useEffect(() => {
     console.log(id);
@@ -128,7 +153,29 @@ const ProfilePage = () => {
           />
           ({user.valoration.length})
         </Box>
-        
+
+        {/* Formulario para activar notificaciones por correo */}
+        {isLoggedIn && (
+          <Box component="form" onSubmit={handleSubmitEnableMails} sx={{ mt: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Activar notificaciones por correo
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Typography variant="body1" sx={{ mr: 2 }}>
+                Activo: notificaciones por correo
+                Inactivo: notificaciones internas
+              </Typography>
+              <Checkbox
+                checked={newEnableMails}
+                onChange={handleEnableMailsChange}
+                inputProps={{ "aria-label": "Activar notificaciones por correo" }}
+              />
+            </Box>
+            <Button type="submit" variant="contained" fullWidth>
+              Aceptar
+            </Button>
+          </Box>
+        )}
 
         {/* Formulario para valorar */}
         {isLoggedIn && showRatingForm && user.email != loggedInUserEmail && (

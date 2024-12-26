@@ -1,32 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import {
   Typography,
   Button,
   Box,
-  Popover,
-  List,
-  ListItem,
-  ListItemText,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { postUser, getAllUsers } from "../api/AuthApi"
+import { postUser, getAllUsers } from "../api/AuthApi";
+import Notificaciones from "./Notificaciones"; // Importa el nuevo componente
+import { putUser } from "../api/AuthApi";
 
 const LoginButton = () => {
-  const [user, setUser] = useState(null);
-  const [addedUser, setAddedUser] = useState(null);
+  const [user, setUser] = useState(null); // Estado para el usuario autenticado
+  const [usuario, setUsuario] = useState({ notifications: [] }); // Estado para el usuario con notificaciones
   const navigate = useNavigate();
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-  const notifications = ["Notificación 1", "Notificación 2", "Notificación 3"];
 
+  // Carga inicial del usuario y sus notificaciones desde sessionStorage
   useEffect(() => {
-    // Verifica si hay un usuario en la sesión al cargar el componente
     const savedUser = sessionStorage.getItem("user");
+    const savedUsuario = sessionStorage.getItem("usuario");
+
     if (savedUser) {
       setUser(JSON.parse(savedUser));
+    }
+    if (savedUsuario) {
+      setUsuario(JSON.parse(savedUsuario));
     }
   }, []);
 
@@ -42,37 +44,30 @@ const LoginButton = () => {
       //carga credentialResponse en las cookies con dominio localhost
       document.cookie = `jwt_token=${credentialResponse.credential}; domain=localhost; path=/`;
 
-
-      /*
-      Se debe añadir usuario a la base de datos con los siguientes datos como mínimo:
-      Email         string  
-      Name          string
-      GivenName     string 
-      FamilyName    string 
-      Picture       string 
-      Role          string 
-      Valoration    double
-      */
-
       const user = {
         email: decodedUser.email,
         name: decodedUser.name,
-        givenName: decodedUser.given_name,
-        familyName: decodedUser.family_name,
+        given_name: decodedUser.given_name,
+        family_name: decodedUser.family_name,
         picture: decodedUser.picture,
+        locale: decodedUser.locale,
+        email_verified: decodedUser.email_verified,
         role: "user",
-        valoration: []
+        valoration: [],
+        notifications: [],
+        enable_emails: false,
       };
 
-      
       const users = await getAllUsers();
 
-      //verifica si el usuario ya existe
+      // Verifica si el usuario ya existe
       let userExists = false;
       for (let i = 0; i < users.length; i++) {
         if (users[i].email === user.email) {
           console.log("User already registered");
           sessionStorage.setItem("id", users[i].id);
+          setUsuario(users[i]); // Actualiza el estado con el usuario existente
+          sessionStorage.setItem("usuario", JSON.stringify(users[i]));
           userExists = true;
           break;
         }
@@ -81,23 +76,10 @@ const LoginButton = () => {
       if (!userExists) {
         console.log("User not registered");
         const addedUser = await postUser(user);
-        setAddedUser(addedUser);
         sessionStorage.setItem("id", addedUser.id);
-        console.log('User added:', addedUser);
+        setUsuario(addedUser); // Actualiza el estado con el nuevo usuario
+        sessionStorage.setItem("usuario", JSON.stringify(addedUser));
       }
-
-      
-      //Recarga todas las paginas cuando alguien inicia sesion
-      //carga la pagina home page
-      
-      //si la direccion actual es /login, recarga la pagina
-      if (window.location.pathname === "/login") {
-        window.location.href = "/";
-      } else {
-        window.location.reload();
-      }
-
-      
     } catch (error) {
       console.error("Error al procesar las credenciales:", error);
     }
@@ -109,12 +91,13 @@ const LoginButton = () => {
   };
 
   const handleLogout = () => {
-    // Elimina el usuario de la sesión y actualiza el estado
     sessionStorage.removeItem("user");
+    sessionStorage.removeItem("usuario");
+    sessionStorage.removeItem("id");
     //Elimina el token de las cookies
     document.cookie = `jwt_token=; domain=localhost; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC`;
     setUser(null);
-    window.location.reload();
+    setUsuario({ notifications: [] });
   };
 
   const goToProfile = () => {
@@ -129,35 +112,37 @@ const LoginButton = () => {
     setAnchorEl(null);
   };
 
+  const clearNotifications = () => {
+    const updatedUsuario = { ...usuario, notifications: [] };
+    setUsuario(updatedUsuario);
+    sessionStorage.setItem("usuario", JSON.stringify(updatedUsuario));
+
+    putUser(sessionStorage.getItem("id"), { notifications: [] })
+          .then(() => {
+            console.log("Notificaciones eliminadas.");
+            setUser((prevUser) => ({ ...prevUser, notifications: [] }));
+            
+          })
+          .catch(() => {
+            console.error("Error al enviar la configuración.");
+          });
+  };
+
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
       {user ? (
         <>
-          <Button
-            variant="contained"
-            color="info"
-            onClick={handleClick}
-          >
+          <Button variant="contained" color="info" onClick={handleClick}>
             Notificaciones
           </Button>
-          <Popover
-            open={open}
+          <Notificaciones
             anchorEl={anchorEl}
+            open={open}
             onClose={handleClose}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left',
-            }}
-          >
-            <List>
-              {notifications.map((notification, index) => (
-                <ListItem key={index}>
-                  <ListItemText primary={notification} />
-                </ListItem>
-              ))}
-            </List>
-          </Popover>
-          
+            notifications={usuario.notifications}
+            clearNotifications={clearNotifications}
+          />
+
           <Typography
             variant="body1"
             noWrap
@@ -169,28 +154,17 @@ const LoginButton = () => {
           >
             Bienvenido, {user.name}
           </Typography>
-          
-          <Button
-            variant="contained"
-            color="success"
-            onClick={goToProfile}
-          >
+
+          <Button variant="contained" color="success" onClick={goToProfile}>
             Perfil
           </Button>
-          
-          <Button
-            variant="contained"
-            color="warning"
-            onClick={handleLogout}
-          >
+
+          <Button variant="contained" color="warning" onClick={handleLogout}>
             Cerrar sesión
           </Button>
         </>
       ) : (
-        <GoogleLogin
-          onSuccess={handleLoginSuccess}
-          onError={handleLoginError}
-        />
+        <GoogleLogin onSuccess={handleLoginSuccess} onError={handleLoginError} />
       )}
     </Box>
   );

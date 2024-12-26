@@ -438,10 +438,9 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var newUser model.User
+	var payload map[string]interface{}
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&newUser); err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
+	if err := decoder.Decode(&payload); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -457,21 +456,31 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	/*
-		Email         string
-		Name          string
-		GivenName     string
-		FamilyName    string
-		Picture       string
-		Role          string
-		Valoration    double
-	*/
-	//Hago que solo se pueda actualizar el rol y la valoracion del usuario(por ahora no queremos otro)
+	// Fusiona los campos nuevos con los existentes
+	updatedFields := bson.M{}
+
+	// Verifica si `enable_mails` está presente en el payload
+	if enableMails, ok := payload["enable_mails"]; ok {
+		if enableMailsBool, isBool := enableMails.(bool); isBool {
+			updatedFields["enable_mails"] = enableMailsBool
+		} else {
+			http.Error(w, "Invalid type for enable_mails", http.StatusBadRequest)
+			return
+		}
+	} else {
+		updatedFields["enable_mails"] = existingUser.EnableMails
+	}
+
+	if role, ok := payload["role"]; ok {
+		updatedFields["role"] = role
+	}
+
+	if valoration, ok := payload["valoration"]; ok {
+		updatedFields["valoration"] = valoration
+	}
+
 	update := bson.M{
-		"$set": bson.M{
-			"role":       newUser.Role,
-			"valoration": newUser.Valoration,
-		},
+		"$set": updatedFields,
 	}
 
 	result, err := database.UsuarioCollection.UpdateOne(ctx, bson.M{"_id": objID}, update)
@@ -486,16 +495,8 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Retrieve the updated document (optional)
-	err = database.UsuarioCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&newUser)
-	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to retrieve updated user")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(newUser); err != nil {
+	if err := json.NewEncoder(w).Encode(payload); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
