@@ -415,9 +415,10 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user struct {
-		ID    string `json:"id"`
-		Name  string `json:"name"`
-		Email string `json:"email"`
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		Email       string `json:"email"`
+		EnableMails bool   `json:"enable_mails"`
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&user)
@@ -426,18 +427,18 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send an email notification to the editor
-	/*
+	if user.EnableMails {
+		// email notification al editor
 		notifyEmail("Nuevo comentario recibido",
 			"Hola {{ nombre }},\nSe ha añadido un nuevo comentario a tu entrada \"{{ entrada }}\".",
 			"<p> Hola {{ nombre }},</p><p>Se ha añadido un nuevo comentario a tu entrada \"{{ entrada }}\".</p>",
 			user.Name,
 			user.Email,
 			entry.Title)
-	*/
-	// Crear el mensaje de notificación
-	notifyInterno("Se ha añadido un nuevo comentario a tu entrada: "+entry.Title, version.Editor)
-
+	} else {
+		// notificacion interna al editor
+		notifyInterno("Se ha añadido un nuevo comentario a tu entrada "+entry.Title, version.Editor)
+	}
 }
 
 // PutComment godoc
