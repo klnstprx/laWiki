@@ -40,7 +40,7 @@ const LoginButton = () => {
       setUser(decodedUser);
 
       //carga credentialResponse en las cookies con dominio localhost
-      document.cookie = `jwt_token=${credentialResponse.credential}; domain=localhost:8000; path=/, SameSite=None; Secure`;
+      document.cookie = `jwt_token=${credentialResponse.credential}; domain=localhost; path=/`;
 
 
       /*
@@ -64,7 +64,7 @@ const LoginButton = () => {
         valoration: []
       };
 
-
+      {/*}
       const users = await getAllUsers();
 
       //verifica si el usuario ya existe
@@ -86,6 +86,7 @@ const LoginButton = () => {
         console.log('User added:', addedUser);
       }
 
+      */}
       //Recarga todas las paginas cuando alguien inicia sesion
       window.location.reload();
       
