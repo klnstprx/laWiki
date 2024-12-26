@@ -479,6 +479,10 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 		updatedFields["valoration"] = valoration
 	}
 
+	if notifications, ok := payload["notifications"]; ok {
+		updatedFields["notifications"] = notifications
+	}
+
 	update := bson.M{
 		"$set": updatedFields,
 	}
