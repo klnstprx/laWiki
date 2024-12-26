@@ -9,14 +9,55 @@ import {
   Box,
   Breadcrumbs,
   Pagination,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 
 import Grid from "@mui/joy/Grid";
 import { deleteEntry, searchEntries } from "../api/EntryApi.js";
-import { getWiki, deleteWiki } from "../api/WikiApi.js";
+import { getWiki, deleteWiki, translateWiki } from "../api/WikiApi.js";
 import EntradaCard from "../components/EntradaCard.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
+
+const availableLanguages = [
+  { code: "AR", name: "Arabic" },
+  { code: "BG", name: "Bulgarian" },
+  { code: "CS", name: "Czech" },
+  { code: "DA", name: "Danish" },
+  { code: "DE", name: "German" },
+  { code: "EL", name: "Greek" },
+  { code: "EN", name: "English" },
+  { code: "EN-GB", name: "English (British)" },
+  { code: "EN-US", name: "English (American)" },
+  { code: "ES", name: "Spanish" },
+  { code: "ET", name: "Estonian" },
+  { code: "FI", name: "Finnish" },
+  { code: "FR", name: "French" },
+  { code: "HU", name: "Hungarian" },
+  { code: "ID", name: "Indonesian" },
+  { code: "IT", name: "Italian" },
+  { code: "JA", name: "Japanese" },
+  { code: "KO", name: "Korean" },
+  { code: "LT", name: "Lithuanian" },
+  { code: "LV", name: "Latvian" },
+  { code: "NB", name: "Norwegian Bokmål" },
+  { code: "NL", name: "Dutch" },
+  { code: "PL", name: "Polish" },
+  { code: "PT", name: "Portuguese" },
+  { code: "PT-BR", name: "Portuguese (Brazilian)" },
+  { code: "PT-PT", name: "Portuguese (all Portuguese variants excluding Brazilian Portuguese)" },
+  { code: "RO", name: "Romanian" },
+  { code: "RU", name: "Russian" },
+  { code: "SK", name: "Slovak" },
+  { code: "SL", name: "Slovenian" },
+  { code: "SV", name: "Swedish" },
+  { code: "TR", name: "Turkish" },
+  { code: "UK", name: "Ukrainian" },
+  { code: "ZH", name: "Chinese" },
+  { code: "ZH-HANS", name: "Chinese (simplified)" },
+  { code: "ZH-HANT", name: "Chinese (traditional)" },
+];
 
 function WikiPage() {
   const [wiki, setWiki] = useState({});
@@ -40,6 +81,8 @@ function WikiPage() {
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
     getWiki(id)
@@ -88,6 +131,32 @@ function WikiPage() {
       showToast("Error al eliminar la wiki", "error");
     }
   };
+
+  const handleDropdownClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleDropdownClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleOptionSelect = (option) => {
+    setSelectedOption(option);
+    setIsModalOpen(true);
+    setAnchorEl(null);
+  };
+
+  const handleTranslateWiki = async () => {
+    try {
+      await translateWiki(id, selectedOption);
+      showToast(`Wiki traducida a ${selectedOption} correctamente`, "success");
+    } catch (error) {
+      console.error("Error al traducir la wiki:", error);
+      showToast("Error al traducir la wiki", "error");
+    }
+    setIsModalOpen(false);
+  };
+
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -193,6 +262,25 @@ function WikiPage() {
               >
                 Borrar Wiki
               </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ mt: 2, ml: 2 }}
+                onClick={handleDropdownClick}
+              >
+                Traducciones
+              </Button>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleDropdownClose}
+              >
+                {availableLanguages.map((lang) => (
+                  <MenuItem key={lang.code} onClick={() => handleOptionSelect(lang.code)}>
+                    {lang.name}
+                  </MenuItem>
+                ))}
+              </Menu>
             </Box>
           </Box>
 
@@ -200,9 +288,12 @@ function WikiPage() {
           <ConfirmationModal
             show={isModalOpen}
             handleClose={() => setIsModalOpen(false)}
-            handleConfirm={handleDeleteWiki}
-            message="¿Estás seguro de que quieres borrar esta wiki?"
+            handleConfirm={selectedOption ? handleTranslateWiki : handleDeleteWiki}
+            message={selectedOption ? 
+              `¿Estás seguro de que quieres traducir esta wiki a ${selectedOption}?` 
+              : "¿Estás seguro de que quieres borrar esta wiki?"}
           />
+
         </>
       )}
     </Container>
