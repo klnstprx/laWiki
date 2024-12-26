@@ -73,7 +73,7 @@ const Comentario = ({ id, content, rating, created_at, author, onDelete }) => {
               alignItems="center"
             >
               <Rating name="read-only" value={rating} readOnly size="small" />
-              {isLoggedIn && ( 
+              {isLoggedIn && (sessionStorage.getItem("role") != "redactor") && ( 
               <IconButton color="error" onClick={handleDelete}>
                 <DeleteIcon />
               </IconButton>

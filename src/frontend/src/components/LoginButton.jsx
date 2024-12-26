@@ -70,6 +70,7 @@ const LoginButton = () => {
           sessionStorage.setItem("id", users[i].id);
           setUsuario(users[i]); // Actualiza el estado con el usuario existente
           sessionStorage.setItem("usuario", JSON.stringify(users[i]));
+          sessionStorage.setItem("role", users[i].role);
           document.cookie = `role=${users[i].role}; domain=localhost; path=/`;
           userExists = true;
           break;
@@ -83,6 +84,7 @@ const LoginButton = () => {
         setUsuario(addedUser); // Actualiza el estado con el nuevo usuario
         sessionStorage.setItem("usuario", JSON.stringify(addedUser));
         document.cookie = `role=${addedUser.role}; domain=localhost; path=/`;
+        sessionStorage.setItem("role", addedUser.role);
       }
 
 
@@ -93,6 +95,7 @@ const LoginButton = () => {
       setUsuario(addedUser); // Actualiza el estado con el nuevo usuario
       sessionStorage.setItem("usuario", JSON.stringify(addedUser));
       document.cookie = `role=${addedUser.role}; domain=localhost; path=/`;
+      sessionStorage.setItem("role", addedUser.role);
     }
 
     //si la direccion actual es /login, recarga la pagina
@@ -117,6 +120,7 @@ const LoginButton = () => {
     sessionStorage.removeItem("user");
     sessionStorage.removeItem("usuario");
     sessionStorage.removeItem("id");
+    sessionStorage.removeItem("role");
     //Elimina el token de las cookies
     document.cookie = `jwt_token=; domain=localhost; path=/;`;
     document.cookie = `role=; domain=localhost; path=/;`;

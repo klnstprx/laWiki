@@ -176,8 +176,9 @@ function WikiPage() {
             >
               Crear Nueva Entrada
             </Button>
-
+            
             <Box>
+            { sessionStorage.getItem("role") != "redactor" &&
               <Button
                 component={Link}
                 to={`/wiki/form/${id}`}
@@ -187,6 +188,8 @@ function WikiPage() {
               >
                 Editar Wiki
               </Button>
+            }
+              { sessionStorage.getItem("role") == "admin" &&
               <Button
                 variant="contained"
                 color="error"
@@ -195,6 +198,7 @@ function WikiPage() {
               >
                 Borrar Wiki
               </Button>
+              }     
             </Box>
           </Box>
           )}

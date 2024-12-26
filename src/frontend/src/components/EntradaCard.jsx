@@ -84,7 +84,7 @@ const EntradaCard = ({
               </Typography>
               <Typography variant="body2"><a href={`/perfil/${usuario.id}`}>{usuario.name}</a></Typography>
             </Grid>
-      {isLoggedIn && (      
+      {isLoggedIn && (sessionStorage.getItem("role") != "redactor") &&(      
       <Grid>
         <IconButton color="error" onClick={handleDelete}>
           <DeleteIcon />

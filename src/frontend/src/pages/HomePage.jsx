@@ -50,7 +50,7 @@ function HomePage() {
           <Typography variant="h2" gutterBottom>
             Wikis
           </Typography>
-          {isLoggedIn && (
+          {isLoggedIn && (sessionStorage.getItem("role") != "redactor") && (
           <Button
             variant="contained"
             color="primary"

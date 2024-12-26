@@ -22,6 +22,9 @@ export default async function apiRequest(endpoint, options = {}) {
     window.location.href = "/login";
     //cerrar sesion ususario
     sessionStorage.removeItem("user");
+    sessionStorage.removeItem("usuario");
+    sessionStorage.removeItem("id");
+    sessionStorage.removeItem("role");
     //Elimina el token de las cookies
     document.cookie = `jwt_token=; domain=localhost; path=/;`;
     document.cookie = `role=; domain=localhost; path=/;`;
