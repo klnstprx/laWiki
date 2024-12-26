@@ -19,6 +19,7 @@ type key int
 
 const requestIDKey key = 0
 
+// Esto que yo sepa no se usa
 func RoleMiddleware(requiredRoles ...string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
