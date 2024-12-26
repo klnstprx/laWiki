@@ -70,6 +70,7 @@ const LoginButton = () => {
           sessionStorage.setItem("id", users[i].id);
           setUsuario(users[i]); // Actualiza el estado con el usuario existente
           sessionStorage.setItem("usuario", JSON.stringify(users[i]));
+          document.cookie = `role=${users[i].role}; domain=localhost; path=/`;
           userExists = true;
           break;
         }
@@ -81,6 +82,7 @@ const LoginButton = () => {
         sessionStorage.setItem("id", addedUser.id);
         setUsuario(addedUser); // Actualiza el estado con el nuevo usuario
         sessionStorage.setItem("usuario", JSON.stringify(addedUser));
+        document.cookie = `role=${addedUser.role}; domain=localhost; path=/`;
       }
 
 
@@ -90,6 +92,7 @@ const LoginButton = () => {
       sessionStorage.setItem("id", addedUser.id);
       setUsuario(addedUser); // Actualiza el estado con el nuevo usuario
       sessionStorage.setItem("usuario", JSON.stringify(addedUser));
+      document.cookie = `role=${addedUser.role}; domain=localhost; path=/`;
     }
 
     //si la direccion actual es /login, recarga la pagina
