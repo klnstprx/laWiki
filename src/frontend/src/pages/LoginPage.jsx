@@ -15,7 +15,7 @@ function LoginPage() {
 
   return (
     <div>
-      <h1>Debes haber iniciado session.</h1>
+      <h1>Debes haber iniciado sesion.</h1>
     </div>
   );
 }

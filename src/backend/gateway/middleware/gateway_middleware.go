@@ -51,7 +51,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		//Asi para que a las solicitudes get no se les pida autenticacion
-		if strings.HasPrefix(r.URL.Path, "/api/auth/") || r.URL.Path == "/health" {
+		if strings.HasPrefix(r.URL.Path, "/api/auth/") || r.URL.Path == "/health" || r.Method == http.MethodGet {
 			next.ServeHTTP(w, r)
 			return
 		}

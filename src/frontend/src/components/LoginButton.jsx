@@ -64,7 +64,7 @@ const LoginButton = () => {
         valoration: []
       };
 
-      {/*}
+      
       const users = await getAllUsers();
 
       //verifica si el usuario ya existe
@@ -86,10 +86,16 @@ const LoginButton = () => {
         console.log('User added:', addedUser);
       }
 
-      */}
-      //Recarga todas las paginas cuando alguien inicia sesion
-      window.location.reload();
       
+      //Recarga todas las paginas cuando alguien inicia sesion
+      //carga la pagina home page
+      
+      //si la direccion actual es /login, recarga la pagina
+      if (window.location.pathname === "/login") {
+        window.location.href = "/";
+      } else {
+        window.location.reload();
+      }
 
       
     } catch (error) {
