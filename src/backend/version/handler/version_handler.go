@@ -349,9 +349,10 @@ func PostVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user struct {
-		ID    string `json:"id"`
-		Name  string `json:"name"`
-		Email string `json:"email"`
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		Email       string `json:"email"`
+		EnableMails bool   `json:"enable_mails"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
@@ -360,18 +361,18 @@ func PostVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send an email notification to the entry author
-
-	/*
+	if user.EnableMails {
+		// email notification al autor de la entrada
 		notifyEmail("Tu entrada ha sido modificada",
 			"Hola {{ nombre }},\nTu entrada \"{{ entrada }}\" ha sido modificada.",
 			"<p> Hola {{ nombre }},</p><p>Tu entrada \"{{ entrada }}\" ha sido modificada.</p>",
 			user.Name,
 			user.Email,
 			entry.Title)
-	*/
-
-	notifyInterno("Tu entrada "+entry.Title+" ha sido modificada", entry.Author)
+	} else {
+		// notificación interna al autor de la entrada
+		notifyInterno("Tu entrada "+entry.Title+" ha sido modificada", entry.Author)
+	}
 }
 
 // PutVersion godoc
@@ -684,9 +685,10 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user struct {
-		ID    string `json:"id"`
-		Name  string `json:"name"`
-		Email string `json:"email"`
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		Email       string `json:"email"`
+		EnableMails bool   `json:"enable_mails"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
@@ -695,16 +697,18 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send an email notification to the editor
-	/*
+	if user.EnableMails {
+		// email notification al editor
 		notifyEmail("Tu modificación ha sido eliminada",
 			"Hola {{ nombre }},\nTu versión de la entrada \"{{ entrada }}\" ha sido eliminada.",
 			"<p> Hola {{ nombre }},</p><p>Tu versión de la entrada \"{{ entrada }}\" ha sido eliminada.</p>",
 			user.Name,
 			user.Email,
 			entry.Title)
-	*/
-	notifyInterno("Tu versión de la entrada "+entry.Title+" ha sido eliminada", version.Editor)
+	} else {
+		// notificación interna al editor
+		notifyInterno("Tu versión de la entrada "+entry.Title+" ha sido eliminada", version.Editor)
+	}
 }
 
 // DeleteVersionsByEntryID godoc
