@@ -60,6 +60,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		cookie, err := r.Cookie("jwt_token")
 		if err != nil {
 			http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
+			fmt.Errorf("Missing token")
 			return
 		}
 
