@@ -83,7 +83,8 @@ function WikiPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
-
+  const [pendingLanguage, setPendingLanguage] = useState(null);
+ 
   useEffect(() => {
     getWiki(id)
       .then((data) => {
@@ -131,7 +132,6 @@ function WikiPage() {
       showToast("Error al eliminar la wiki", "error");
     }
   };
-
   const handleDropdownClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -141,22 +141,40 @@ function WikiPage() {
   };
 
   const handleOptionSelect = (option) => {
-    setSelectedOption(option);
+    setPendingLanguage(option);
     setIsModalOpen(true);
     setAnchorEl(null);
   };
 
   const handleTranslateWiki = async () => {
-    try {
-      await translateWiki(id, selectedOption);
-      showToast(`Wiki traducida a ${selectedOption} correctamente`, "success");
-    } catch (error) {
-      console.error("Error al traducir la wiki:", error);
-      showToast("Error al traducir la wiki", "error");
-    }
-    setIsModalOpen(false);
+
+      if(!pendingLanguage===wiki.sourceLang){
+        try {
+          await translateWiki(id, pendingLanguage);
+          showToast(`Wiki traducida a ${pendingLanguage} correctamente`, "success");
+          // Fetch the updated wiki data to reflect the translation
+          const updatedWiki = await getWiki(id);
+          setWiki(updatedWiki);
+          setSelectedOption(pendingLanguage);
+        } catch (error) {
+          console.error("Error al traducir la wiki:", error);
+          showToast("Error al traducir la wiki", "error");
+        }
+        setIsModalOpen(false);
+      }else{
+        showToast(`Wiki traducida a ${pendingLanguage} correctamente`, "success");
+        setSelectedOption(pendingLanguage);
+        setIsModalOpen(false);
+      }
   };
 
+  const getTranslatedField = (field) => {
+    if (wiki.sourceLang===selectedOption) {
+      return wiki[field];
+    }else{
+      return wiki.translatedFields?.[selectedOption]?.[field] || wiki[field];
+    }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -170,7 +188,7 @@ function WikiPage() {
           Inicio
         </Typography>
         <Typography color="textPrimary" className="breadcrumb-active">
-          {wiki.title}
+          {getTranslatedField("title")}
         </Typography>
       </Breadcrumbs>
 
@@ -188,13 +206,13 @@ function WikiPage() {
             sx={{ p: 2,  mb: 4, textAlign: "center", borderRadius: 1 }}
           >
             <Typography variant="h3" component="h1" sx={{ m: 0 }}>
-              {wiki.title}
+            {getTranslatedField("title")}
             </Typography>
             <Typography variant="h6" gutterBottom>
-              <strong>Descripción:</strong> {wiki.description}
+              <strong>Descripción:</strong> {getTranslatedField("description")}
             </Typography>
             <Typography variant="h6" gutterBottom>
-              <strong>Categoría:</strong> {wiki.category}
+              <strong>Categoría:</strong> {getTranslatedField("category")}
             </Typography>
           </Paper>
 
@@ -268,7 +286,7 @@ function WikiPage() {
                 sx={{ mt: 2, ml: 2 }}
                 onClick={handleDropdownClick}
               >
-                Traducciones
+                Cambiar Idioma: {selectedOption || "Seleccionar"}
               </Button>
               <Menu
                 anchorEl={anchorEl}
@@ -288,9 +306,9 @@ function WikiPage() {
           <ConfirmationModal
             show={isModalOpen}
             handleClose={() => setIsModalOpen(false)}
-            handleConfirm={selectedOption ? handleTranslateWiki : handleDeleteWiki}
-            message={selectedOption ? 
-              `¿Estás seguro de que quieres traducir esta wiki a ${selectedOption}?` 
+            handleConfirm={pendingLanguage ? handleTranslateWiki : handleDeleteWiki}
+            message={pendingLanguage ? 
+              `¿Estás seguro de que quieres traducir esta wiki a ${pendingLanguage}?` 
               : "¿Estás seguro de que quieres borrar esta wiki?"}
           />
 
