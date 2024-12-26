@@ -7,8 +7,6 @@ import (
 	"runtime/debug"
 	"time"
 
-	"strings"
-
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
@@ -56,8 +54,11 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		//Asi para que a las solicitudes get(y otras) no se les pida autenticacion
-		if strings.HasPrefix(r.URL.Path, "/api/auth/") || r.URL.Path == "/health" || r.Method == http.MethodGet {
+		//haz que el servidor muestre por pantalla el path de la solicitud
+		fmt.Println(r.URL.Path)
+
+		//Asi para que a las solicitudes get(y las que son a auth) no se les pida autenticacion
+		if r.URL.Path == "/api/auth" || r.URL.Path == "/health" || r.Method == http.MethodGet {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -70,7 +71,15 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		cookieRole, err := r.Cookie("role")
+		if err != nil {
+			http.Error(w, "Unauthorized: missing role", http.StatusUnauthorized)
+			fmt.Errorf("Missing role")
+			return
+		}
+
 		tokenString := cookie.Value
+		role := cookieRole.Value
 
 		// Parse and validate the token using RS256 and public key
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -115,7 +124,15 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		// Extract user claims and add them to the request context
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			ctx := context.WithValue(r.Context(), "user", claims)
-			next.ServeHTTP(w, r.WithContext(ctx))
+			//Para peticiones de tipo post y put es necesario el rol de redactor
+			if r.Method == http.MethodPost || r.Method == http.MethodPut {
+				if role == "redactor" {
+					next.ServeHTTP(w, r.WithContext(ctx))
+					return
+				}
+				http.Error(w, "Forbidden: insufficient privileges", http.StatusForbidden)
+				return
+			}
 		} else {
 			http.Error(w, "Unauthorized: invalid token claims", http.StatusUnauthorized)
 			return
