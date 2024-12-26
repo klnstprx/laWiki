@@ -17,6 +17,16 @@ export default async function apiRequest(endpoint, options = {}) {
     ...options,
   });
 
+  // Si la respuesta es un 401 Unauthorized, redirigimos al usuario a la página de inicio de sesión
+  if (response.status === 401) {
+    window.location.href = "/login";
+    //cerrar sesion ususario
+    sessionStorage.removeItem("user");
+    //Elimina el token de las cookies
+    document.cookie = `jwt_token=; domain=localhost; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC`;
+    return;
+  }
+
   // Comprobamos si la respuesta fue correcta (status 200-299)
   if (!response.ok) {
     let errorMessage = `HTTP error! status: ${response.status}`;
