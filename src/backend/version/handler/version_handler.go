@@ -428,6 +428,8 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
+
+		req.Header.Set("X-Internal-Request", "true")
 		resp, err := client.Do(req)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to send request to media service")
@@ -550,7 +552,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 		}
 
 		config.App.Logger.Info().Str("url", mediaServiceURL).Msg("Sending delete request to media service")
-
+		req.Header.Set("X-Internal-Request", "true")
 		resp, err := client.Do(req)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to send delete request to media service")
@@ -766,6 +768,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
 				return
 			}
+			req.Header.Set("X-Internal-Request", "true")
 			resp, err := client.Do(req)
 			if err != nil {
 				config.App.Logger.Error().Err(err).Msg("Failed to send request to media service")
@@ -793,6 +796,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Internal-Request", "true")
 
 		config.App.Logger.Info().Str("url", commentServiceURL).Msg("Sending delete request to comment service")
 		client := &http.Client{
@@ -910,6 +914,7 @@ func notifyInterno(mensaje string, autor string) {
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Internal-Request", "true")
 
 	// Enviar la solicitud
 	resp, err := client.Do(req)

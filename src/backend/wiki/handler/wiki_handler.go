@@ -390,6 +390,8 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		req.Header.Set("X-Internal-Request", "true")
+
 		resp, err := client.Do(req)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to send request to media service")
@@ -422,6 +424,8 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 	}
 
 	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Sending request to delete associated entries")
+
+	req.Header.Set("X-Internal-Request", "true")
 
 	resp, err := client.Do(req)
 	if err != nil {
