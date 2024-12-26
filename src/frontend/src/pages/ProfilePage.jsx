@@ -9,7 +9,11 @@ const ProfilePage = () => {
 
   const [newRating, setNewRating] = useState(0);
   const [mediaRating, setMediaRating] = useState(0);
+  const [showRatingForm, setShowRatingForm] = useState(true); // Estado para controlar la visibilidad del formulario
   const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
+  // Obtener el email del usuario logueado desde sessionStorage
+  const loggedInUser = JSON.parse(sessionStorage.getItem('user'));
+  const loggedInUserEmail = loggedInUser ? loggedInUser.email : null;
 
   const handleRatingChange = (event, newValue) => {
     setNewRating(newValue);
@@ -26,6 +30,7 @@ const ProfilePage = () => {
         console.log("Valoración enviada.");
         // Actualizar el estado de la valoración
         setUser((prevUser) => ({ ...prevUser, valoration: updatedValoration }));
+        setShowRatingForm(false);
       })
       .catch(() => {
         console.error("Error al enviar la valoración.");
@@ -126,7 +131,7 @@ const ProfilePage = () => {
         
 
         {/* Formulario para valorar */}
-        {isLoggedIn && (
+        {isLoggedIn && showRatingForm && user.email != loggedInUserEmail && (
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4 }}>
           <Typography variant="h6" gutterBottom>
             Valorar al usuario
