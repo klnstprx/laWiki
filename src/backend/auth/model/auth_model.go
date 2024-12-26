@@ -8,8 +8,9 @@ type User struct {
 	FamilyName    string    `json:"family_name" bson:"family_name"`
 	Picture       string    `json:"picture" bson:"picture"`
 	Locale        string    `json:"locale" bson:"locale"`
-	VerifiedEmail bool      `json:"verified_email" bson:"verified_email"`
+	EmailVerified bool      `json:"email_verified" bson:"email_verified"`
 	Role          string    `json:"role" bson:"role"`
 	Valoration    []float64 `json:"valoration" bson:"valoration"`
 	Notifications []string  `json:"notifications" bson:"notifications"`
+	EnableMails   bool      `json:"enable_mails" bson:"enable_mails"`
 }
