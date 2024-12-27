@@ -23,6 +23,7 @@ import {
   Typography,
   Menu,
   MenuItem,
+  Divider,
 } from "@mui/material";
 import { getWiki } from "../api/WikiApi.js";
 import HistoryIcon from "@mui/icons-material/History";
@@ -350,14 +351,22 @@ function EntradaPage() {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Typography variant="subtitle2">Autor: {entry.author}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              Autor: {entry.author}
+            </Typography>
             <Typography variant="caption" color="text.secondary">
               {new Date(entry.created_at).toLocaleDateString()}
             </Typography>
           </Stack>
-          <Typography variant="h2" component="h1">
+
+          <Divider sx={{ my: 2 }} />
+
+          <Typography variant="h2" component="h1" style={{ padding: "16px" }}>
             {getTranslatedField("title")}
           </Typography>
+
+          <Divider sx={{ my: 2 }} />
+          
           <Stack
             direction="row"
             spacing={2}
@@ -380,7 +389,6 @@ function EntradaPage() {
             >
               Editar contenido
             </Button>
-            {/* Language Selector */}
             <Button
               variant="contained"
               color="primary"
