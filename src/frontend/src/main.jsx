@@ -11,15 +11,19 @@ import { ThemeProvider } from "@mui/material/styles";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import theme from "./styles/theme";
+import { LanguageProvider } from "./context/LanguageProvider";
+
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
       <BrowserRouter>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
+          <LanguageProvider>
+              <ToastProvider>
+                <App />
+              </ToastProvider>
+          </LanguageProvider>
         </LocalizationProvider>
       </BrowserRouter>
     </ThemeProvider>
