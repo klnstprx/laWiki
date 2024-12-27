@@ -148,7 +148,7 @@ function WikiPage() {
 
   const handleTranslateWiki = async () => {
 
-      if(!pendingLanguage===wiki.sourceLang){
+      if(wiki.sourceLang!==pendingLanguage){
         try {
           await translateWiki(id, pendingLanguage);
           showToast(`Wiki traducida a ${pendingLanguage} correctamente`, "success");
@@ -162,7 +162,7 @@ function WikiPage() {
         }
         setIsModalOpen(false);
       }else{
-        showToast(`Wiki traducida a ${pendingLanguage} correctamente`, "success");
+        showToast(`FWiki traducida a ${pendingLanguage} correctamente`, "success");
         setSelectedOption(pendingLanguage);
         setIsModalOpen(false);
       }
