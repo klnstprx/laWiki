@@ -19,45 +19,7 @@ import { getWiki, deleteWiki, translateWiki } from "../api/WikiApi.js";
 import EntradaCard from "../components/EntradaCard.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
-
-const availableLanguages = [
-  { code: "AR", name: "Arabic" },
-  { code: "BG", name: "Bulgarian" },
-  { code: "CS", name: "Czech" },
-  { code: "DA", name: "Danish" },
-  { code: "DE", name: "German" },
-  { code: "EL", name: "Greek" },
-  { code: "EN", name: "English" },
-  { code: "EN-GB", name: "English (British)" },
-  { code: "EN-US", name: "English (American)" },
-  { code: "ES", name: "Spanish" },
-  { code: "ET", name: "Estonian" },
-  { code: "FI", name: "Finnish" },
-  { code: "FR", name: "French" },
-  { code: "HU", name: "Hungarian" },
-  { code: "ID", name: "Indonesian" },
-  { code: "IT", name: "Italian" },
-  { code: "JA", name: "Japanese" },
-  { code: "KO", name: "Korean" },
-  { code: "LT", name: "Lithuanian" },
-  { code: "LV", name: "Latvian" },
-  { code: "NB", name: "Norwegian Bokmål" },
-  { code: "NL", name: "Dutch" },
-  { code: "PL", name: "Polish" },
-  { code: "PT", name: "Portuguese" },
-  { code: "PT-BR", name: "Portuguese (Brazilian)" },
-  { code: "PT-PT", name: "Portuguese (all Portuguese variants excluding Brazilian Portuguese)" },
-  { code: "RO", name: "Romanian" },
-  { code: "RU", name: "Russian" },
-  { code: "SK", name: "Slovak" },
-  { code: "SL", name: "Slovenian" },
-  { code: "SV", name: "Swedish" },
-  { code: "TR", name: "Turkish" },
-  { code: "UK", name: "Ukrainian" },
-  { code: "ZH", name: "Chinese" },
-  { code: "ZH-HANS", name: "Chinese (simplified)" },
-  { code: "ZH-HANT", name: "Chinese (traditional)" },
-];
+import { availableLanguages } from "../constants/languages.js";
 
 function WikiPage() {
   const [wiki, setWiki] = useState({});
@@ -156,13 +118,16 @@ function WikiPage() {
           const updatedWiki = await getWiki(id);
           setWiki(updatedWiki);
           setSelectedOption(pendingLanguage);
+          // Fetch the updated entries to reflect the translation
+          const updatedEntries = await searchEntries({ wikiID: id });
+          setEntradas(updatedEntries);
         } catch (error) {
           console.error("Error al traducir la wiki:", error);
           showToast("Error al traducir la wiki", "error");
         }
         setIsModalOpen(false);
       }else{
-        showToast(`FWiki traducida a ${pendingLanguage} correctamente`, "success");
+        showToast(`Wiki traducida a ${pendingLanguage} correctamente`, "success");
         setSelectedOption(pendingLanguage);
         setIsModalOpen(false);
       }
@@ -231,7 +196,13 @@ function WikiPage() {
                   <Grid xs={12} sm={6} md={4} key={entrada.id}>
                     <EntradaCard
                       id={entrada.id}
-                      title={entrada.title}
+                      title={
+                        entrada.translatedFields &&
+                        entrada.translatedFields[selectedOption] &&
+                        entrada.translatedFields[selectedOption].title
+                          ? entrada.translatedFields[selectedOption].title
+                          : entrada.title
+                      }
                       author={entrada.author}
                       createdAt={entrada.created_at}
                       onDelete={handleDeleteEntry}
