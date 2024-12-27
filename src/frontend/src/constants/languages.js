@@ -24,7 +24,7 @@ export const availableLanguages = [
   { code: "PL", name: "Polish" },
   { code: "PT", name: "Portuguese" },
   { code: "PT-BR", name: "Portuguese (Brazilian)" },
-  { code: "PT-PT", name: "Portuguese (all Portuguese variants excluding Brazilian Portuguese)" },
+  { code: "PT-PT", name: "Portuguese (Portugal)" },
   { code: "RO", name: "Romanian" },
   { code: "RU", name: "Russian" },
   { code: "SK", name: "Slovak" },
