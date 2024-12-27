@@ -87,7 +87,6 @@ const ProfilePage = () => {
         setUser((prevUser) => ({ ...prevUser, role: selectedRole }));
         //cambiar el rol de la sesion y cookies
         showToast("El rol del usuario ha sido actualizado correctamente.", "success");
-        window.location.reload();
       })
       .catch(() => {
         console.error("Error al actualizar el rol.");
