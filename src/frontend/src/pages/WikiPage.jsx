@@ -20,6 +20,7 @@ import EntradaCard from "../components/EntradaCard.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
 import { availableLanguages } from "../constants/languages.js";
+import {useLanguage} from "../context/LanguageContext.jsx";
 
 function WikiPage() {
   const [wiki, setWiki] = useState({});
@@ -43,7 +44,7 @@ function WikiPage() {
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const { selectedOption, setSelectedOption } = useLanguage();
   const [anchorEl, setAnchorEl] = useState(null);
   const [pendingLanguage, setPendingLanguage] = useState(null);
  
