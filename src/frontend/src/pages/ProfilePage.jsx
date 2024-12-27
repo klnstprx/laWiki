@@ -86,8 +86,6 @@ const ProfilePage = () => {
         // Actualizar el estado del rol
         setUser((prevUser) => ({ ...prevUser, role: selectedRole }));
         //cambiar el rol de la sesion y cookies
-        sessionStorage.setItem("role", selectedRole);
-        document.cookie = `role=${selectedRole}; domain=localhost; path=/`;
         showToast("El rol del usuario ha sido actualizado correctamente.", "success");
         window.location.reload();
       })
@@ -234,7 +232,7 @@ const ProfilePage = () => {
         )}
 
         {/* Formulario para cambiar rol */}
-        {isLoggedIn && (sessionStorage.getItem("role") === "admin") && (
+        {isLoggedIn && (sessionStorage.getItem("role") === "admin") && user.email != loggedInUserEmail &&(
           <Box component="form" onSubmit={handleSubmitRoleChange} sx={{ mt: 4 }}>
             <FormControl fullWidth sx={{ mb: 2 }}>
               <InputLabel id="role-select-label">Rol</InputLabel>
