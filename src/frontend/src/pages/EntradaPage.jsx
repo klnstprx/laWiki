@@ -28,6 +28,7 @@ import {
 import { getWiki } from "../api/WikiApi.js";
 import HistoryIcon from "@mui/icons-material/History";
 import EditIcon from "@mui/icons-material/Edit";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 import Grid from "@mui/joy/Grid";
 import { availableLanguages } from "../constants/languages.js";
@@ -253,7 +254,7 @@ function EntradaPage() {
 
   // Language selector state and handlers
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const { selectedOption, setSelectedOption } = useLanguage();
   const [anchorEl, setAnchorEl] = useState(null);
   const [pendingLanguage, setPendingLanguage] = useState(null);
 
@@ -305,6 +306,14 @@ function EntradaPage() {
       return wiki[field];
     } else {
       return wiki.translatedFields?.[selectedOption]?.[field] || wiki[field];
+    }
+  };
+
+  const getTranslatedFieldVersion = (field) => {
+    if (entry.sourceLang === selectedOption) {
+      return version[field];
+    } else {
+      return version.translatedFields?.[selectedOption]?.[field] || version[field];
     }
   };
 
@@ -425,7 +434,7 @@ function EntradaPage() {
           )
           : (
             <Version
-              content={version.content}
+              content={getTranslatedFieldVersion("content")}
               editor={version.editor}
               created_at={version.created_at}
               entry_id={version.entry_id}

@@ -20,7 +20,7 @@ import EntradaCard from "../components/EntradaCard.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
 import { availableLanguages } from "../constants/languages.js";
-import {useLanguage} from "../context/LanguageContext.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 function WikiPage() {
   const [wiki, setWiki] = useState({});
