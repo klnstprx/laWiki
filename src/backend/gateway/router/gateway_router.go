@@ -20,6 +20,7 @@ func NewRouter() http.Handler {
 	r.Use(custommw.LoggerMiddleware(config.App.Logger))
 	// Custom middleware for authentication, etc.
 	r.Use(custommw.RequestID)
+	r.Use(custommw.AuthMiddleware)
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{config.App.FrontendURL}, // Reemplaza con el dominio del frontend
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -28,7 +29,6 @@ func NewRouter() http.Handler {
 		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
-	r.Use(custommw.AuthMiddleware)
 	// Health Check
 	r.Get("/health", handler.HealthCheck)
 

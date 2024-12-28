@@ -20,6 +20,23 @@ const requestIDKey key = 0
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", config.App.FrontendURL) // Reemplaza con el dominio del frontend
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		// Si es una petición interna, omitir la autenticación
+		if r.Header.Get("X-Internal-Request") == "true" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Si es una solicitud OPTIONS, respondemos inmediatamente
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
 		if r.Method == http.MethodGet {
 			next.ServeHTTP(w, r)
 			return
