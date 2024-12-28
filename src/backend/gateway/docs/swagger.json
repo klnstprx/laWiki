@@ -5,6 +5,217 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/auth": {
+      "get": {
+        "description": "Retrieves the list of all user objects from the database",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get All Users",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "email_verified": {
+                    "type": "boolean"
+                  },
+                  "enable_mails": {
+                    "type": "boolean"
+                  },
+                  "family_name": {
+                    "type": "string"
+                  },
+                  "given_name": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "locale": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "notifications": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "picture": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  },
+                  "valoration": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Creates a new user. Expects a JSON object in the request body.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Create a New User",
+        "parameters": [
+          {
+            "description": "User information",
+            "name": "user",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "email_verified": {
+                  "type": "boolean"
+                },
+                "enable_mails": {
+                  "type": "boolean"
+                },
+                "family_name": {
+                  "type": "string"
+                },
+                "given_name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "locale": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "notifications": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "picture": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string"
+                },
+                "valoration": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "email_verified": {
+                  "type": "boolean"
+                },
+                "enable_mails": {
+                  "type": "boolean"
+                },
+                "family_name": {
+                  "type": "string"
+                },
+                "given_name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "locale": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "notifications": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "picture": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string"
+                },
+                "valoration": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "/api/auth/callback": {
       "get": {
         "description": "Handles the OAuth2 callback from Google",
@@ -35,6 +246,12 @@
               "type": "string"
             }
           },
+          "400": {
+            "description": "Missing state or code",
+            "schema": {
+              "type": "string"
+            }
+          },
           "401": {
             "description": "Invalid OAuth state",
             "schema": {
@@ -42,7 +259,7 @@
             }
           },
           "500": {
-            "description": "Could not create JWT",
+            "description": "Internal server error",
             "schema": {
               "type": "string"
             }
@@ -87,6 +304,344 @@
         }
       }
     },
+    "/api/auth/logout": {
+      "get": {
+        "description": "Clears the JWT token cookie",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Logout",
+        "responses": {
+          "302": {
+            "description": "Redirect after logout",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "description": "Returns user information for the authenticated user",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Get Authenticated User Info",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "email_verified": {
+                  "type": "boolean"
+                },
+                "enable_mails": {
+                  "type": "boolean"
+                },
+                "family_name": {
+                  "type": "string"
+                },
+                "given_name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "locale": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "notifications": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "picture": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string"
+                },
+                "valoration": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/{id}": {
+      "get": {
+        "description": "Retrieves a user by its ID",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get a User by ID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "User ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "email_verified": {
+                  "type": "boolean"
+                },
+                "enable_mails": {
+                  "type": "boolean"
+                },
+                "family_name": {
+                  "type": "string"
+                },
+                "given_name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "locale": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "notifications": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "picture": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string"
+                },
+                "valoration": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid user ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Updates a user by its ID. Expects a JSON object in the request body.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update a User by ID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "User ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Updated user information",
+            "name": "user",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "400": {
+            "description": "Invalid user ID or request body",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Deletes a user by its ID",
+        "tags": [
+          "Users"
+        ],
+        "summary": "Delete a User by ID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "User ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Invalid user ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/{id}/notifications": {
+      "post": {
+        "description": "Adds a notification to the specified user",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Add a Notification to a User",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "User ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Notification to add",
+            "name": "notification",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notification added successfully",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Invalid user ID or request body",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "/api/wikis/": {
       "get": {
         "description": "Retrieves the list of all wiki JSON objects from the database.",
@@ -108,13 +663,22 @@
                   "category": {
                     "type": "string"
                   },
+                  "created_at": {
+                    "type": "string"
+                  },
                   "description": {
                     "type": "string"
                   },
                   "id": {
                     "type": "string"
                   },
+                  "media_id": {
+                    "type": "string"
+                  },
                   "title": {
+                    "type": "string"
+                  },
+                  "updated_at": {
                     "type": "string"
                   }
                 }
@@ -153,13 +717,22 @@
                 "category": {
                   "type": "string"
                 },
+                "created_at": {
+                  "type": "string"
+                },
                 "description": {
                   "type": "string"
                 },
                 "id": {
                   "type": "string"
                 },
+                "media_id": {
+                  "type": "string"
+                },
                 "title": {
+                  "type": "string"
+                },
+                "updated_at": {
                   "type": "string"
                 }
               }
@@ -175,13 +748,22 @@
                 "category": {
                   "type": "string"
                 },
+                "created_at": {
+                  "type": "string"
+                },
                 "description": {
                   "type": "string"
                 },
                 "id": {
                   "type": "string"
                 },
+                "media_id": {
+                  "type": "string"
+                },
                 "title": {
+                  "type": "string"
+                },
+                "updated_at": {
                   "type": "string"
                 }
               }
@@ -269,13 +851,22 @@
                   "category": {
                     "type": "string"
                   },
+                  "created_at": {
+                    "type": "string"
+                  },
                   "description": {
                     "type": "string"
                   },
                   "id": {
                     "type": "string"
                   },
+                  "media_id": {
+                    "type": "string"
+                  },
                   "title": {
+                    "type": "string"
+                  },
+                  "updated_at": {
                     "type": "string"
                   }
                 }
@@ -325,13 +916,22 @@
                 "category": {
                   "type": "string"
                 },
+                "created_at": {
+                  "type": "string"
+                },
                 "description": {
                   "type": "string"
                 },
                 "id": {
                   "type": "string"
                 },
+                "media_id": {
+                  "type": "string"
+                },
                 "title": {
+                  "type": "string"
+                },
+                "updated_at": {
                   "type": "string"
                 }
               }
@@ -388,13 +988,22 @@
                 "category": {
                   "type": "string"
                 },
+                "created_at": {
+                  "type": "string"
+                },
                 "description": {
                   "type": "string"
                 },
                 "id": {
                   "type": "string"
                 },
+                "media_id": {
+                  "type": "string"
+                },
                 "title": {
+                  "type": "string"
+                },
+                "updated_at": {
                   "type": "string"
                 }
               }
@@ -410,13 +1019,22 @@
                 "category": {
                   "type": "string"
                 },
+                "created_at": {
+                  "type": "string"
+                },
                 "description": {
                   "type": "string"
                 },
                 "id": {
                   "type": "string"
                 },
+                "media_id": {
+                  "type": "string"
+                },
                 "title": {
+                  "type": "string"
+                },
+                "updated_at": {
                   "type": "string"
                 }
               }
@@ -515,89 +1133,14 @@
                   "title": {
                     "type": "string"
                   },
+                  "updated_at": {
+                    "type": "string"
+                  },
                   "wiki_id": {
                     "type": "string"
                   }
                 }
               }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new entry. Expects a JSON object in the request body.",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Entries"
-        ],
-        "summary": "Create a new entry",
-        "parameters": [
-          {
-            "description": "Entry information",
-            "name": "entry",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "author": {
-                  "type": "string"
-                },
-                "created_at": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                },
-                "title": {
-                  "type": "string"
-                },
-                "wiki_id": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "author": {
-                  "type": "string"
-                },
-                "created_at": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                },
-                "title": {
-                  "type": "string"
-                },
-                "wiki_id": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request body",
-            "schema": {
-              "type": "string"
             }
           },
           "500": {
@@ -689,6 +1232,9 @@
                     "type": "string"
                   },
                   "title": {
+                    "type": "string"
+                  },
+                  "updated_at": {
                     "type": "string"
                   },
                   "wiki_id": {
@@ -794,6 +1340,9 @@
                 "title": {
                   "type": "string"
                 },
+                "updated_at": {
+                  "type": "string"
+                },
                 "wiki_id": {
                   "type": "string"
                 }
@@ -860,6 +1409,9 @@
                 "title": {
                   "type": "string"
                 },
+                "updated_at": {
+                  "type": "string"
+                },
                 "wiki_id": {
                   "type": "string"
                 }
@@ -883,6 +1435,9 @@
                   "type": "string"
                 },
                 "title": {
+                  "type": "string"
+                },
+                "updated_at": {
                   "type": "string"
                 },
                 "wiki_id": {
@@ -981,11 +1536,17 @@
                   "created_at": {
                     "type": "string"
                   },
+                  "entry_id": {
+                    "type": "string"
+                  },
                   "id": {
                     "type": "string"
                   },
                   "rating": {
                     "type": "integer"
+                  },
+                  "updated_at": {
+                    "type": "string"
                   },
                   "version_id": {
                     "type": "string"
@@ -1032,11 +1593,17 @@
                 "created_at": {
                   "type": "string"
                 },
+                "entry_id": {
+                  "type": "string"
+                },
                 "id": {
                   "type": "string"
                 },
                 "rating": {
                   "type": "integer"
+                },
+                "updated_at": {
+                  "type": "string"
                 },
                 "version_id": {
                   "type": "string"
@@ -1060,11 +1627,17 @@
                 "created_at": {
                   "type": "string"
                 },
+                "entry_id": {
+                  "type": "string"
+                },
                 "id": {
                   "type": "string"
                 },
                 "rating": {
                   "type": "integer"
+                },
+                "updated_at": {
+                  "type": "string"
                 },
                 "version_id": {
                   "type": "string"
@@ -1166,11 +1739,17 @@
                   "created_at": {
                     "type": "string"
                   },
+                  "entry_id": {
+                    "type": "string"
+                  },
                   "id": {
                     "type": "string"
                   },
                   "rating": {
                     "type": "integer"
+                  },
+                  "updated_at": {
+                    "type": "string"
                   },
                   "version_id": {
                     "type": "string"
@@ -1260,11 +1839,17 @@
                 "created_at": {
                   "type": "string"
                 },
+                "entry_id": {
+                  "type": "string"
+                },
                 "id": {
                   "type": "string"
                 },
                 "rating": {
                   "type": "integer"
+                },
+                "updated_at": {
+                  "type": "string"
                 },
                 "version_id": {
                   "type": "string"
@@ -1329,11 +1914,17 @@
                 "created_at": {
                   "type": "string"
                 },
+                "entry_id": {
+                  "type": "string"
+                },
                 "id": {
                   "type": "string"
                 },
                 "rating": {
                   "type": "integer"
+                },
+                "updated_at": {
+                  "type": "string"
                 },
                 "version_id": {
                   "type": "string"
@@ -1357,11 +1948,17 @@
                 "created_at": {
                   "type": "string"
                 },
+                "entry_id": {
+                  "type": "string"
+                },
                 "id": {
                   "type": "string"
                 },
                 "rating": {
                   "type": "integer"
+                },
+                "updated_at": {
+                  "type": "string"
                 },
                 "version_id": {
                   "type": "string"
@@ -1450,6 +2047,9 @@
               "items": {
                 "type": "object",
                 "properties": {
+                  "address": {
+                    "type": "string"
+                  },
                   "content": {
                     "type": "string"
                   },
@@ -1463,6 +2063,15 @@
                     "type": "string"
                   },
                   "id": {
+                    "type": "string"
+                  },
+                  "media_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "updated_at": {
                     "type": "string"
                   }
                 }
@@ -1498,6 +2107,9 @@
             "schema": {
               "type": "object",
               "properties": {
+                "address": {
+                  "type": "string"
+                },
                 "content": {
                   "type": "string"
                 },
@@ -1511,6 +2123,15 @@
                   "type": "string"
                 },
                 "id": {
+                  "type": "string"
+                },
+                "media_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "updated_at": {
                   "type": "string"
                 }
               }
@@ -1523,6 +2144,9 @@
             "schema": {
               "type": "object",
               "properties": {
+                "address": {
+                  "type": "string"
+                },
                 "content": {
                   "type": "string"
                 },
@@ -1536,6 +2160,15 @@
                   "type": "string"
                 },
                 "id": {
+                  "type": "string"
+                },
+                "media_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "updated_at": {
                   "type": "string"
                 }
               }
@@ -1664,6 +2297,9 @@
               "items": {
                 "type": "object",
                 "properties": {
+                  "address": {
+                    "type": "string"
+                  },
                   "content": {
                     "type": "string"
                   },
@@ -1677,6 +2313,15 @@
                     "type": "string"
                   },
                   "id": {
+                    "type": "string"
+                  },
+                  "media_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "updated_at": {
                     "type": "string"
                   }
                 }
@@ -1723,6 +2368,9 @@
             "schema": {
               "type": "object",
               "properties": {
+                "address": {
+                  "type": "string"
+                },
                 "content": {
                   "type": "string"
                 },
@@ -1736,6 +2384,15 @@
                   "type": "string"
                 },
                 "id": {
+                  "type": "string"
+                },
+                "media_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "updated_at": {
                   "type": "string"
                 }
               }
@@ -1789,6 +2446,9 @@
             "schema": {
               "type": "object",
               "properties": {
+                "address": {
+                  "type": "string"
+                },
                 "content": {
                   "type": "string"
                 },
@@ -1802,6 +2462,15 @@
                   "type": "string"
                 },
                 "id": {
+                  "type": "string"
+                },
+                "media_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "updated_at": {
                   "type": "string"
                 }
               }
@@ -1814,6 +2483,9 @@
             "schema": {
               "type": "object",
               "properties": {
+                "address": {
+                  "type": "string"
+                },
                 "content": {
                   "type": "string"
                 },
@@ -1827,6 +2499,15 @@
                   "type": "string"
                 },
                 "id": {
+                  "type": "string"
+                },
+                "media_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "updated_at": {
                   "type": "string"
                 }
               }

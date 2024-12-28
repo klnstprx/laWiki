@@ -1,4 +1,36 @@
 basePath: /api/auth
+definitions:
+  model.User:
+    properties:
+      email:
+        type: string
+      email_verified:
+        type: boolean
+      enable_mails:
+        type: boolean
+      family_name:
+        type: string
+      given_name:
+        type: string
+      id:
+        type: string
+      locale:
+        type: string
+      name:
+        type: string
+      notifications:
+        items:
+          type: string
+        type: array
+      picture:
+        type: string
+      role:
+        type: string
+      valoration:
+        items:
+          type: number
+        type: array
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -6,6 +38,197 @@ info:
   title: Auth Service API
   version: "1.0"
 paths:
+  /api/auth:
+    get:
+      description: Retrieves the list of all user objects from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.User'
+            type: array
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get All Users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user. Expects a JSON object in the request body.
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.User'
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Create a New User
+      tags:
+      - Users
+  /api/auth/{id}:
+    delete:
+      description: Deletes a user by its ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Invalid user ID
+          schema:
+            type: string
+        "404":
+          description: User not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete a User by ID
+      tags:
+      - Users
+    get:
+      description: Retrieves a user by its ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+        "400":
+          description: Invalid user ID
+          schema:
+            type: string
+        "404":
+          description: User not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get a User by ID
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Updates a user by its ID. Expects a JSON object in the request
+        body.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated user information
+        in: body
+        name: user
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid user ID or request body
+          schema:
+            type: string
+        "404":
+          description: User not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update a User by ID
+      tags:
+      - Users
+  /api/auth/{id}/notifications:
+    post:
+      consumes:
+      - application/json
+      description: Adds a notification to the specified user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Notification to add
+        in: body
+        name: notification
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Notification added successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid user ID or request body
+          schema:
+            type: string
+        "404":
+          description: User not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Add a Notification to a User
+      tags:
+      - Users
   /api/auth/callback:
     get:
       description: Handles the OAuth2 callback from Google
@@ -25,12 +248,16 @@ paths:
           description: Redirect after login
           schema:
             type: string
+        "400":
+          description: Missing state or code
+          schema:
+            type: string
         "401":
           description: Invalid OAuth state
           schema:
             type: string
         "500":
-          description: Could not create JWT
+          description: Internal server error
           schema:
             type: string
       summary: OAuth2 Callback
@@ -58,6 +285,34 @@ paths:
           schema:
             type: string
       summary: Initiate OAuth2 Login
+      tags:
+      - Authentication
+  /api/auth/logout:
+    get:
+      description: Clears the JWT token cookie
+      responses:
+        "302":
+          description: Redirect after logout
+          schema:
+            type: string
+      summary: Logout
+      tags:
+      - Authentication
+  /api/auth/me:
+    get:
+      description: Returns user information for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: Get Authenticated User Info
       tags:
       - Authentication
 securityDefinitions:

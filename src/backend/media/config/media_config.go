@@ -14,21 +14,21 @@ import (
 
 // GlobalConfig holds the configuration for the application
 type GlobalConfig struct {
-	API_GATEWAY_URL string `toml:"API_GATEWAY_URL"`
-	PrettyLogs      *bool  `toml:"PRETTY_LOGS"`
-	Debug           *bool  `toml:"DEBUG"`
-	MongoDBURI      string `toml:"MONGODB_URI"`
-	DBName          string `toml:"DB_NAME"`
+	ApiGatewayURL string `toml:"API_GATEWAY_URL"`
+	PrettyLogs    *bool  `toml:"PRETTY_LOGS"`
+	Debug         *bool  `toml:"DEBUG"`
+	MongoDBURI    string `toml:"MONGODB_URI"`
+	DBName        string `toml:"DB_NAME"`
 }
 
 // MediaConfig holds the configuration specific to the Media service
 type MediaConfig struct {
-	Port                int    `toml:"PORT"`
-	CLOUDIFY_CLOUD_NAME string `toml:"CLOUDIFY_CLOUD_NAME"`
-	CLOUDIFY_API_KEY    string `toml:"CLOUDIFY_API_KEY"`
-	CLOUDIFY_API_SECRET string `toml:"CLOUDIFY_API_SECRET"`
-	DBCollectionName    string `toml:"DB_COLLECTION_NAME"`
-	MB_LIMIT            int64  `toml:"MB_LIMIT"`
+	Port              int    `toml:"PORT"`
+	CloudifyCloudName string `toml:"CLOUDIFY_CLOUD_NAME"`
+	CloudifyApiKey    string `toml:"CLOUDIFY_API_KEY"`
+	CloudifyApiSecret string `toml:"CLOUDIFY_API_SECRET"`
+	DBCollectionName  string `toml:"DB_COLLECTION_NAME"`
+	MbLimit           int64  `toml:"MB_LIMIT"`
 }
 
 // Config represents the structure of the config.toml file
@@ -45,7 +45,7 @@ type AppConfig struct {
 	MongoDBURI       string
 	DBCollectionName string
 	DBName           string
-	MB_LIMIT         int64
+	MbLimit          int64
 }
 
 // App holds app configuration
@@ -121,36 +121,36 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	}
 
 	// Initialize Cloudinary
-	if config.Media.CLOUDIFY_CLOUD_NAME != "" && config.Media.CLOUDIFY_API_KEY != "" && config.Media.CLOUDIFY_API_SECRET != "" {
+	if config.Media.CloudifyCloudName != "" && config.Media.CloudifyApiKey != "" && config.Media.CloudifyApiSecret != "" {
 		var err error
-		cfg.Cld, err = cloudinary.NewFromParams(config.Media.CLOUDIFY_CLOUD_NAME, config.Media.CLOUDIFY_API_KEY, config.Media.CLOUDIFY_API_SECRET)
+		cfg.Cld, err = cloudinary.NewFromParams(config.Media.CloudifyCloudName, config.Media.CloudifyApiKey, config.Media.CloudifyApiSecret)
 		if err != nil {
 			log.Error().Msgf("Failed to initialize Cloudinary: %v", err)
 		}
 	} else {
 
 		// CLOUDIFY_CLOUD_NAME is required
-		if config.Media.CLOUDIFY_CLOUD_NAME == "" {
+		if config.Media.CloudifyCloudName == "" {
 			missingVars = append(missingVars, "CLOUDIFY_CLOUD_NAME")
 			log.Warn().Msg("CLOUDIFY_CLOUD_NAME not set in config file.")
 		}
 		// CLOUDIFY_API_KEY is required
-		if config.Media.CLOUDIFY_API_KEY == "" {
+		if config.Media.CloudifyApiKey == "" {
 			missingVars = append(missingVars, "CLOUDIFY_API_KEY")
 			log.Warn().Msg("CLOUDIFY_API_KEY not set in config file.")
 		}
 		// CLOUDIFY_API_SECRET is required
-		if config.Media.CLOUDIFY_API_SECRET == "" {
+		if config.Media.CloudifyApiSecret == "" {
 			missingVars = append(missingVars, "CLOUDIFY_API_SECRET")
 			log.Warn().Msg("CLOUDIFY_API_SECRET not set in config file.")
 		}
 	}
 
-	if config.Media.MB_LIMIT == 0 {
-		cfg.MB_LIMIT = 5 // Default to 5 MB
+	if config.Media.MbLimit == 0 {
+		cfg.MbLimit = 5 // Default to 5 MB
 		log.Warn().Msg("MB_LIMIT not set in config file. Using default '5'.")
 	} else {
-		cfg.MB_LIMIT = config.Media.MB_LIMIT
+		cfg.MbLimit = config.Media.MbLimit
 	}
 
 	// If there are missing required variables, log them and exit

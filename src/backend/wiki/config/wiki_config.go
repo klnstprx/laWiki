@@ -12,11 +12,11 @@ import (
 )
 
 type GlobalConfig struct {
-	API_GATEWAY_URL string `toml:"API_GATEWAY_URL"`
-	PrettyLogs      *bool  `toml:"PRETTY_LOGS"`
-	Debug           *bool  `toml:"DEBUG"`
-	MongoDBURI      string `toml:"MONGODB_URI"`
-	DBName          string `toml:"DB_NAME"`
+	ApiGatewayURL string `toml:"API_GATEWAY_URL"`
+	PrettyLogs    *bool  `toml:"PRETTY_LOGS"`
+	Debug         *bool  `toml:"DEBUG"`
+	MongoDBURI    string `toml:"MONGODB_URI"`
+	DBName        string `toml:"DB_NAME"`
 }
 
 // WikiConfig holds the configuration specific to the wiki service
@@ -40,7 +40,7 @@ type AppConfig struct {
 	MongoDBURI       string
 	DBCollectionName string
 	DBName           string
-	API_GATEWAY_URL  string
+	ApiGatewayURL    string
 }
 
 // App holds the global app configuration
@@ -117,8 +117,8 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	}
 
 	// API_GATEWAY_URL is required
-	if config.Global.API_GATEWAY_URL != "" {
-		cfg.API_GATEWAY_URL = config.Global.API_GATEWAY_URL
+	if config.Global.ApiGatewayURL != "" {
+		cfg.ApiGatewayURL = config.Global.ApiGatewayURL
 	} else {
 		log.Warn().Msg("API_GATEWAY_URL not set in config file.")
 		missingVars = append(missingVars, "API_GATEWAY_URL")

@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Paper from "@mui/material/Paper";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import PropTypes from "prop-types";
 import {
-  Typography,
+  Avatar,
   Box,
+  CircularProgress,
   Divider,
   Stack,
-  Avatar,
-  CircularProgress,
+  Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import DOMPurify from "dompurify";
@@ -18,6 +18,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { getMedia } from "../api/MediaApi";
 
+import { Link } from "react-router-dom";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -95,7 +96,7 @@ const Version = ({
 
   //carga el usuario
 
-//carga el usuario
+  //carga el usuario
   useEffect(() => {
     const fetchUsuario = async () => {
       try {
@@ -154,8 +155,13 @@ const Version = ({
             src={usuario.picture}
             alt={editor}
           />
-          <Typography variant="subtitle1" fontWeight="bold">
-            <a href={`/perfil/${usuario.id}`}>{usuario.name}</a>
+          <Typography
+            component={Link}
+            to={`/perfil/${usuario.id}`}
+            variant="subtitle1"
+            fontWeight="bold"
+          >
+            {usuario.name}
           </Typography>
         </Box>
         <Typography variant="caption" color="text.secondary">
@@ -171,88 +177,95 @@ const Version = ({
         dangerouslySetInnerHTML={{
           __html: DOMPurify.sanitize(content),
         }}
-      ></Box>
+      >
+      </Box>
 
       <Divider sx={{ my: 2 }} />
 
       {/* Media Section */}
-      {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-          <CircularProgress />
-        </Box>
-      ) : mediaError ? (
-        <Typography color="error" sx={{ mt: 3 }}>
-          {mediaError}
-        </Typography>
-      ) : medias && medias.length > 0 ? (
-        <>
-          <Slider {...sliderSettings}>
-            {medias.map((media, index) => (
-              <div key={index}>
-                <Box sx={{ m: 3 }}>
-                  <img
-                    src={media.uploadUrl}
-                    alt={`Image ${index + 1}`}
-                    style={{
-                      maxWidth: "100%",
-                      maxHeight: "500px",
-                      width: "auto",
-                      height: "auto",
-                      display: "block",
-                      margin: "10px auto",
-                      borderRadius: "8px",
-                      boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.75)",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {
-                      setSelectedImage(media.uploadUrl);
-                      setOpenDialog(true);
-                    }}
-                  />
-                </Box>
-              </div>
-            ))}
-          </Slider>
+      {loading
+        ? (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+            <CircularProgress />
+          </Box>
+        )
+        : mediaError
+          ? (
+            <Typography color="error" sx={{ mt: 3 }}>
+              {mediaError}
+            </Typography>
+          )
+          : medias && medias.length > 0
+            ? (
+              <>
+                <Slider {...sliderSettings}>
+                  {medias.map((media, index) => (
+                    <div key={index}>
+                      <Box sx={{ m: 3 }}>
+                        <img
+                          src={media.uploadUrl}
+                          alt={`Image ${index + 1}`}
+                          style={{
+                            maxWidth: "100%",
+                            maxHeight: "500px",
+                            width: "auto",
+                            height: "auto",
+                            display: "block",
+                            margin: "10px auto",
+                            borderRadius: "8px",
+                            boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.75)",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            setSelectedImage(media.uploadUrl);
+                            setOpenDialog(true);
+                          }}
+                        />
+                      </Box>
+                    </div>
+                  ))}
+                </Slider>
 
-          {/* Image Dialog */}
-          <Dialog
-            open={openDialog}
-            onClose={() => setOpenDialog(false)}
-            maxWidth="xl"
-            sx={{
-              "& .MuiDialog-paper": {
-                maxWidth: "80%",
-              },
-            }}
-          >
-            <DialogContent sx={{ padding: 0, position: "relative" }}>
-              <IconButton
-                aria-label="close"
-                onClick={() => setOpenDialog(false)}
-                sx={{
-                  position: "absolute",
-                  right: 8,
-                  top: 8,
-                  color: (theme) => theme.palette.grey[500],
-                  zIndex: 1,
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
-              <img
-                src={selectedImage}
-                alt="Selected"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "contain",
-                  display: "block",
-                }}
-              />
-            </DialogContent>
-          </Dialog>
-        </>
-      ) : null}
+                {/* Image Dialog */}
+                <Dialog
+                  open={openDialog}
+                  onClose={() => setOpenDialog(false)}
+                  maxWidth="xl"
+                  sx={{
+                    "& .MuiDialog-paper": {
+                      maxWidth: "80%",
+                    },
+                  }}
+                >
+                  <DialogContent sx={{ padding: 0, position: "relative" }}>
+                    <IconButton
+                      aria-label="close"
+                      onClick={() => setOpenDialog(false)}
+                      sx={{
+                        position: "absolute",
+                        right: 8,
+                        top: 8,
+                        color: (theme) => theme.palette.grey[500],
+                        zIndex: 1,
+                      }}
+                    >
+                      <CloseIcon />
+                    </IconButton>
+                    <img
+                      src={selectedImage}
+                      alt="Selected"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                        display: "block",
+                      }}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </>
+            )
+            : null}
 
       {/* Map Section */}
       {coordinates && (

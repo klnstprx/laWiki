@@ -1,19 +1,19 @@
-import { useEffect, useState, useRef } from "react";
-import { postVersion, getVersion } from "../api/VersionApi.js";
+import { useEffect, useRef, useState } from "react";
+import { getVersion, postVersion } from "../api/VersionApi.js";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  Container,
-  Paper,
-  Typography,
-  Button,
-  TextField,
-  Box,
-  IconButton,
-  Alert,
-  Divider,
   Accordion,
+  AccordionDetails,
   AccordionSummary,
-  AccordionDetails,  
+  Alert,
+  Box,
+  Button,
+  Container,
+  Divider,
+  IconButton,
+  Paper,
+  TextField,
+  Typography,
 } from "@mui/material";
 import Grid from "@mui/joy/Grid";
 import ReactQuill from "react-quill";
@@ -22,11 +22,12 @@ import { Link } from "react-router-dom";
 import { Breadcrumbs } from "@mui/material";
 import { getEntry } from "../api/EntryApi.js";
 import { getWiki } from "../api/WikiApi.js";
-import { postMedia, getMedia} from "../api/MediaApi";
+import { getMedia, postMedia } from "../api/MediaApi";
 import DeleteIcon from "@mui/icons-material/Delete";
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { useAuth } from "../context/AuthContext";
 
 function FormVersionPage() {
   const { entryId, versionId } = useParams();
@@ -38,7 +39,7 @@ function FormVersionPage() {
     editor: "",
     content: "",
   });
-  const [uploads, setUploads] = useState([]); // Store selected files
+  const [uploads, setUploads] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [error, setError] = useState(null);
   const formRef = useRef(null);
@@ -46,12 +47,12 @@ function FormVersionPage() {
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif"];
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
-  const id = sessionStorage.getItem('id'); // Suponiendo que guardas el id del usuario en sessionStorage
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [isLoggedIn, navigate]);
 
@@ -240,7 +241,6 @@ function FormVersionPage() {
 
           const response = await postMedia(formData);
           newMediaIds.push(response.id);
-
         } catch (error) {
           console.error(`Error uploading file ${file.name}:`, error);
           setError(`Error uploading file ${file.name}`);
@@ -251,7 +251,7 @@ function FormVersionPage() {
 
     const jsonData = {
       content: version.content,
-      editor: id,
+      editor: user.id,
       entry_id: entryId,
       address: version.address,
       media_ids: [
@@ -269,10 +269,6 @@ function FormVersionPage() {
       console.error("Error posting version:", error);
     }
   };
-
-  if (!isLoggedIn) {
-    return null; // O puedes mostrar un mensaje de carga o redirección
-  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -296,148 +292,162 @@ function FormVersionPage() {
         </Typography>
       </Breadcrumbs>
 
-      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4 }}>
-        <form id="miFormulario" ref={formRef} onSubmit={handleSubmit}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid xs={12} sm={8}>
-              <Typography variant="h4">Editar entrada</Typography>
+      {isLoggedIn && (
+        <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4 }}>
+          <form id="miFormulario" ref={formRef} onSubmit={handleSubmit}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid xs={12} sm={8}>
+                <Typography variant="h4">Editar entrada</Typography>
+              </Grid>
+              <Grid xs={12} sm={4}>
+                <TextField
+                  id="address"
+                  name="address"
+                  label="Ubicación (opcional)"
+                  value={version.address || ""}
+                  onChange={handleChange}
+                  variant="outlined"
+                  fullWidth
+                  slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                    },
+                  }}
+                />
+              </Grid>
             </Grid>
-            <Grid xs={12} sm={4}>
-              <TextField
-                id="address"
-                name="address"
-                label="Ubicación (opcional)"
-                value={version.address || ""}
-                onChange={handleChange}
-                variant="outlined"
-                fullWidth
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                  },
-                }}
-              />
-            </Grid>
-          </Grid>
-          {versionError && (
-            <Typography variant="body1" color="error" gutterBottom>
-              {versionError}
-            </Typography>
-          )}
-          <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
-            Contenido:
-          </Typography>
-          <Box
-            sx={{
-              height: "400px",
-            }}
-          >
-            <ReactQuill
-              theme="snow"
-              value={version.content || ""}
-              onChange={handleEditorChange}
-              style={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                border: formErrors.content ? "1px solid red" : "1px solid #ccc",
-              }}
-              
-            />
-            {formErrors.content && (
-              <Typography
-                variant="body2"
-                sx={{ color: "red", fontSize: "12px", mt: 1 }}
-              >
-                {formErrors.content}
+            {versionError && (
+              <Typography variant="body1" color="error" gutterBottom>
+                {versionError}
               </Typography>
             )}
-          </Box>
-          <br /> <br />
-          <Button
-            component="label"
-            sx={{ mt: 2 }}
-            variant="outlined"
-            color="primary"
-          >
-            Añadir Imágenes
-            <input
-              id="image-input"
-              type="file"
-              hidden
-              accept="image/*"
-              multiple
-              onChange={handleImageChange}
-            />
-          </Button>
-          {uploads.length > 0 && (
-            <>
-              <Divider sx={{ my: 2 }} />
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="subtitle1">Nuevas Imágenes:</Typography>
-                {uploads.map((file, index) => (
-                  <Box
-                    key={index}
-                    sx={{ display: "flex", alignItems: "center", mt: 1 }}
-                  >
-                    <Typography variant="body2">{file.name}</Typography>
-                    <IconButton
-                      onClick={() => handleRemoveImage(index)}
-                      sx={{ ml: 1 }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                ))}
-              </Box>
-            </>
-          )}
-          {existingImages.length > 0 && (
-            <Accordion sx={{ mt: 2 }}>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1a-content"
-                id="panel1a-header"
-              >
-                <Typography>Imágenes Existentes</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                {existingImages.map((image, index) => (
-                  <Box
-                    key={image.id || index}
-                    sx={{ display: "flex", alignItems: "center", mt: 1 }}
-                  >
-                    <a href={image.uploadUrl} target="_blank" rel="noopener noreferrer">
-                      <Typography variant="body2" color="primary" sx={{ textDecoration: 'underline', cursor: 'pointer' }}>
-                        {image.publicId}
-                      </Typography>
-                    </a>
-                    <IconButton
-                      onClick={() => handleToggleVisibility(index)}
-                      sx={{ ml: 1 }}
-                    >
-                      {image.isVisible ? (
-                        <VisibilityIcon />
-                      ) : (
-                        <VisibilityOffIcon />
-                      )}
-                    </IconButton>
-                  </Box>
-                ))}
-              </AccordionDetails>
-            </Accordion>
-          )}
-
-          {error && <Alert severity="error">{error}</Alert>}
-          <Box sx={{ mt: 5, pt: 1 }} display="flex" justifyContent="flex-end">
-            <Button type="submit" variant="contained" color="primary">
-              Enviar
+            <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
+              Contenido:
+            </Typography>
+            <Box
+              sx={{
+                height: "400px",
+              }}
+            >
+              <ReactQuill
+                theme="snow"
+                value={version.content || ""}
+                onChange={handleEditorChange}
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  border: formErrors.content
+                    ? "1px solid red"
+                    : "1px solid #ccc",
+                }}
+              />
+              {formErrors.content && (
+                <Typography
+                  variant="body2"
+                  sx={{ color: "red", fontSize: "12px", mt: 1 }}
+                >
+                  {formErrors.content}
+                </Typography>
+              )}
+            </Box>
+            <br /> <br />
+            <Button
+              component="label"
+              sx={{ mt: 2 }}
+              variant="outlined"
+              color="primary"
+            >
+              Añadir Imágenes
+              <input
+                id="image-input"
+                type="file"
+                hidden
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+              />
             </Button>
-          </Box>
-        </form>
-      </Paper>
+            {uploads.length > 0 && (
+              <>
+                <Divider sx={{ my: 2 }} />
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle1">Nuevas Imágenes:</Typography>
+                  {uploads.map((file, index) => (
+                    <Box
+                      key={index}
+                      sx={{ display: "flex", alignItems: "center", mt: 1 }}
+                    >
+                      <Typography variant="body2">{file.name}</Typography>
+                      <IconButton
+                        onClick={() => handleRemoveImage(index)}
+                        sx={{ ml: 1 }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
+                  ))}
+                </Box>
+              </>
+            )}
+            {existingImages.length > 0 && (
+              <Accordion sx={{ mt: 2 }}>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1a-content"
+                  id="panel1a-header"
+                >
+                  <Typography>Imágenes Existentes</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {existingImages.map((image, index) => (
+                    <Box
+                      key={image.id || index}
+                      sx={{ display: "flex", alignItems: "center", mt: 1 }}
+                    >
+                      <a
+                        href={image.uploadUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Typography
+                          variant="body2"
+                          color="primary"
+                          sx={{
+                            textDecoration: "underline",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {image.publicId}
+                        </Typography>
+                      </a>
+                      <IconButton
+                        onClick={() => handleToggleVisibility(index)}
+                        sx={{ ml: 1 }}
+                      >
+                        {image.isVisible
+                          ? <VisibilityIcon />
+                          : <VisibilityOffIcon />}
+                      </IconButton>
+                    </Box>
+                  ))}
+                </AccordionDetails>
+              </Accordion>
+            )}
+
+            {error && <Alert severity="error">{error}</Alert>}
+            <Box sx={{ mt: 5, pt: 1 }} display="flex" justifyContent="flex-end">
+              <Button type="submit" variant="contained" color="primary">
+                Enviar
+              </Button>
+            </Box>
+          </form>
+        </Paper>
+      )}
+      {!isLoggedIn && <Alert sx={{ mb: 2 }}>No estas logeado.</Alert>}
     </Container>
   );
 }
 
 export default FormVersionPage;
+

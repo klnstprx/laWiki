@@ -367,11 +367,17 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "entry_id": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "rating": {
                     "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
                 },
                 "version_id": {
                     "type": "string"

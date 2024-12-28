@@ -1,10 +1,11 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { Card, CardContent, Typography, IconButton } from "@mui/material";
+import { Card, CardContent, IconButton, Typography } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
 import { useState } from "react";
 import Grid from "@mui/joy/Grid";
+import { useAuth } from "../context/AuthContext";
 
 const VersionCard = ({
   entradaId,
@@ -14,7 +15,9 @@ const VersionCard = ({
   onDelete,
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
+  const userRole = user?.role || "";
 
   const handleDelete = () => {
     setShowDeleteModal(true);
@@ -52,11 +55,11 @@ const VersionCard = ({
             </Typography>
           </Grid>
           <Grid>
-          {isLoggedIn && (sessionStorage.getItem("role") != "redactor") &&(
-            <IconButton color="error" onClick={handleDelete}>
-              <DeleteIcon />
-            </IconButton>
-          )}
+            {isLoggedIn && userRole !== "redactor" && (
+              <IconButton color="error" onClick={handleDelete}>
+                <DeleteIcon />
+              </IconButton>
+            )}
           </Grid>
         </Grid>
       </CardContent>

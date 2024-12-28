@@ -1,17 +1,17 @@
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import {
   AppBar,
+  Button,
+  CircularProgress,
+  ClickAwayListener,
+  IconButton,
+  InputBase,
+  Paper,
+  Popper,
   Toolbar,
   Typography,
-  InputBase,
-  IconButton,
-  Button,
-  Popper,
-  Paper,
-  ClickAwayListener,
-  CircularProgress,
 } from "@mui/material";
-import { Search as SearchIcon, Home as HomeIcon } from "@mui/icons-material";
+import { Home as HomeIcon, Search as SearchIcon } from "@mui/icons-material";
 import { alpha, styled } from "@mui/material/styles";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { searchWikis } from "../api/WikiApi";
@@ -19,8 +19,7 @@ import { searchEntries } from "../api/EntryApi";
 import { searchComments } from "../api/CommentApi";
 import { searchVersions } from "../api/VersionApi";
 import SearchResultsList from "./SearchResultsList";
-import { GoogleLogin } from "@react-oauth/google";
-import LoginButton from "./LoginButton";
+import UserNav from "./UserNav";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -136,8 +135,6 @@ const Header = () => {
     navigate("/advanced-search");
   };
 
-  
-
   return (
     <AppBar position="static">
       <Toolbar>
@@ -172,7 +169,7 @@ const Header = () => {
           Home
         </Typography>
 
-        <LoginButton/>
+        <UserNav />
 
         <Search ref={searchRef}>
           <SearchIconWrapper>
@@ -201,25 +198,27 @@ const Header = () => {
                   overflowY: "auto",
                 }}
               >
-                {loading ? (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      padding: "10px",
-                    }}
-                  >
-                    <CircularProgress size={24} />
-                    <Typography variant="body2" sx={{ ml: 2 }}>
-                      Cargando...
-                    </Typography>
-                  </div>
-                ) : (
-                  <SearchResultsList
-                    results={searchResults}
-                    onItemClick={handleClickAway}
-                  />
-                )}
+                {loading
+                  ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "10px",
+                      }}
+                    >
+                      <CircularProgress size={24} />
+                      <Typography variant="body2" sx={{ ml: 2 }}>
+                        Cargando...
+                      </Typography>
+                    </div>
+                  )
+                  : (
+                    <SearchResultsList
+                      results={searchResults}
+                      onItemClick={handleClickAway}
+                    />
+                  )}
               </Paper>
             </ClickAwayListener>
           </Popper>

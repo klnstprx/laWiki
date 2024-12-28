@@ -1,33 +1,44 @@
-import React, { useEffect, useState } from "react";
-import { Box, Avatar, Typography, Paper, Rating, Button, Checkbox, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import { useEffect, useState } from "react";
+import {
+  Avatar,
+  Box,
+  Button,
+  Checkbox,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Rating,
+  Select,
+  Typography,
+} from "@mui/material";
 import { useParams } from "react-router-dom";
 import { getUser, putUser } from "../api/AuthApi";
 import { useToast } from "../context/ToastContext.jsx";
+import { useAuth } from "../context/AuthContext";
 
 const ProfilePage = () => {
-  const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null); // Renamed to avoid confusion with logged-in user
   const { id } = useParams();
-  const {showToast} = useToast();
+  const { showToast } = useToast();
 
   const [newRating, setNewRating] = useState(0);
   const [newEnableMails, setNewEnableMails] = useState(false);
   const [mediaRating, setMediaRating] = useState(0);
-  const [showRatingForm, setShowRatingForm] = useState(true); // Estado para controlar la visibilidad del formulario
-  const [selectedRole, setSelectedRole] = useState(""); // Estado para manejar el rol seleccionado
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
-  // Obtener el email del usuario logueado desde sessionStorage
-  const loggedInUser = JSON.parse(sessionStorage.getItem('user'));
-  const loggedInUserEmail = loggedInUser ? loggedInUser.email : null;
+  const [showRatingForm, setShowRatingForm] = useState(true);
+  const [selectedRole, setSelectedRole] = useState("");
+
+  const { user: loggedInUser, setUser: setLoggedInUser } = useAuth(); // Use setUser to update AuthContext
+  const isLoggedIn = !!loggedInUser;
+  const loggedInUserEmail = loggedInUser?.email || null;
 
   const handleRatingChange = (event, newValue) => {
     setNewRating(newValue);
   };
 
-  const handleEnableMailsChange = (event, newValue) => {
-    console.log("onchange del checkbox")
-    setNewEnableMails(newValue);
-    console.log("New Rating:", newRating);
-  }
+  const handleEnableMailsChange = (event) => {
+    setNewEnableMails(event.target.checked);
+  };
 
   const handleRoleChange = (event) => {
     setSelectedRole(event.target.value);
@@ -35,17 +46,25 @@ const ProfilePage = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("New Rating:", newRating);
 
-    const updatedValoration = user.valoration ? [...user.valoration, newRating] : [newRating];
+    const updatedValoration = userProfile.valoration
+      ? [...userProfile.valoration, newRating]
+      : [newRating];
 
     putUser(id, { valoration: updatedValoration })
       .then(() => {
-        console.log("Valoración enviada.");
-        // Actualizar el estado de la valoración
-        setUser((prevUser) => ({ ...prevUser, valoration: updatedValoration }));
+        // Update the user profile state
+        setUserProfile((prevUser) => ({
+          ...prevUser,
+          valoration: updatedValoration,
+        }));
         setShowRatingForm(false);
         showToast("Tu valoración ha sido enviada correctamente.", "success");
+
+        // Recalculate media rating
+        const sum = updatedValoration.reduce((acc, val) => acc + val, 0);
+        const media = sum / updatedValoration.length;
+        setMediaRating(media);
       })
       .catch(() => {
         console.error("Error al enviar la valoración.");
@@ -53,76 +72,80 @@ const ProfilePage = () => {
       });
 
     setNewRating(0);
-    // Actualiza el campo setMediaRating
-    const sum = updatedValoration.reduce((acc, val) => acc + val, 0);
-    const media = sum / updatedValoration.length;
-    setMediaRating(media);
   };
 
   const handleSubmitEnableMails = (event) => {
     event.preventDefault();
-    console.log("EnableMails:", newEnableMails);
 
     putUser(id, { enable_mails: newEnableMails })
       .then(() => {
-        console.log("Configuración enviada.");
-        // Actualizar el estado de las notificaciones por correo
-        setUser((prevUser) => ({ ...prevUser, enable_mails: newEnableMails }));
-        showToast("La configuración de notificaciones ha sido actualizada correctamente.", "success");
+        // Update the user profile state
+        setUserProfile((prevUser) => ({
+          ...prevUser,
+          enable_mails: newEnableMails,
+        }));
+        showToast(
+          "La configuración de notificaciones ha sido actualizada correctamente.",
+          "success",
+        );
       })
       .catch(() => {
         console.error("Error al enviar la configuración.");
-        showToast("Hubo un error al actualizar la configuración de notificaciones.", "error");
+        showToast(
+          "Hubo un error al actualizar la configuración de notificaciones.",
+          "error",
+        );
       });
-  }
+  };
 
   const handleSubmitRoleChange = (event) => {
     event.preventDefault();
-    console.log("Selected Role:", selectedRole);
 
     putUser(id, { role: selectedRole })
       .then(() => {
-        console.log("Rol actualizado.");
-        // Actualizar el estado del rol
-        setUser((prevUser) => ({ ...prevUser, role: selectedRole }));
-        //cambiar el rol de la sesion y cookies
-        sessionStorage.setItem("role", selectedRole);
-        document.cookie = `role=${selectedRole}; domain=localhost; path=/`;
-        showToast("El rol del usuario ha sido actualizado correctamente.", "success");
-        window.location.reload();
+        // Update the user profile state
+        setUserProfile((prevUser) => ({ ...prevUser, role: selectedRole }));
+
+        // If the logged-in user is changing their own role, update the AuthContext
+        if (id === loggedInUser.id) {
+          setLoggedInUser((prevUser) => ({ ...prevUser, role: selectedRole }));
+        }
+
+        showToast(
+          "El rol del usuario ha sido actualizado correctamente.",
+          "success",
+        );
       })
       .catch(() => {
         console.error("Error al actualizar el rol.");
         showToast("Hubo un error al actualizar el rol del usuario.", "error");
       });
-  }
+  };
 
   useEffect(() => {
-    console.log(id);
     getUser(id)
       .then((data) => {
-        setUser(data);
+        setUserProfile(data);
         if (data && data.valoration && data.valoration.length > 0) {
           const sum = data.valoration.reduce((acc, val) => acc + val, 0);
           const media = sum / data.valoration.length;
           setMediaRating(media);
         }
 
-        // Inicializa el estado `newEnableMails` con el valor actual del usuario
+        // Initialize `newEnableMails` with the user's current setting
         if (data && typeof data.enable_mails === "boolean") {
           setNewEnableMails(data.enable_mails);
         }
 
-        // Inicializa el estado `selectedRole` con el rol actual del usuario
+        // Initialize `selectedRole` with the user's current role
         if (data && data.role) {
           setSelectedRole(data.role);
         }
-
       })
-      .catch(() => setUser(null));
+      .catch(() => setUserProfile(null));
   }, [id]);
 
-  if (!user) {
+  if (!userProfile) {
     return (
       <Box
         sx={{
@@ -132,7 +155,7 @@ const ProfilePage = () => {
           height: "100vh",
         }}
       >
-        <Typography variant="h5">No has iniciado sesión.</Typography>
+        <Typography variant="h5">Usuario no encontrado.</Typography>
       </Box>
     );
   }
@@ -143,7 +166,7 @@ const ProfilePage = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: "100vh",
+        minHeight: "100vh", // Changed to minHeight to avoid overflow issues
         backgroundColor: "#f5f5f5",
         padding: 2,
       }}
@@ -165,24 +188,26 @@ const ProfilePage = () => {
             gap: 2,
           }}
         >
-          {/* Foto de perfil */}
+          {/* Profile Picture */}
           <Avatar
-            alt={user.name}
-            src={user.picture}
+            alt={userProfile.name}
+            src={userProfile.picture}
             sx={{
               width: 100,
               height: 100,
             }}
           />
-          {/* Nombre */}
+          {/* Name */}
           <Typography variant="h5" fontWeight="bold">
-            <span>{user.name} ({user.valoration.length})</span> 
+            <span>
+              {userProfile.name} ({userProfile.valoration.length})
+            </span>
           </Typography>
-          {/* Correo electrónico */}
+          {/* Email */}
           <Typography variant="body1" color="text.secondary">
-            {user.email}
+            {userProfile.email}
           </Typography>
-          {/* Valoración */}
+          {/* Rating */}
           <Rating
             name="user-rating"
             value={mediaRating}
@@ -191,21 +216,27 @@ const ProfilePage = () => {
           />
         </Box>
 
-        {/* Formulario para activar notificaciones por correo */}
-        {isLoggedIn && user.email == loggedInUserEmail &&(
-          <Box component="form" onSubmit={handleSubmitEnableMails} sx={{ mt: 4 }}>
+        {/* Enable Emails Form */}
+        {isLoggedIn && userProfile.email === loggedInUserEmail && (
+          <Box
+            component="form"
+            onSubmit={handleSubmitEnableMails}
+            sx={{ mt: 4 }}
+          >
             <Typography variant="h6" gutterBottom>
               Activar notificaciones por correo
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
               <Typography variant="body1" sx={{ mr: 2 }}>
-                Activo: notificaciones por correo
-                Inactivo: notificaciones internas
+                Activado: notificaciones por correo. Desactivado: notificaciones
+                internas.
               </Typography>
               <Checkbox
                 checked={newEnableMails}
                 onChange={handleEnableMailsChange}
-                inputProps={{ "aria-label": "Activar notificaciones por correo" }}
+                inputProps={{
+                  "aria-label": "Activar notificaciones por correo",
+                }}
               />
             </Box>
             <Button type="submit" variant="contained" fullWidth>
@@ -214,28 +245,37 @@ const ProfilePage = () => {
           </Box>
         )}
 
-        {/* Formulario para valorar */}
-        {isLoggedIn && showRatingForm && user.email != loggedInUserEmail && (
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            Valorar al usuario
-          </Typography>
-          <Rating
-            name="new-rating"
-            value={newRating}
-            onChange={handleRatingChange}
-            precision={0.5}
-            sx={{ mb: 2 }}
-          />
-          <Button type="submit" variant="contained" fullWidth>
-            Enviar valoración
-          </Button>
-        </Box>
+        {/* Rating Form */}
+        {isLoggedIn &&
+          showRatingForm &&
+          userProfile.email !== loggedInUserEmail && (
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Valorar al usuario
+            </Typography>
+            <Rating
+              name="new-rating"
+              value={newRating}
+              onChange={handleRatingChange}
+              precision={0.5}
+              sx={{ mb: 2 }}
+            />
+            <Button type="submit" variant="contained" fullWidth>
+              Enviar valoración
+            </Button>
+          </Box>
         )}
 
-        {/* Formulario para cambiar rol */}
-        {isLoggedIn && (sessionStorage.getItem("role") === "admin") && (
-          <Box component="form" onSubmit={handleSubmitRoleChange} sx={{ mt: 4 }}>
+        {/* Role Change Form */}
+        {isLoggedIn && loggedInUser.role === "admin" && (
+          <Box
+            component="form"
+            onSubmit={handleSubmitRoleChange}
+            sx={{ mt: 4 }}
+          >
+            <Typography variant="h6" gutterBottom>
+              Cambiar Rol del Usuario
+            </Typography>
             <FormControl fullWidth sx={{ mb: 2 }}>
               <InputLabel id="role-select-label">Rol</InputLabel>
               <Select
@@ -255,7 +295,6 @@ const ProfilePage = () => {
             </Button>
           </Box>
         )}
-
       </Paper>
     </Box>
   );

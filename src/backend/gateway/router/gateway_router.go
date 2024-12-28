@@ -17,19 +17,18 @@ func NewRouter() http.Handler {
 
 	// Middlewares
 	r.Use(middleware.Recoverer)
+	r.Use(custommw.LoggerMiddleware(config.App.Logger))
 	// Custom middleware for authentication, etc.
 	r.Use(custommw.RequestID)
-	r.Use(custommw.AuthMiddleware)
-	r.Use(custommw.LoggerMiddleware(config.App.Logger))
 	r.Use(cors.Handler(cors.Options{
-		// AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin hosts
-		AllowedOrigins:   []string{"http://localhost:5173"}, //Reemplaza con el dominio del frontend
+		AllowedOrigins:   []string{config.App.FrontendURL}, // Reemplaza con el dominio del frontend
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
+	r.Use(custommw.AuthMiddleware)
 	// Health Check
 	r.Get("/health", handler.HealthCheck)
 
@@ -46,6 +45,8 @@ func NewRouter() http.Handler {
 	// Define routes to backend services
 	// aqui anadimos (con r.Mount()) cada microservico al gateway.
 	r.Route("/api", func(r chi.Router) {
+		// Auth Service Routes
+		r.Mount("/auth", proxyHandler(config.App.AuthServiceURL, "/api/auth"))
 		// Wiki Service Routes
 		r.Mount("/wikis", proxyHandler(config.App.WikiServiceURL, "/api/wikis"))
 
@@ -54,9 +55,6 @@ func NewRouter() http.Handler {
 
 		// Comment Service Routes
 		r.Mount("/comments", proxyHandler(config.App.CommentServiceURL, "/api/comments"))
-
-		// Auth Service Routes
-		r.Mount("/auth", proxyHandler(config.App.AuthServiceURL, "/api/auth"))
 
 		// Version Service Routes
 		r.Mount("/versions", proxyHandler(config.App.VersionServiceURL, "/api/versions"))

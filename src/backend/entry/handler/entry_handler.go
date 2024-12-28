@@ -378,7 +378,7 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	// Delete associated versions first
-	versionServiceURL := fmt.Sprintf("%s/api/versions/entry?entryID=%s", config.App.API_GATEWAY_URL, id)
+	versionServiceURL := fmt.Sprintf("%s/api/versions/entry?entryID=%s", config.App.ApiGatewayURL, id)
 	config.App.Logger.Info().Str("url", versionServiceURL).Msg("Preparing to delete associated versions")
 
 	req, err := http.NewRequest("DELETE", versionServiceURL, nil)
@@ -448,7 +448,7 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 
 	// Retrieve the user from the user service with the author ID from the entry
-	userServiceURL := fmt.Sprintf("%s/api/auth/user?id=%s", config.App.API_GATEWAY_URL, entry.Author)
+	userServiceURL := fmt.Sprintf("%s/api/auth/users/%s", config.App.ApiGatewayURL, entry.Author)
 	config.App.Logger.Info().Str("url", userServiceURL).Msg("Sending request to user service")
 
 	req, err = http.NewRequest("GET", userServiceURL, nil)
@@ -549,7 +549,7 @@ func DeleteEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 		entryID := entry.ID
 
 		// Send request to version service to delete versions associated with entryID
-		versionServiceURL := fmt.Sprintf("%s/api/versions/entry?entryID=%s", config.App.API_GATEWAY_URL, entryID)
+		versionServiceURL := fmt.Sprintf("%s/api/versions/entry?entryID=%s", config.App.ApiGatewayURL, entryID)
 		config.App.Logger.Info().Str("url", versionServiceURL).Msg("Preparing to delete associated versions")
 
 		req, err := http.NewRequest("DELETE", versionServiceURL, nil)
@@ -652,7 +652,7 @@ func notifyInterno(mensaje string, editor string) {
 	)
 
 	// Construir la URL del servicio de usuarios con query string
-	userServiceURL := fmt.Sprintf("%s/api/auth/notifications?id=%s", config.App.API_GATEWAY_URL, editor)
+	userServiceURL := fmt.Sprintf("%s/api/auth/users/%s/notifications", config.App.ApiGatewayURL, editor)
 
 	client := &http.Client{
 		Timeout: 5 * time.Second,

@@ -10,6 +10,8 @@ definitions:
         type: string
       title:
         type: string
+      updated_at:
+        type: string
       wiki_id:
         type: string
     type: object
@@ -37,35 +39,6 @@ paths:
           schema:
             type: string
       summary: Get all entries
-      tags:
-      - Entries
-    post:
-      consumes:
-      - application/json
-      description: Creates a new entry. Expects a JSON object in the request body.
-      parameters:
-      - description: Entry information
-        in: body
-        name: entry
-        required: true
-        schema:
-          $ref: '#/definitions/model.Entry'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/model.Entry'
-        "400":
-          description: Invalid request body
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Create a new entry
       tags:
       - Entries
   /api/entries/{id}:

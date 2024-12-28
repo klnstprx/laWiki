@@ -362,7 +362,7 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 		Timeout: 5 * time.Second,
 	}
 
-	//get the media ID, found in the wiki object
+	// get the media ID, found in the wiki object
 	var wiki model.Wiki
 	objID, err := primitive.ObjectIDFromHex(wikiID)
 	if err != nil {
@@ -380,7 +380,7 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 
 	// Delete associated media first
 	if wiki.MediaID != "" {
-		mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.API_GATEWAY_URL, wiki.MediaID)
+		mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.ApiGatewayURL, wiki.MediaID)
 		config.App.Logger.Info().Str("url", mediaServiceURL).Msg("Preparing to delete associated media")
 
 		req, err := http.NewRequest("DELETE", mediaServiceURL, nil)
@@ -413,7 +413,7 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Delete associated entries first
-	entryServiceURL := fmt.Sprintf("%s/api/entries/wiki?wikiID=%s", config.App.API_GATEWAY_URL, wikiID)
+	entryServiceURL := fmt.Sprintf("%s/api/entries/wiki?wikiID=%s", config.App.ApiGatewayURL, wikiID)
 	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Preparing to delete associated entries")
 
 	req, err := http.NewRequest("DELETE", entryServiceURL, nil)

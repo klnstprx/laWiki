@@ -33,7 +33,7 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 }
 
 func getImageFile(r *http.Request) (multipart.File, *multipart.FileHeader, error) {
-	err := r.ParseMultipartForm(config.App.MB_LIMIT << 20) // 5 MB
+	err := r.ParseMultipartForm(config.App.MbLimit << 20) // 5 MB
 	if err != nil {
 		log.Println("Error parsing form data:", err)
 		return nil, nil, err

@@ -323,13 +323,22 @@ const docTemplate = `{
                 "category": {
                     "type": "string"
                 },
+                "created_at": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
+                "media_id": {
+                    "type": "string"
+                },
                 "title": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

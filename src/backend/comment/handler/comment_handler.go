@@ -267,7 +267,7 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 	comment.CreatedAt = time.Now().UTC()
 
 	// Retrieve EntryID from the provided VersionID by making an HTTP request
-	versionServiceURL := fmt.Sprintf("%s/api/versions/%s", config.App.API_GATEWAY_URL, comment.VersionID)
+	versionServiceURL := fmt.Sprintf("%s/api/versions/%s", config.App.ApiGatewayURL, comment.VersionID)
 	config.App.Logger.Info().Str("url", versionServiceURL).Msg("Fetching Version to get EntryID")
 
 	client := &http.Client{
@@ -350,7 +350,7 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 	config.App.Logger.Info().Interface("comment", comment).Msg("Added new comment")
 
 	// Retrieve the entry title from the entry service with the entryID from the comment
-	entryServiceURL := fmt.Sprintf("%s/api/entries/%s", config.App.API_GATEWAY_URL, comment.EntryID)
+	entryServiceURL := fmt.Sprintf("%s/api/entries/%s", config.App.ApiGatewayURL, comment.EntryID)
 	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Fetching Entry to get title")
 
 	req, err = http.NewRequest("GET", entryServiceURL, nil)
@@ -388,7 +388,7 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve the editor's email address from the user service with the editor ID from the version
-	userServiceURL := fmt.Sprintf("%s/api/auth/user?id=%s", config.App.API_GATEWAY_URL, version.Editor)
+	userServiceURL := fmt.Sprintf("%s/api/auth/users/%s", config.App.ApiGatewayURL, version.Editor)
 	config.App.Logger.Info().Str("url", userServiceURL).Msg("Fetching User to get email")
 
 	req, err = http.NewRequest("GET", userServiceURL, nil)
@@ -629,7 +629,7 @@ func notifyInterno(mensaje string, editor string) {
 	)
 
 	// Construir la URL del servicio de usuarios con query string
-	userServiceURL := fmt.Sprintf("%s/api/auth/notifications?id=%s", config.App.API_GATEWAY_URL, editor)
+	userNotificationURL := fmt.Sprintf("%s/api/auth/users/%s/notifications", config.App.ApiGatewayURL, editor)
 
 	client := &http.Client{
 		Timeout: 5 * time.Second,
@@ -642,7 +642,7 @@ func notifyInterno(mensaje string, editor string) {
 
 	payloadBytes, _ := json.Marshal(notificationPayload)
 
-	req, err := http.NewRequest("POST", userServiceURL, bytes.NewBuffer(payloadBytes))
+	req, err := http.NewRequest("POST", userNotificationURL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
 		return

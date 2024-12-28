@@ -13,6 +13,7 @@ import { useToast } from "../context/ToastContext.jsx";
 import { Breadcrumbs } from "@mui/material";
 import { useEffect } from "react";
 import { getWiki } from "../api/WikiApi";
+import { useAuth } from "../context/AuthContext";
 
 function FormEntradaPage() {
   const { id: wikiId } = useParams();
@@ -22,11 +23,12 @@ function FormEntradaPage() {
   const { showToast } = useToast();
   const [error, setError] = useState(null);
   const [titleError, setTitleError] = useState("");
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const idAutor = sessionStorage.getItem("id"); // Obtén el ID del usuario desde sessionStorage
+    const idAutor = user.id;
     setError(null);
 
     let isValid = true;
@@ -43,7 +45,7 @@ function FormEntradaPage() {
     const entryData = {
       title,
       wiki_id: wikiId,
-      author: idAutor
+      author: idAutor,
     };
 
     try {
@@ -60,7 +62,7 @@ function FormEntradaPage() {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate('/login');
+      navigate("/");
     }
   }, [isLoggedIn, navigate]);
 
@@ -80,10 +82,6 @@ function FormEntradaPage() {
         );
     }
   }, [wikiId]);
-
-  if (!isLoggedIn) {
-    return null; // O puedes mostrar un mensaje de carga o redirección
-  }
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
@@ -108,43 +106,47 @@ function FormEntradaPage() {
           {error}
         </Alert>
       )}
-      <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-        <TextField
-          margin="normal"
-          fullWidth
-          id="title"
-          label="Título"
-          name="title"
-          autoComplete="off"
-          autoFocus
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          error={!!titleError}
-          helperText={titleError}
-          slotProps={{
-            inputLabel: {
-              shrink: true,
-            },
-          }}
-        />
-        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-          >
-            {"Crear Entrada"}
-          </Button>
-          <Button
-            component={Link}
-            to={`/wiki/${wikiId}`}
-            variant="outlined"
-            color="primary"
-          >
-            Cancelar
-          </Button>
+      {isLoggedIn && (
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          <TextField
+            margin="normal"
+            fullWidth
+            id="title"
+            label="Título"
+            name="title"
+            autoComplete="off"
+            autoFocus
+            value={title}
+            onChange={(e) =>
+              setTitle(e.target.value)}
+            error={!!titleError}
+            helperText={titleError}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
+            }}
+          />
+          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+            >
+              {"Crear Entrada"}
+            </Button>
+            <Button
+              component={Link}
+              to={`/wiki/${wikiId}`}
+              variant="outlined"
+              color="primary"
+            >
+              Cancelar
+            </Button>
+          </Box>
         </Box>
-      </Box>
+      )}
+      {!isLoggedIn && <Alert sx={{ mb: 2 }}>No estas logeado.</Alert>}
     </Container>
   );
 }

@@ -14,3 +14,13 @@ type User struct {
 	Notifications []string  `json:"notifications" bson:"notifications"`
 	EnableMails   bool      `json:"enable_mails" bson:"enable_mails"`
 }
+
+type GoogleUser struct {
+	Email         string `json:"email"`
+	Name          string `json:"name"`
+	Picture       string `json:"picture"`
+	GivenName     string `json:"given_name"`
+	FamilyName    string `json:"family_name"`
+	Locale        string `json:"locale"`
+	EmailVerified bool   `json:"email_verified"`
+}

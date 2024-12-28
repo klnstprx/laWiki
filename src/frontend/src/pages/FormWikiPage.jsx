@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react";
 import {
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Box,
-  IconButton,
   Alert,
-  Breadcrumbs
+  Box,
+  Breadcrumbs,
+  Button,
+  Container,
+  IconButton,
+  TextField,
+  Typography,
 } from "@mui/material";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getWiki, postWiki, putWiki } from "../api/WikiApi";
 import { postMedia } from "../api/MediaApi";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
 import { useToast } from "../context/ToastContext.jsx";
+import { useAuth } from "../context/AuthContext";
 
 function FormWikiPage() {
   const { wikiId } = useParams();
@@ -24,7 +25,7 @@ function FormWikiPage() {
     title: "",
     description: "",
     category: "",
-    media_id: ""
+    media_id: "",
   });
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -35,17 +36,18 @@ function FormWikiPage() {
     title: "",
     description: "",
     category: "",
-    media_id: ""
+    media_id: "",
   });
 
   const [upload, setUpload] = useState(null);
   const [uploading, setUploading] = useState(false);
-  
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
+
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [isLoggedIn, navigate]);
 
@@ -57,6 +59,7 @@ function FormWikiPage() {
             setWiki(data);
             if (data.media_id && data.media_id.length > 0) {
               // Fetch and set the uploaded image if needed
+              // ???????
             }
           } else {
             setError("Wiki no encontrada.");
@@ -165,17 +168,17 @@ function FormWikiPage() {
     }
   };
 
-  if (!isLoggedIn) {
-    return null; // O puedes mostrar un mensaje de carga o redirección
-  }
-
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
         <Typography className="breadcrumb-link" component={Link} to="/">
           Inicio
         </Typography>
-        <Typography className="breadcrumb-link" component={Link} to={`/wiki/${wikiId}`}>
+        <Typography
+          className="breadcrumb-link"
+          component={Link}
+          to={`/wiki/${wikiId}`}
+        >
           {wiki.title}
         </Typography>
       </Breadcrumbs>
@@ -183,100 +186,108 @@ function FormWikiPage() {
       <Typography variant="h4" gutterBottom>
         {wikiId ? "Editar Wiki" : "Crear Nueva Wiki"}
       </Typography>
-      {(error) && (
+      {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
-      <Box component="form" onSubmit={onSubmit} noValidate sx={{ mt: 1 }}>
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          id="title"
-          name="title"
-          label="Título"
-          value={wiki.title}
-          onChange={handleChange}
-          variant="outlined"
-          error={!!formErrors.title}
-          helperText={formErrors.title}
-          slotProps={{
-            inputLabel: {
-              shrink: true,
-            },
-          }}
-        />
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          id="description"
-          name="description"
-          label="Descripción"
-          value={wiki.description}
-          onChange={handleChange}
-          variant="outlined"
-          multiline
-          rows={4}
-          error={!!formErrors.description}
-          helperText={formErrors.description}
-          slotProps={{
-            inputLabel: {
-              shrink: true,
-            },
-          }}
-        />
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          id="category"
-          name="category"
-          label="Categoría"
-          value={wiki.category}
-          onChange={handleChange}
-          variant="outlined"
-          error={!!formErrors.category}
-          helperText={formErrors.category}
-          slotProps={{
-            inputLabel: {
-              shrink: true,
-            },
-          }}
-        />
-        <Button variant="outlined" color="primary" component="label" sx={{ mt: 2 }}>
-          Añadir Imagen
-          <input
-            id="image-input"
-            type="file"
-            hidden
-            accept="image/*"
-            onChange={handleImageChange}
+      {isLoggedIn && (
+        <Box component="form" onSubmit={onSubmit} noValidate sx={{ mt: 1 }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="title"
+            name="title"
+            label="Título"
+            value={wiki.title}
+            onChange={handleChange}
+            variant="outlined"
+            error={!!formErrors.title}
+            helperText={formErrors.title}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
+            }}
           />
-        </Button>
-        {upload && (
-          <Box sx={{ mt: 2, display: "flex", alignItems: "center" }}>
-            <Typography variant="body2">{upload.file.name}</Typography>
-            <IconButton onClick={handleRemoveImage} sx={{ ml: 1 }}>
-              <DeleteIcon />
-            </IconButton>
-          </Box>
-        )}
-        <Button
-          type="submit"
-          fullWidth
-          variant="contained"
-          sx={{ mt: 3, mb: 2 }}
-          disabled={uploading}
-        >
-          {uploading
-            ? "Subiendo..."
-            : wikiId
-            ? "Guardar Cambios"
-            : "Crear Wiki"}
-        </Button>
-      </Box>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="description"
+            name="description"
+            label="Descripción"
+            value={wiki.description}
+            onChange={handleChange}
+            variant="outlined"
+            multiline
+            rows={4}
+            error={!!formErrors.description}
+            helperText={formErrors.description}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
+            }}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="category"
+            name="category"
+            label="Categoría"
+            value={wiki.category}
+            onChange={handleChange}
+            variant="outlined"
+            error={!!formErrors.category}
+            helperText={formErrors.category}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
+            }}
+          />
+          <Button
+            variant="outlined"
+            color="primary"
+            component="label"
+            sx={{ mt: 2 }}
+          >
+            Añadir Imagen
+            <input
+              id="image-input"
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+          </Button>
+          {upload && (
+            <Box sx={{ mt: 2, display: "flex", alignItems: "center" }}>
+              <Typography variant="body2">{upload.file.name}</Typography>
+              <IconButton onClick={handleRemoveImage} sx={{ ml: 1 }}>
+                <DeleteIcon />
+              </IconButton>
+            </Box>
+          )}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+            disabled={uploading}
+          >
+            {uploading
+              ? "Subiendo..."
+              : wikiId
+              ? "Guardar Cambios"
+              : "Crear Wiki"}
+          </Button>
+        </Box>
+      )}
+      {!isLoggedIn && <Alert sx={{ mb: 2 }}>No estas logeado.</Alert>}
 
       <ConfirmationModal
         show={isModalOpen}

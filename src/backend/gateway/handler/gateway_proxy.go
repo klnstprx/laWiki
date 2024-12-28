@@ -38,10 +38,6 @@ func ReverseProxy(target string, prefixToStrip string) func(http.ResponseWriter,
 		req.Host = targetURL.Host
 	}
 
-	proxy.ModifyResponse = func(resp *http.Response) error {
-		return nil
-	}
-
 	// Error handler
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
 		config.App.Logger.Error().Err(err).Msg("Proxy error")

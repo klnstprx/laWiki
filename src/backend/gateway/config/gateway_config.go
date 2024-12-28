@@ -13,9 +13,10 @@ import (
 
 // GlobalConfig holds the configuration for the application
 type GlobalConfig struct {
-	PrettyLogs *bool  `toml:"PRETTY_LOGS"`
-	Debug      *bool  `toml:"DEBUG"`
-	JWTSecret  string `toml:"JWT_SECRET"`
+	PrettyLogs  *bool  `toml:"PRETTY_LOGS"`
+	Debug       *bool  `toml:"DEBUG"`
+	JWTSecret   string `toml:"JWT_SECRET"`
+	FrontendURL string `toml:"FRONTEND_URL"`
 }
 
 // GatewayConfig holds the configuration specific to the gateway service
@@ -47,6 +48,7 @@ type AppConfig struct {
 	CommentServiceURL string
 	MediaServiceURL   string
 	JWTSecret         string
+	FrontendURL       string
 }
 
 // App holds app configuration
@@ -146,6 +148,13 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		missingVars = append(missingVars, "JWT_SECRET")
 	} else {
 		cfg.JWTSecret = config.Global.JWTSecret
+	}
+
+	if config.Global.FrontendURL != "" {
+		cfg.FrontendURL = config.Global.FrontendURL
+	} else {
+		cfg.FrontendURL = "localhost:5173"
+		log.Warn().Msg("FRONTEND_URL not set in config file. Using default 'localhost:5173'.")
 	}
 
 	// If there are missing required variables, log them and exit

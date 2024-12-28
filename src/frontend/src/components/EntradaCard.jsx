@@ -4,14 +4,15 @@ import {
   Card,
   CardActionArea,
   CardContent,
-  Typography,
   IconButton,
+  Typography,
 } from "@mui/material";
 import Grid from "@mui/joy/Grid";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ConfirmationModal from "../components/ConfirmationModal.jsx"; // add import
-import { useState, useEffect } from "react"; // add import
-import { getUser} from "../api/AuthApi"; // add import
+import ConfirmationModal from "../components/ConfirmationModal.jsx";
+import { useState } from "react";
+
+import { useAuth } from "../context/AuthContext";
 
 const EntradaCard = ({
   id,
@@ -21,24 +22,17 @@ const EntradaCard = ({
   onEntradaClick,
   onDelete,
 }) => {
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
+  const userRole = user?.role || "";
+
   const handleClick = () => {
     if (onEntradaClick) {
       onEntradaClick(id);
     }
   };
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // add state
-  const [usuario, setUsuario] = useState({}); // add state
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
-
-  //cargar usuario de la base de datos
-  useEffect(() => {
-    const fetchUser = async () => {
-      const user = await getUser(author);
-      setUsuario(user);
-    };
-    fetchUser();
-  } , [author]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleDelete = () => {
     setShowDeleteModal(true);
@@ -79,17 +73,23 @@ const EntradaCard = ({
         </CardContent>
       </CardActionArea>
       <Grid xs={6}>
-              <Typography variant="subtitle1" color="textSecondary">
-                Autor
-              </Typography>
-              <Typography variant="body2"><a href={`/perfil/${usuario.id}`}>{usuario.name}</a></Typography>
-            </Grid>
-      {isLoggedIn && (sessionStorage.getItem("role") != "redactor") &&(      
-      <Grid>
-        <IconButton color="error" onClick={handleDelete}>
-          <DeleteIcon />
-        </IconButton>
+        <Typography variant="subtitle1" color="textSecondary">
+          Autor
+        </Typography>
+        <Typography
+          component={Link}
+          to={`/perfil/${author.id}`}
+          variant="body2"
+        >
+          Autor: {author.name}
+        </Typography>
       </Grid>
+      {isLoggedIn && userRole !== "redactor" && (
+        <Grid>
+          <IconButton color="error" onClick={handleDelete}>
+            <DeleteIcon />
+          </IconButton>
+        </Grid>
       )}
       <ConfirmationModal
         show={showDeleteModal}
@@ -104,7 +104,7 @@ const EntradaCard = ({
 EntradaCard.propTypes = {
   id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
-  author: PropTypes.string.isRequired,
+  author: PropTypes.object.isRequired,
   createdAt: PropTypes.string.isRequired,
   onEntradaClick: PropTypes.func,
   onDelete: PropTypes.func.isRequired,

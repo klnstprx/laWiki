@@ -364,6 +364,9 @@ const docTemplate = `{
         "model.Version": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
                 "content": {
                     "type": "string"
                 },
@@ -377,6 +380,15 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "media_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

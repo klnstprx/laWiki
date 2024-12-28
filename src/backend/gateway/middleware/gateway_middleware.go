@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
-	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
-	"github.com/lestrrat-go/jwx/v2/jwk"
+	"github.com/laWiki/gateway/config"
 	"github.com/rs/zerolog"
 )
 
@@ -19,161 +18,45 @@ type key int
 
 const requestIDKey key = 0
 
-// Esto que yo sepa no se usa
-func RoleMiddleware(requiredRoles ...string) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			role := r.Context().Value("role").(string)
-			for _, requiredRole := range requiredRoles {
-				if role == requiredRole {
-					next.ServeHTTP(w, r)
-					return
-				}
-			}
-			http.Error(w, "Forbidden: insufficient privileges", http.StatusForbidden)
-		})
-	}
-}
-
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Skip authentication for auth routes and health check
-
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173") // Reemplaza con el dominio del frontend
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-
-		// Si es una petición interna, omitir la autenticación
-		if r.Header.Get("X-Internal-Request") == "true" {
+		if r.Method == http.MethodGet {
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		// Si es una solicitud OPTIONS, respondemos inmediatamente
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		//haz que el servidor muestre por pantalla el path de la solicitud
-		fmt.Println(r.URL.Path)
-
-		//Asi para que a las solicitudes get(y las que son a auth) no se les pida autenticacion
-		if strings.Contains(r.URL.Path, "/api/auth") || r.URL.Path == "/health" || r.Method == http.MethodGet {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		// Get the JWT token from the cookie
+		// retrieve token from "jwt_token" cookie
 		cookie, err := r.Cookie("jwt_token")
 		if err != nil {
 			http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
-			fmt.Errorf("Missing token")
 			return
 		}
-
-		cookieRole, err := r.Cookie("role")
-		if err != nil {
-			http.Error(w, "Unauthorized: missing role", http.StatusUnauthorized)
-			fmt.Errorf("Missing role")
-			return
-		}
-
 		tokenString := cookie.Value
-		role := cookieRole.Value
-		fmt.Println(role)
 
-		// Parse and validate the token using RS256 and public key
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			// Ensure the signing method is RS256
-			if token.Method.Alg() != jwt.SigningMethodRS256.Alg() {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Method.Alg())
+		// parse/validate using HS256
+		token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", t.Header["alg"])
 			}
-
-			// Get the public key from JWKS
-			jwksURL := "https://www.googleapis.com/oauth2/v3/certs" // URL del JWKS de Google, cambia si es otro proveedor
-			keySet, err := jwk.Fetch(r.Context(), jwksURL)
-			if err != nil {
-				return nil, fmt.Errorf("failed to fetch public keys: %v", err)
-			}
-
-			// Find the key with the appropriate kid (Key ID) from the token header
-			kid := token.Header["kid"].(string)
-			key, ok := keySet.LookupKeyID(kid)
-			if !ok {
-				return nil, fmt.Errorf("unable to find appropriate key")
-			}
-
-			// Return the public key to verify the token
-			var pubKey interface{}
-			err = key.Raw(&pubKey)
-			if err != nil {
-				return nil, fmt.Errorf("failed to extract key: %v", err)
-			}
-			return pubKey, nil
+			return []byte(config.App.JWTSecret), nil
 		})
 
-		if err != nil {
+		if err != nil || !token.Valid {
 			http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		if !token.Valid {
-			http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
-			return
-		}
-
-		// Extract user claims and add them to the request context, chequea que el rol sea el correcto
-		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			ctx := context.WithValue(r.Context(), "user", claims)
-
-			if role == "redactor" {
-
-				if strings.Contains(r.URL.Path, "/api/entries") || strings.Contains(r.URL.Path, "/api/comments") || strings.Contains(r.URL.Path, "/api/media") || strings.Contains(r.URL.Path, "/api/versions") {
-					if r.Method == http.MethodPost || r.Method == http.MethodPut {
-						next.ServeHTTP(w, r.WithContext(ctx))
-						return
-					} else {
-						http.Error(w, "Forbidden: insufficient privileges", http.StatusForbidden)
-						return
-					}
-				} else {
-					http.Error(w, "Forbidden: insufficient privileges", http.StatusForbidden)
-					return
-				}
-
-			} else if role == "editor" {
-
-				if strings.Contains(r.URL.Path, "/api/media") || strings.Contains(r.URL.Path, "/api/wikis") {
-					if r.Method == http.MethodPost || r.Method == http.MethodPut {
-						next.ServeHTTP(w, r.WithContext(ctx))
-						return
-					} else {
-						http.Error(w, "Forbidden: insufficient privileges", http.StatusForbidden)
-						return
-					}
-				} else if strings.Contains(r.URL.Path, "/api/entries") || strings.Contains(r.URL.Path, "/api/comments") || strings.Contains(r.URL.Path, "/api/versions") {
-					if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete {
-						next.ServeHTTP(w, r.WithContext(ctx))
-						return
-					} else {
-						http.Error(w, "Forbidden: insufficient privileges", http.StatusForbidden)
-						return
-					}
-				} else {
-					http.Error(w, "Forbidden: insufficient privileges", http.StatusForbidden)
-					return
-				}
-
-			} else if role == "admin" {
-				next.ServeHTTP(w, r.WithContext(ctx))
-				return
-			}
-		} else {
+		// extract claims
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
 			http.Error(w, "Unauthorized: invalid token claims", http.StatusUnauthorized)
 			return
 		}
+		role, _ := claims["role"].(string)
+
+		// put the role in context for route handlers
+		ctx := context.WithValue(r.Context(), "user_role", role)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 

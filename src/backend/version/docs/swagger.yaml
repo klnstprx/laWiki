@@ -2,6 +2,8 @@ basePath: /api/versions
 definitions:
   model.Version:
     properties:
+      address:
+        type: string
       content:
         type: string
       created_at:
@@ -11,6 +13,12 @@ definitions:
       entry_id:
         type: string
       id:
+        type: string
+      media_ids:
+        items:
+          type: string
+        type: array
+      updated_at:
         type: string
     type: object
 host: localhost:8004

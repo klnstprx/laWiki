@@ -285,7 +285,7 @@ func PostVersion(w http.ResponseWriter, r *http.Request) {
 	config.App.Logger.Info().Interface("version", version).Msg("Added new version")
 
 	// Retrieve the entry from the entry service with the entry ID from the version
-	entryServiceURL := fmt.Sprintf("%s/api/entries/%s", config.App.API_GATEWAY_URL, version.EntryID)
+	entryServiceURL := fmt.Sprintf("%s/api/entries/%s", config.App.ApiGatewayURL, version.EntryID)
 	req, err := http.NewRequest("GET", entryServiceURL, nil)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to create request to entry service")
@@ -324,7 +324,7 @@ func PostVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve the user from the user service with the author ID from the entry
-	userServiceURL := fmt.Sprintf("%s/api/auth/user?id=%s", config.App.API_GATEWAY_URL, entry.Author)
+	userServiceURL := fmt.Sprintf("%s/api/auth/users/%s", config.App.ApiGatewayURL, entry.Author)
 	req, err = http.NewRequest("GET", userServiceURL, nil)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
@@ -423,7 +423,7 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 	// Delete unreferenced media files
 	client := &http.Client{Timeout: 5 * time.Second}
 	for _, mediaID := range mediaIDsToDelete {
-		mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.API_GATEWAY_URL, mediaID)
+		mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.ApiGatewayURL, mediaID)
 		req, err := http.NewRequest("DELETE", mediaServiceURL, nil)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to create request to media service")
@@ -545,7 +545,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 
 	// Delete associated media files first
 	for _, mediaID := range version.MediaIDs {
-		mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.API_GATEWAY_URL, mediaID)
+		mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.ApiGatewayURL, mediaID)
 		req, err := http.NewRequest("DELETE", mediaServiceURL, nil)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to create request to media service")
@@ -573,7 +573,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Delete associated comments first
-	commentServiceURL := fmt.Sprintf("%s/api/comments/version?versionID=%s", config.App.API_GATEWAY_URL, id)
+	commentServiceURL := fmt.Sprintf("%s/api/comments/version?versionID=%s", config.App.ApiGatewayURL, id)
 	config.App.Logger.Info().Str("url", commentServiceURL).Msg("Preparing to delete associated comments")
 
 	req, err := http.NewRequest("DELETE", commentServiceURL, nil)
@@ -622,7 +622,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 
 	// Retrieve the entry from the entry service with the entry ID from the version
-	entryServiceURL := fmt.Sprintf("%s/api/entries/%s", config.App.API_GATEWAY_URL, version.EntryID)
+	entryServiceURL := fmt.Sprintf("%s/api/entries/%s", config.App.ApiGatewayURL, version.EntryID)
 	req, err = http.NewRequest("GET", entryServiceURL, nil)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to create request to entry service")
@@ -659,7 +659,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve the user from the user service with the editor ID from the version
-	userServiceURL := fmt.Sprintf("%s/api/auth/user?id=%s", config.App.API_GATEWAY_URL, version.Editor)
+	userServiceURL := fmt.Sprintf("%s/api/auth/users/%s", config.App.ApiGatewayURL, version.Editor)
 	req, err = http.NewRequest("GET", userServiceURL, nil)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
@@ -761,13 +761,13 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 		versionIDs = append(versionIDs, version.ID)
 	}
 
-	//this is the client to send requests to the media service
+	// this is the client to send requests to the media service
 	client := &http.Client{Timeout: 5 * time.Second}
 
-	//delete associated media files
+	// delete associated media files
 	for _, version := range versions {
 		for _, mediaID := range version.MediaIDs {
-			mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.API_GATEWAY_URL, mediaID)
+			mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.ApiGatewayURL, mediaID)
 			req, err := http.NewRequest("DELETE", mediaServiceURL, nil)
 			if err != nil {
 				config.App.Logger.Error().Err(err).Msg("Failed to create request to media service")
@@ -794,7 +794,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 
 	// Delete associated comments for each versionID
 	for _, versionID := range versionIDs {
-		commentServiceURL := fmt.Sprintf("%s/api/comments/version?versionID=%s", config.App.API_GATEWAY_URL, versionID)
+		commentServiceURL := fmt.Sprintf("%s/api/comments/version?versionID=%s", config.App.ApiGatewayURL, versionID)
 		req, err := http.NewRequest("DELETE", commentServiceURL, nil)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to create request to comment service")
@@ -901,7 +901,7 @@ func notifyInterno(mensaje string, autor string) {
 	)
 
 	// Construir la URL del servicio de usuarios con query string
-	userServiceURL := fmt.Sprintf("%s/api/auth/notifications?id=%s", config.App.API_GATEWAY_URL, autor)
+	userServiceURL := fmt.Sprintf("%s/api/auth/users/%s/notifications", config.App.ApiGatewayURL, autor)
 
 	client := &http.Client{
 		Timeout: 5 * time.Second,

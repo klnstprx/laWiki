@@ -15,12 +15,14 @@ import (
 
 // GlobalConfig holds the configuration for the application
 type GlobalConfig struct {
-	PrettyLogs      *bool  `toml:"PRETTY_LOGS"`
-	Debug           *bool  `toml:"DEBUG"`
-	JWTSecret       string `toml:"JWT_SECRET"`
-	API_GATEWAY_URL string `toml:"API_GATEWAY_URL"`
-	MongoDBURI      string `toml:"MONGODB_URI"`
-	DBName          string `toml:"DB_NAME"`
+	PrettyLogs    *bool  `toml:"PRETTY_LOGS"`
+	Debug         *bool  `toml:"DEBUG"`
+	JWTSecret     string `toml:"JWT_SECRET"`
+	FrontendURL   string `toml:"FRONTEND_URL"`
+	ApiGatewayURL string `toml:"API_GATEWAY_URL"`
+	MongoDBURI    string `toml:"MONGODB_URI"`
+	DBName        string `toml:"DB_NAME"`
+	UseHTTPS      bool   `toml:"USE_HTTPS"`
 }
 
 // AuthConfig holds the configuration specific to the auth service
@@ -39,18 +41,20 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Logger     *zerolog.Logger
-	Port       string
-	PrettyLogs bool
-	Debug      bool
+	Logger      *zerolog.Logger
+	Port        string
+	PrettyLogs  bool
+	Debug       bool
+	FrontendURL string
 
 	GoogleOAuthConfig *oauth2.Config
 	JWTSecret         string
+	UseHTTPS          bool
 
 	MongoDBURI       string
 	DBCollectionName string
 	DBName           string
-	API_GATEWAY_URL  string
+	ApiGatewayURL    string
 }
 
 // App holds app configuration
@@ -117,6 +121,13 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	} else {
 		cfg.DBCollectionName = "usuarios" // Default to "wikis"
 		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'usuarios'.")
+	}
+
+	if config.Global.FrontendURL != "" {
+		cfg.FrontendURL = config.Global.FrontendURL
+	} else {
+		cfg.FrontendURL = "localhost:5173"
+		log.Warn().Msg("FRONTEND_URL not set in config file. Using default 'localhost:5173'.")
 	}
 
 	// MONGODB_URI is required

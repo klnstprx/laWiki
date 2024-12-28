@@ -26,6 +26,7 @@ import { getWiki } from "../api/WikiApi.js";
 import HistoryIcon from "@mui/icons-material/History";
 import EditIcon from "@mui/icons-material/Edit";
 import { getUser } from "../api/AuthApi.js";
+import { useAuth } from "../context/AuthContext";
 
 import Grid from "@mui/joy/Grid";
 
@@ -39,7 +40,7 @@ function EntradaPage() {
   const [commentsError, setCommentsError] = useState(null);
   const [versionError, setVersionError] = useState(null);
   const [coordinates, setCoordinates] = useState(null);
-  const [usuario, setUsuario] = useState({}); // add state
+  const [autor, setAutor] = useState({});
 
   const [showModal, setShowModal] = useState(false);
   const [pendingComment, setPendingComment] = useState(null);
@@ -47,7 +48,8 @@ function EntradaPage() {
   const formRef = useRef(null);
 
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
   const geoCacheRef = useRef(
     JSON.parse(sessionStorage.getItem("geoCache")) || {},
@@ -68,11 +70,10 @@ function EntradaPage() {
     }
 
     // Si no está en el cache, realiza la solicitud a la API
-    const url = `https://nominatim.openstreetmap.org/search?q=${
-      encodeURIComponent(
-        address,
-      )
-    }&format=json&addressdetails=1&limit=1`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+      address,
+    )
+      }&format=json&addressdetails=1&limit=1`;
 
     try {
       const response = await fetch(url);
@@ -146,10 +147,9 @@ function EntradaPage() {
             //cargar usuario de la base de datos
             getUser(data.author)
               .then((user) => {
-                setUsuario(user);
+                setAutor(user);
               })
               .catch(() => setEntryError("No se pudo cargar el autor."));
-
           } else {
             setEntryError("No se encontró la entrada solicitada.");
           }
@@ -233,9 +233,29 @@ function EntradaPage() {
 
       // Fetch comments for the actual version
       searchComments({ versionID: actualVersionId })
-        .then((data) => {
+        .then(async (data) => {
           if (data && data.length > 0) {
-            setComments(data);
+            // Fetch unique authors
+            const uniqueAuthorIds = [
+              ...new Set(data.map((comment) => comment.author)),
+            ];
+
+            const authorPromises = uniqueAuthorIds.map((authorId) =>
+              getUser(authorId).then((user) => [authorId, user])
+            );
+
+            const authorEntries = await Promise.all(authorPromises);
+
+            // Map of authorId -> author object
+            const authorMap = Object.fromEntries(authorEntries);
+
+            // Augment comments with the author object
+            const commentsWithAuthors = data.map((comment) => ({
+              ...comment,
+              author: authorMap[comment.author],
+            }));
+
+            setComments(commentsWithAuthors);
           } else {
             setComments([]);
           }
@@ -246,8 +266,6 @@ function EntradaPage() {
     }
   }, [actualVersionId]);
 
- 
-
   // Handler to submit a new comment
   async function subirComentario(event) {
     event.preventDefault();
@@ -256,7 +274,7 @@ function EntradaPage() {
     jsonData["version_id"] = actualVersionId;
     jsonData["entry_id"] = entryId;
     jsonData["rating"] = parseInt(jsonData["rating"], 10);
-    jsonData["author"] = sessionStorage.getItem("id");
+    jsonData["author"] = user.id;
     setPendingComment(jsonData);
     setShowModal(true);
   }
@@ -304,7 +322,13 @@ function EntradaPage() {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Typography variant="subtitle2">Autor: <a href={`/perfil/${usuario.id}`}>{usuario.name}</a></Typography>
+            <Typography
+              component={Link}
+              to={`/perfil/${autor.id}`}
+              variant="subtitle2"
+            >
+              Autor: {autor.name}
+            </Typography>
             <Typography variant="caption" color="text.secondary">
               {new Date(entry.created_at).toLocaleDateString()}
             </Typography>
@@ -313,29 +337,29 @@ function EntradaPage() {
             {entry.title}
           </Typography>
           {isLoggedIn && (
-          <Stack
-            direction="row"
-            spacing={2}
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Button
-              variant="contained"
-              component={Link}
-              to={`/versiones/${entry.id}/`}
-              startIcon={<HistoryIcon />}
+            <Stack
+              direction="row"
+              spacing={2}
+              justifyContent="center"
+              alignItems="center"
             >
-              Ver historial
-            </Button>
-            <Button
-              variant="contained"
-              component={Link}
-              to={`/version/form/${entry.id}/${actualVersionId || ""}`}
-              startIcon={<EditIcon />}
-            >
-              Editar contenido
-            </Button>
-          </Stack>
+              <Button
+                variant="contained"
+                component={Link}
+                to={`/versiones/${entry.id}/`}
+                startIcon={<HistoryIcon />}
+              >
+                Ver historial
+              </Button>
+              <Button
+                variant="contained"
+                component={Link}
+                to={`/version/form/${entry.id}/${actualVersionId || ""}`}
+                startIcon={<EditIcon />}
+              >
+                Editar contenido
+              </Button>
+            </Stack>
           )}
         </Paper>
       )}
@@ -345,24 +369,24 @@ function EntradaPage() {
         {loadingVersion
           ? <Typography variant="body1">Cargando versión...</Typography>
           : versionError
-          ? <Alert severity="error">{versionError}</Alert>
-          : !version
-          ? (
-            <Alert serverity="info">
-              No se ha encontrado niguna version asignada a esta entrada.
-            </Alert>
-          )
-          : (
-            <Version
-              content={version.content}
-              editor={version.editor}
-              created_at={version.created_at}
-              entry_id={version.entry_id}
-              address={version.address}
-              coordinates={coordinates}
-              media_ids={version.media_ids}
-            />
-          )}
+            ? <Alert severity="error">{versionError}</Alert>
+            : !version
+              ? (
+                <Alert serverity="info">
+                  No se ha encontrado niguna version asignada a esta entrada.
+                </Alert>
+              )
+              : (
+                <Version
+                  content={version.content}
+                  editor={version.editor}
+                  created_at={version.created_at}
+                  entry_id={version.entry_id}
+                  address={version.address}
+                  coordinates={coordinates}
+                  media_ids={version.media_ids}
+                />
+              )}
       </Paper>
 
       {entryError && <Alert severity="error">{entryError}</Alert>}
@@ -383,7 +407,7 @@ function EntradaPage() {
                   content={comment.content}
                   rating={comment.rating}
                   created_at={comment.created_at}
-                  author={comment.author}
+                  author={comment.author} // Now author is the user object
                   onDelete={(id) => handleDeleteComment(id)}
                 />
               ))}
@@ -395,51 +419,51 @@ function EntradaPage() {
             )
           )}
       </Paper>
-      
+
       {/* Form to Add Comment */}
-      {isLoggedIn && ( 
-      <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-        <Typography variant="h5" gutterBottom>
-          Añadir comentario
-        </Typography>
-        <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
-          <Grid container spacing={2}>
-            <Grid xs={12}>
-              <TextField
-                id="content"
-                name="content"
-                label="Contenido"
-                multiline
-                required
-                fullWidth
-                rows={4}
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                  },
-                }}
-              />
+      {isLoggedIn && (
+        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+          <Typography variant="h5" gutterBottom>
+            Añadir comentario
+          </Typography>
+          <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
+            <Grid container spacing={2}>
+              <Grid xs={12}>
+                <TextField
+                  id="content"
+                  name="content"
+                  label="Contenido"
+                  multiline
+                  required
+                  fullWidth
+                  rows={4}
+                  slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid xs={12} sm={6} md={4}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Valoración:
+                </Typography>
+                <Rating name="rating" id="rating" size="large" />
+              </Grid>
+              <Grid xs={12} md={4}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  sx={{ height: "100%" }}
+                >
+                  Enviar
+                </Button>
+              </Grid>
             </Grid>
-            <Grid xs={12} sm={6} md={4}>
-              <Typography variant="subtitle2" gutterBottom>
-                Valoración:
-              </Typography>
-              <Rating name="rating" id="rating" size="large" />
-            </Grid>
-            <Grid xs={12} md={4}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                sx={{ height: "100%" }}
-              >
-                Enviar
-              </Button>
-            </Grid>
-          </Grid>
-        </form>
-      </Paper>
+          </form>
+        </Paper>
       )}
 
       <ConfirmationModal

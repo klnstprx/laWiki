@@ -1,22 +1,24 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  Container,
-  Paper,
-  Typography,
-  Button,
   Alert,
   Box,
   Breadcrumbs,
+  Button,
+  Container,
   Pagination,
+  Paper,
+  Typography,
 } from "@mui/material";
 
 import Grid from "@mui/joy/Grid";
 import { deleteEntry, searchEntries } from "../api/EntryApi.js";
-import { getWiki, deleteWiki } from "../api/WikiApi.js";
+import { getUser } from "../api/AuthApi.js";
+import { deleteWiki, getWiki } from "../api/WikiApi.js";
 import EntradaCard from "../components/EntradaCard.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
+import { useAuth } from "../context/AuthContext";
 
 function WikiPage() {
   const [wiki, setWiki] = useState({});
@@ -40,7 +42,9 @@ function WikiPage() {
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
+  const userRole = user?.role || "";
 
   useEffect(() => {
     getWiki(id)
@@ -58,7 +62,31 @@ function WikiPage() {
     searchEntries({ wikiID: id })
       .then((data) => {
         if (data && Array.isArray(data)) {
-          setEntradas(data);
+          // Extract unique author IDs
+          const authorIds = Array.from(
+            new Set(data.map((entry) => entry.author)),
+          );
+
+          // Fetch user data for each author
+          const userPromises = authorIds.map((authorId) => getUser(authorId));
+          Promise.all(userPromises)
+            .then((users) => {
+              // Map user IDs to user objects
+              const userMap = {};
+              users.forEach((user) => {
+                userMap[user.id] = user;
+              });
+
+              // Map entries to include user objects
+              const updatedEntries = data.map((entry) => ({
+                ...entry,
+                author: userMap[entry.author] ||
+                  { id: entry.author, name: "Unknown" },
+              }));
+
+              setEntradas(updatedEntries);
+            })
+            .catch((err) => setError(err.message));
         } else {
           setEntradas([]);
         }
@@ -70,7 +98,7 @@ function WikiPage() {
     try {
       await deleteEntry(entryID);
       setEntradas((prevEntries) =>
-        prevEntries.filter((entry) => entry.id !== entryID),
+        prevEntries.filter((entry) => entry.id !== entryID)
       );
       showToast("Entrada eliminada correctamente", "success");
     } catch (error) {
@@ -117,7 +145,7 @@ function WikiPage() {
           {/* Page Header */}
           <Paper
             elevation={3}
-            sx={{ p: 2,  mb: 4, textAlign: "center", borderRadius: 1 }}
+            sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}
           >
             <Typography variant="h3" component="h1" sx={{ m: 0 }}>
               {wiki.title}
@@ -139,23 +167,23 @@ function WikiPage() {
             >
               Entradas
             </Typography>
-            {selectedEntradas && selectedEntradas.length > 0 ? (
-              <Grid container spacing={2}>
-                {selectedEntradas.map((entrada) => (
-                  <Grid xs={12} sm={6} md={4} key={entrada.id}>
-                    <EntradaCard
-                      id={entrada.id}
-                      title={entrada.title}
-                      author={entrada.author}
-                      createdAt={entrada.created_at}
-                      onDelete={handleDeleteEntry}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            ) : (
-              <Typography>No entries available</Typography>
-            )}
+            {selectedEntradas && selectedEntradas.length > 0
+              ? (
+                <Grid container spacing={2}>
+                  {selectedEntradas.map((entrada) => (
+                    <Grid xs={12} sm={6} md={4} key={entrada.id}>
+                      <EntradaCard
+                        id={entrada.id}
+                        title={entrada.title}
+                        author={entrada.author}
+                        createdAt={entrada.created_at}
+                        onDelete={handleDeleteEntry}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              )
+              : <Typography>No entries available</Typography>}
             <Pagination
               count={Math.ceil(entradas.length / itemsPerPage)}
               page={currentPage}
@@ -166,41 +194,43 @@ function WikiPage() {
 
           {/* Buttons */}
           {isLoggedIn && (
-          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-            <Button
-              component={Link}
-              to={`/crear-entrada/${id}`}
-              variant="contained"
-              color="primary"
-              sx={{ mt: 2 }}
-            >
-              Crear Nueva Entrada
-            </Button>
-            
-            <Box>
-            { sessionStorage.getItem("role") != "redactor" &&
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Button
                 component={Link}
-                to={`/wiki/form/${id}`}
-                variant="outlined"
-                color="primary"
-                sx={{ mt: 2, mr: 2 }}
-              >
-                Editar Wiki
-              </Button>
-            }
-              { sessionStorage.getItem("role") == "admin" &&
-              <Button
+                to={`/crear-entrada/${id}`}
                 variant="contained"
-                color="error"
+                color="primary"
                 sx={{ mt: 2 }}
-                onClick={() => setIsModalOpen(true)}
               >
-                Borrar Wiki
+                Crear Nueva Entrada
               </Button>
-              }     
+
+              <Box>
+                {userRole != "redactor" &&
+                  (
+                    <Button
+                      component={Link}
+                      to={`/wiki/form/${id}`}
+                      variant="outlined"
+                      color="primary"
+                      sx={{ mt: 2, mr: 2 }}
+                    >
+                      Editar Wiki
+                    </Button>
+                  )}
+                {userRole == "admin" &&
+                  (
+                    <Button
+                      variant="contained"
+                      color="error"
+                      sx={{ mt: 2 }}
+                      onClick={() => setIsModalOpen(true)}
+                    >
+                      Borrar Wiki
+                    </Button>
+                  )}
+              </Box>
             </Box>
-          </Box>
           )}
 
           {/* Confirmation Modal */}
