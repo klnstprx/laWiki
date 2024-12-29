@@ -70,10 +70,11 @@ function EntradaPage() {
     }
 
     // Si no está en el cache, realiza la solicitud a la API
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-      address,
-    )
-      }&format=json&addressdetails=1&limit=1`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${
+      encodeURIComponent(
+        address,
+      )
+    }&format=json&addressdetails=1&limit=1`;
 
     try {
       const response = await fetch(url);
@@ -369,24 +370,24 @@ function EntradaPage() {
         {loadingVersion
           ? <Typography variant="body1">Cargando versión...</Typography>
           : versionError
-            ? <Alert severity="error">{versionError}</Alert>
-            : !version
-              ? (
-                <Alert serverity="info">
-                  No se ha encontrado niguna version asignada a esta entrada.
-                </Alert>
-              )
-              : (
-                <Version
-                  content={version.content}
-                  editor={version.editor}
-                  created_at={version.created_at}
-                  entry_id={version.entry_id}
-                  address={version.address}
-                  coordinates={coordinates}
-                  media_ids={version.media_ids}
-                />
-              )}
+          ? <Alert severity="error">{versionError}</Alert>
+          : !version
+          ? (
+            <Alert serverity="info">
+              No se ha encontrado niguna version asignada a esta entrada.
+            </Alert>
+          )
+          : (
+            <Version
+              content={version.content}
+              editor={version.editor}
+              created_at={version.created_at}
+              entry_id={version.entry_id}
+              address={version.address}
+              coordinates={coordinates}
+              media_ids={version.media_ids}
+            />
+          )}
       </Paper>
 
       {entryError && <Alert severity="error">{entryError}</Alert>}
@@ -407,7 +408,7 @@ function EntradaPage() {
                   content={comment.content}
                   rating={comment.rating}
                   created_at={comment.created_at}
-                  author={comment.author} // Now author is the user object
+                  author={comment.author}
                   onDelete={(id) => handleDeleteComment(id)}
                 />
               ))}

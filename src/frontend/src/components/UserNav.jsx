@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import apiRequest from "../api/Api";
 import UserMenu from "./UserMenu";
 import LoginButton from "./LoginButton";
+import { useNavigate } from "react-router-dom";
 
 const UserNav = () => {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -22,6 +24,7 @@ const UserNav = () => {
     try {
       await apiRequest("/auth/logout");
       setUser(null);
+      navigate("/");
     } catch (error) {
       console.error("Error logging out:", error);
     }

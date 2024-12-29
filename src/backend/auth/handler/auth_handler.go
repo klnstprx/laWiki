@@ -43,9 +43,10 @@ func generateStateOauthCookie(w http.ResponseWriter) string {
 		Name:     "oauthstate",
 		Value:    state,
 		Expires:  expiration,
-		HttpOnly: false,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
+		Path:     "/",
 	}
 	http.SetCookie(w, &cookie)
 	return state
@@ -64,9 +65,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Name:     "oauthstate",
 		Value:    state,
 		Expires:  time.Now().Add(10 * time.Minute),
-		HttpOnly: false,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
+		Path:     "/",
 	})
 
 	// Build the Google login URL
@@ -136,9 +138,10 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 		Name:     "jwt_token",
 		Value:    tokenString,
 		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: false,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
+		Path:     "/",
 	})
 
 	// redirect user to the frontend
@@ -232,9 +235,10 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		Name:     "jwt_token",
 		Value:    "",
 		Expires:  time.Now().Add(-1 * time.Hour),
-		HttpOnly: false,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
+		Path:     "/",
 	})
 	http.Redirect(w, r, config.App.FrontendURL, http.StatusSeeOther)
 }
