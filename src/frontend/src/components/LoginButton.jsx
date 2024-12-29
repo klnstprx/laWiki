@@ -38,8 +38,7 @@ const LoginButton = () => {
       setUser(decodedUser);
 
       //carga credentialResponse en las cookies con dominio localhost
-      document.cookie =
-        `jwt_token=${credentialResponse.credential}; domain=localhost; path=/`;
+      document.cookie = `jwt_token=${credentialResponse.credential}; path=/`;
 
       const user = {
         email: decodedUser.email,
@@ -67,7 +66,7 @@ const LoginButton = () => {
             setUsuario(users[i]); // Actualiza el estado con el usuario existente
             sessionStorage.setItem("usuario", JSON.stringify(users[i]));
             sessionStorage.setItem("role", users[i].role);
-            document.cookie = `role=${users[i].role}; domain=localhost; path=/`;
+            document.cookie = `role=${users[i].role}; path=/`;
             userExists = true;
             break;
           }
@@ -79,7 +78,7 @@ const LoginButton = () => {
           sessionStorage.setItem("id", addedUser.id);
           setUsuario(addedUser); // Actualiza el estado con el nuevo usuario
           sessionStorage.setItem("usuario", JSON.stringify(addedUser));
-          document.cookie = `role=${addedUser.role}; domain=localhost; path=/`;
+          document.cookie = `role=${addedUser.role}; path=/`;
           sessionStorage.setItem("role", addedUser.role);
         }
       } else {
@@ -88,7 +87,7 @@ const LoginButton = () => {
         sessionStorage.setItem("id", addedUser.id);
         setUsuario(addedUser); // Actualiza el estado con el nuevo usuario
         sessionStorage.setItem("usuario", JSON.stringify(addedUser));
-        document.cookie = `role=${addedUser.role}; domain=localhost; path=/`;
+        document.cookie = `role=${addedUser.role}; path=/`;
         sessionStorage.setItem("role", addedUser.role);
       }
     } catch (error) {
@@ -107,8 +106,8 @@ const LoginButton = () => {
     sessionStorage.removeItem("id");
     sessionStorage.removeItem("role");
     //Elimina el token de las cookies
-    document.cookie = `jwt_token=; domain=localhost; path=/;`;
-    document.cookie = `role=; domain=localhost; path=/;`;
+    document.cookie = `jwt_token=; path=/;`;
+    document.cookie = `role=; path=/;`;
     setUser(null);
     setUsuario({ notifications: [] });
     window.location.reload();
