@@ -40,6 +40,7 @@ function WikiPage() {
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
 
   useEffect(() => {
     getWiki(id)
@@ -71,10 +72,10 @@ function WikiPage() {
       setEntradas((prevEntries) =>
         prevEntries.filter((entry) => entry.id !== entryID),
       );
-      showToast("Comentario eliminado correctamente", "success");
+      showToast("Entrada eliminada correctamente", "success");
     } catch (error) {
-      console.error("Error al eliminar el comentario:", error);
-      showToast("Error al eliminar el comentario", "error");
+      console.error("Error al eliminar la entrada:", error);
+      showToast("Error al eliminar la entrada", "error");
     }
   };
 
@@ -164,6 +165,7 @@ function WikiPage() {
           </Paper>
 
           {/* Buttons */}
+          {isLoggedIn && (
           <Box sx={{ display: "flex", justifyContent: "space-between" }}>
             <Button
               component={Link}
@@ -174,8 +176,9 @@ function WikiPage() {
             >
               Crear Nueva Entrada
             </Button>
-
+            
             <Box>
+            { sessionStorage.getItem("role") != "redactor" &&
               <Button
                 component={Link}
                 to={`/wiki/form/${id}`}
@@ -185,6 +188,8 @@ function WikiPage() {
               >
                 Editar Wiki
               </Button>
+            }
+              { sessionStorage.getItem("role") == "admin" &&
               <Button
                 variant="contained"
                 color="error"
@@ -193,8 +198,10 @@ function WikiPage() {
               >
                 Borrar Wiki
               </Button>
+              }     
             </Box>
           </Box>
+          )}
 
           {/* Confirmation Modal */}
           <ConfirmationModal

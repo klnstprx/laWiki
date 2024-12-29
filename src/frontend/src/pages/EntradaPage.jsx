@@ -25,6 +25,7 @@ import {
 import { getWiki } from "../api/WikiApi.js";
 import HistoryIcon from "@mui/icons-material/History";
 import EditIcon from "@mui/icons-material/Edit";
+import { getUser } from "../api/AuthApi.js";
 
 import Grid from "@mui/joy/Grid";
 
@@ -38,6 +39,7 @@ function EntradaPage() {
   const [commentsError, setCommentsError] = useState(null);
   const [versionError, setVersionError] = useState(null);
   const [coordinates, setCoordinates] = useState(null);
+  const [usuario, setUsuario] = useState({}); // add state
 
   const [showModal, setShowModal] = useState(false);
   const [pendingComment, setPendingComment] = useState(null);
@@ -45,6 +47,7 @@ function EntradaPage() {
   const formRef = useRef(null);
 
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
+  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
 
   const geoCacheRef = useRef(
     JSON.parse(sessionStorage.getItem("geoCache")) || {},
@@ -139,6 +142,14 @@ function EntradaPage() {
         .then((data) => {
           if (data && Object.keys(data).length > 0) {
             setEntry(data);
+
+            //cargar usuario de la base de datos
+            getUser(data.author)
+              .then((user) => {
+                setUsuario(user);
+              })
+              .catch(() => setEntryError("No se pudo cargar el autor."));
+
           } else {
             setEntryError("No se encontró la entrada solicitada.");
           }
@@ -235,6 +246,8 @@ function EntradaPage() {
     }
   }, [actualVersionId, fetchCoordinatesNominatim]);
 
+ 
+
   // Handler to submit a new comment
   async function subirComentario(event) {
     event.preventDefault();
@@ -243,6 +256,7 @@ function EntradaPage() {
     jsonData["version_id"] = actualVersionId;
     jsonData["entry_id"] = entryId;
     jsonData["rating"] = parseInt(jsonData["rating"], 10);
+    jsonData["author"] = sessionStorage.getItem("id");
     setPendingComment(jsonData);
     setShowModal(true);
   }
@@ -290,7 +304,7 @@ function EntradaPage() {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Typography variant="subtitle2">Autor: {entry.author}</Typography>
+            <Typography variant="subtitle2">Autor: <a href={`/perfil/${usuario.id}`}>{usuario.name}</a></Typography>
             <Typography variant="caption" color="text.secondary">
               {new Date(entry.created_at).toLocaleDateString()}
             </Typography>
@@ -298,6 +312,7 @@ function EntradaPage() {
           <Typography variant="h2" component="h1">
             {entry.title}
           </Typography>
+          {isLoggedIn && (
           <Stack
             direction="row"
             spacing={2}
@@ -321,6 +336,7 @@ function EntradaPage() {
               Editar contenido
             </Button>
           </Stack>
+          )}
         </Paper>
       )}
 
@@ -379,8 +395,9 @@ function EntradaPage() {
             )
           )}
       </Paper>
-
+      
       {/* Form to Add Comment */}
+      {isLoggedIn && ( 
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
         <Typography variant="h5" gutterBottom>
           Añadir comentario
@@ -409,20 +426,6 @@ function EntradaPage() {
               </Typography>
               <Rating name="rating" id="rating" size="large" />
             </Grid>
-            <Grid xs={12} sm={6} md={4} alignContent="center">
-              <TextField
-                id="author"
-                name="author"
-                label="Autor"
-                required
-                fullWidth
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                  },
-                }}
-              />
-            </Grid>
             <Grid xs={12} md={4}>
               <Button
                 type="submit"
@@ -437,6 +440,7 @@ function EntradaPage() {
           </Grid>
         </form>
       </Paper>
+      )}
 
       <ConfirmationModal
         message="¿Estás seguro de que quieres crear este comentario?"

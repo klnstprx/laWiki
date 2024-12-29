@@ -40,6 +40,14 @@ function FormWikiPage() {
 
   const [upload, setUpload] = useState(null);
   const [uploading, setUploading] = useState(false);
+  
+  const isLoggedIn = !!sessionStorage.getItem('user'); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/login');
+    }
+  }, [isLoggedIn, navigate]);
 
   useEffect(() => {
     if (wikiId) {
@@ -156,6 +164,10 @@ function FormWikiPage() {
       setIsModalOpen(true);
     }
   };
+
+  if (!isLoggedIn) {
+    return null; // O puedes mostrar un mensaje de carga o redirección
+  }
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>

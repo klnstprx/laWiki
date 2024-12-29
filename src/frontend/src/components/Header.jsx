@@ -19,6 +19,8 @@ import { searchEntries } from "../api/EntryApi";
 import { searchComments } from "../api/CommentApi";
 import { searchVersions } from "../api/VersionApi";
 import SearchResultsList from "./SearchResultsList";
+import { GoogleLogin } from "@react-oauth/google";
+import LoginButton from "./LoginButton";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -134,6 +136,8 @@ const Header = () => {
     navigate("/advanced-search");
   };
 
+  
+
   return (
     <AppBar position="static">
       <Toolbar>
@@ -167,6 +171,8 @@ const Header = () => {
         >
           Home
         </Typography>
+
+        <LoginButton/>
 
         <Search ref={searchRef}>
           <SearchIconWrapper>

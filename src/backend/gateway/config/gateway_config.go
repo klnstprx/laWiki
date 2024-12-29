@@ -13,8 +13,9 @@ import (
 
 // GlobalConfig holds the configuration for the application
 type GlobalConfig struct {
-	PrettyLogs *bool `toml:"PRETTY_LOGS"`
-	Debug      *bool `toml:"DEBUG"`
+	PrettyLogs *bool  `toml:"PRETTY_LOGS"`
+	Debug      *bool  `toml:"DEBUG"`
+	JWTSecret  string `toml:"JWT_SECRET"`
 }
 
 // GatewayConfig holds the configuration specific to the gateway service
@@ -45,6 +46,7 @@ type AppConfig struct {
 	VersionServiceURL string
 	CommentServiceURL string
 	MediaServiceURL   string
+	JWTSecret         string
 }
 
 // App holds app configuration
@@ -137,6 +139,13 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		missingVars = append(missingVars, "MEDIA_SERVICE_URL")
 	} else {
 		cfg.MediaServiceURL = config.Gateway.MediaServiceURL
+	}
+
+	// JWT_SECRET is required
+	if config.Global.JWTSecret == "" {
+		missingVars = append(missingVars, "JWT_SECRET")
+	} else {
+		cfg.JWTSecret = config.Global.JWTSecret
 	}
 
 	// If there are missing required variables, log them and exit

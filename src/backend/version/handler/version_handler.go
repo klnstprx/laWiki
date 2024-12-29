@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -15,6 +16,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/mailersend/mailersend-go"
 )
 
 // HealthCheck godoc
@@ -280,6 +283,96 @@ func PostVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	config.App.Logger.Info().Interface("version", version).Msg("Added new version")
+
+	// Retrieve the entry from the entry service with the entry ID from the version
+	entryServiceURL := fmt.Sprintf("%s/api/entries/%s", config.App.API_GATEWAY_URL, version.EntryID)
+	req, err := http.NewRequest("GET", entryServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	req.Header.Set("X-Internal-Request", "true")
+	resp, err := client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("Entry service returned error")
+		http.Error(w, "Failed to retrieve entry information", http.StatusInternalServerError)
+		return
+	}
+
+	var entry struct {
+		ID     string `json:"id"`
+		Author string `json:"author"`
+		Title  string `json:"title"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&entry); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode entry response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Retrieve the user from the user service with the author ID from the entry
+	userServiceURL := fmt.Sprintf("%s/api/auth/user?id=%s", config.App.API_GATEWAY_URL, entry.Author)
+	req, err = http.NewRequest("GET", userServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	req.Header.Set("X-Internal-Request", "true")
+	resp, err = client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("User service returned error")
+		http.Error(w, "Failed to retrieve user information", http.StatusInternalServerError)
+		return
+	}
+
+	var user struct {
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		Email       string `json:"email"`
+		EnableMails bool   `json:"enable_mails"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode user response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if user.EnableMails {
+		// email notification al autor de la entrada
+		notifyEmail("Tu entrada ha sido modificada",
+			"Hola {{ nombre }},\nTu entrada \"{{ entrada }}\" ha sido modificada.",
+			"<p> Hola {{ nombre }},</p><p>Tu entrada \"{{ entrada }}\" ha sido modificada.</p>",
+			user.Name,
+			user.Email,
+			entry.Title)
+	} else {
+		// notificación interna al autor de la entrada
+		notifyInterno("Tu entrada "+entry.Title+" ha sido modificada", entry.Author)
+	}
 }
 
 // PutVersion godoc
@@ -337,6 +430,8 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
+
+		req.Header.Set("X-Internal-Request", "true")
 		resp, err := client.Do(req)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to send request to media service")
@@ -459,7 +554,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 		}
 
 		config.App.Logger.Info().Str("url", mediaServiceURL).Msg("Sending delete request to media service")
-
+		req.Header.Set("X-Internal-Request", "true")
 		resp, err := client.Do(req)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to send delete request to media service")
@@ -489,7 +584,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	config.App.Logger.Info().Str("url", commentServiceURL).Msg("Sending request to delete associated comments")
-
+	req.Header.Set("X-Internal-Request", "true")
 	resp, err := client.Do(req)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to send request to comment service")
@@ -525,6 +620,95 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Str("versionID", id).Msg("Version and associated comments deleted successfully")
 	w.WriteHeader(http.StatusNoContent)
+
+	// Retrieve the entry from the entry service with the entry ID from the version
+	entryServiceURL := fmt.Sprintf("%s/api/entries/%s", config.App.API_GATEWAY_URL, version.EntryID)
+	req, err = http.NewRequest("GET", entryServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	req.Header.Set("X-Internal-Request", "true")
+	resp, err = client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("Entry service returned error")
+		http.Error(w, "Failed to retrieve entry information", http.StatusInternalServerError)
+		return
+	}
+
+	var entry struct {
+		ID     string `json:"id"`
+		Author string `json:"author"`
+		Title  string `json:"title"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&entry); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode entry response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Retrieve the user from the user service with the editor ID from the version
+	userServiceURL := fmt.Sprintf("%s/api/auth/user?id=%s", config.App.API_GATEWAY_URL, version.Editor)
+	req, err = http.NewRequest("GET", userServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	req.Header.Set("X-Internal-Request", "true")
+	resp, err = client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("User service returned error")
+		http.Error(w, "Failed to retrieve user information", http.StatusInternalServerError)
+		return
+	}
+
+	var user struct {
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		Email       string `json:"email"`
+		EnableMails bool   `json:"enable_mails"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode user response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if user.EnableMails {
+		// email notification al editor
+		notifyEmail("Tu modificación ha sido eliminada",
+			"Hola {{ nombre }},\nTu versión de la entrada \"{{ entrada }}\" ha sido eliminada.",
+			"<p> Hola {{ nombre }},</p><p>Tu versión de la entrada \"{{ entrada }}\" ha sido eliminada.</p>",
+			user.Name,
+			user.Email,
+			entry.Title)
+	} else {
+		// notificación interna al editor
+		notifyInterno("Tu versión de la entrada "+entry.Title+" ha sido eliminada", version.Editor)
+	}
 }
 
 // DeleteVersionsByEntryID godoc
@@ -590,6 +774,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
 				return
 			}
+			req.Header.Set("X-Internal-Request", "true")
 			resp, err := client.Do(req)
 			if err != nil {
 				config.App.Logger.Error().Err(err).Msg("Failed to send request to media service")
@@ -617,6 +802,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Internal-Request", "true")
 
 		config.App.Logger.Info().Str("url", commentServiceURL).Msg("Sending delete request to comment service")
 		client := &http.Client{
@@ -661,4 +847,100 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Int64("deletedCount", deleteResult.DeletedCount).Str("entryID", entryID).Msg("Versions deleted successfully")
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func notifyEmail(subject string, text string, html string, destinoNombre string, destinoEmail string, entryTitle string) {
+	ms := mailersend.NewMailersend("mlsn.9938f4dc11ca834ac853af3f07c9d9552a39e8007391e356dfb28d76094516c8")
+
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	from := mailersend.From{
+		Name:  "laWiki",
+		Email: "laWiki@trial-x2p0347d0v94zdrn.mlsender.net",
+	}
+
+	recipients := []mailersend.Recipient{
+		{
+			Name:  destinoNombre,
+			Email: destinoEmail,
+		},
+	}
+
+	personalization := []mailersend.Personalization{
+		{
+			Email: destinoEmail,
+			Data: map[string]interface{}{
+				"nombre":  destinoNombre,
+				"entrada": entryTitle,
+			},
+		},
+	}
+
+	tags := []string{}
+
+	message := ms.Email.NewMessage()
+
+	message.SetFrom(from)
+	message.SetRecipients(recipients)
+	message.SetSubject(subject)
+	message.SetHTML(html)
+	message.SetText(text)
+	message.SetTags(tags)
+	message.SetPersonalization(personalization)
+
+	res, _ := ms.Email.Send(ctx, message)
+
+	fmt.Printf(res.Header.Get("X-Message-Id"))
+}
+
+func notifyInterno(mensaje string, autor string) {
+	notificationMessage := fmt.Sprintf(
+		mensaje,
+	)
+
+	// Construir la URL del servicio de usuarios con query string
+	userServiceURL := fmt.Sprintf("%s/api/auth/notifications?id=%s", config.App.API_GATEWAY_URL, autor)
+
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	// Crear el cuerpo de la solicitud array con la cadena
+	notificationPayload := map[string]string{
+		"notification": notificationMessage,
+	}
+
+	payloadBytes, _ := json.Marshal(notificationPayload)
+
+	req, err := http.NewRequest("POST", userServiceURL, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Internal-Request", "true")
+
+	// Enviar la solicitud
+	resp, err := client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", bodyString).
+			Msg("User service returned error")
+		return
+	}
+
+	config.App.Logger.Info().
+		Str("userId", autor).
+		Msg("Notification sent to user service")
 }
