@@ -1,4 +1,51 @@
-.PHONY: run-all run-api-gateway run-wiki-service run-entry-service run-comment-service run-version-service run-media-service clean combine-swagger
+.PHONY: all build push $(SERVICES:%=build-%) run-all run-api-gateway run-wiki-service run-entry-service run-comment-service run-version-service run-media-service clean combine-swagger
+# Define your services
+SERVICES = auth comment entry gateway media translation wiki
+
+# Default target when you run 'make' without arguments
+all: build push
+
+# Build all services
+build: $(SERVICES:%=build-%)
+
+# Push all services
+push: $(SERVICES:%=push-%)
+
+# Build each service
+build-%:
+	cd $* vice . && \
+		./translation-service > translation-service.log 2>&1 & \
+		echo $$! > translation-service.pid \
+	)
+
+run-all: clean run-wiki-service run-entry-service run-comment-service run-version-service run-media-service run-api-gateway
+
+clean:
+	@echo "Stopping services..."
+	-@cd wiki && test -e wiki-service.pid && kill `cat wiki-service.pid` 2>/dev/null && rm wiki-service.pid || true
+	-@cd entry && test -e entry-service.pid && kill `cat entry-service.pid` 2>/dev/null && rm entry-service.pid || true
+	-@cd comment && test -e comment-service.pid && kill `cat comment-service.pid` 2>/dev/null && rm comment-service.pid || true
+	-@cd version && test -e version-service.pid && kill `cat version-service.pid` 2>/dev/null && rm version-service.pid || true
+	-@cd media && test -e media-service.pid && kill `cat media-service.pid` 2>/dev/null && rm media-service.pid || true
+	-@cd auth && test -e auth-service.pid && kill `cat auth-service.pid` 2>/dev/null && rm auth-service.pid || true
+	-@cd gateway && test -e api-gateway.pid && kill `cat api-gateway.pid` 2>/dev/null && rm api-gateway.pid || true
+
+combine-swagger:
+	@echo "Generating Swagger documentation for all services..."
+	cd wiki && swag init
+	cd entry && swag init
+	cd comment && swag init
+	cd version && swag init
+	cd media && swag init
+	cd auth && swag init
+	cd gateway && swag init
+	@echo "Combining Swagger documentation..."
+	npx swagger-combine swagger-config.json -o gateway/docs/swagger.json
+	@echo "Swagger documentation combined successfully."&& sudo docker build -t klnstprx/$*-service .
+
+# Push each service
+push-%:
+	sudo docker push klnstprx/$*-service
 
 run-wiki-service:
 	@echo "Running wiki-service..."
@@ -59,32 +106,4 @@ run-auth-service:
 run-translation-service: 
 	@echo "Running translation-service..."
 	cd translation && ( \
-		go build -o translation-service . && \
-		./translation-service > translation-service.log 2>&1 & \
-		echo $$! > translation-service.pid \
-	)
-
-run-all: clean run-wiki-service run-entry-service run-comment-service run-version-service run-media-service run-api-gateway
-
-clean:
-	@echo "Stopping services..."
-	-@cd wiki && test -e wiki-service.pid && kill `cat wiki-service.pid` 2>/dev/null && rm wiki-service.pid || true
-	-@cd entry && test -e entry-service.pid && kill `cat entry-service.pid` 2>/dev/null && rm entry-service.pid || true
-	-@cd comment && test -e comment-service.pid && kill `cat comment-service.pid` 2>/dev/null && rm comment-service.pid || true
-	-@cd version && test -e version-service.pid && kill `cat version-service.pid` 2>/dev/null && rm version-service.pid || true
-	-@cd media && test -e media-service.pid && kill `cat media-service.pid` 2>/dev/null && rm media-service.pid || true
-	-@cd auth && test -e auth-service.pid && kill `cat auth-service.pid` 2>/dev/null && rm auth-service.pid || true
-	-@cd gateway && test -e api-gateway.pid && kill `cat api-gateway.pid` 2>/dev/null && rm api-gateway.pid || true
-
-combine-swagger:
-	@echo "Generating Swagger documentation for all services..."
-	cd wiki && swag init
-	cd entry && swag init
-	cd comment && swag init
-	cd version && swag init
-	cd media && swag init
-	cd auth && swag init
-	cd gateway && swag init
-	@echo "Combining Swagger documentation..."
-	npx swagger-combine swagger-config.json -o gateway/docs/swagger.json
-	@echo "Swagger documentation combined successfully."
+		go build -o translation-ser
