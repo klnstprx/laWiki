@@ -21,6 +21,7 @@ func NewRouter() http.Handler {
 			r.Get("/", handler.GetVersionByID)
 			r.Put("/", handler.PutVersion)
 			r.Delete("/", handler.DeleteVersion)
+			r.Post("/translate", handler.TranslateVersion)
 		})
 	})
 

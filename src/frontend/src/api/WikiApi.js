@@ -31,3 +31,10 @@ export async function searchWikis(params) {
   const queryString = new URLSearchParams(params).toString();
   return apiRequest(`/wikis/search?${queryString}`);
 }
+
+export async function translateWiki(id, targetLang) {
+  const queryString = new URLSearchParams({ targetLang }).toString();
+  return apiRequest(`/wikis/${encodeURIComponent(id)}/translate?${queryString}`, {
+    method: "POST",
+  });
+}

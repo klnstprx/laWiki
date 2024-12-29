@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -15,6 +17,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/mailersend/mailersend-go"
 )
 
 // HealthCheck godoc
@@ -280,6 +284,96 @@ func PostVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	config.App.Logger.Info().Interface("version", version).Msg("Added new version")
+
+	// Retrieve the entry from the entry service with the entry ID from the version
+	entryServiceURL := fmt.Sprintf("%s/api/entries/%s", config.App.API_GATEWAY_URL, version.EntryID)
+	req, err := http.NewRequest("GET", entryServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	req.Header.Set("X-Internal-Request", "true")
+	resp, err := client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("Entry service returned error")
+		http.Error(w, "Failed to retrieve entry information", http.StatusInternalServerError)
+		return
+	}
+
+	var entry struct {
+		ID     string `json:"id"`
+		Author string `json:"author"`
+		Title  string `json:"title"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&entry); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode entry response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Retrieve the user from the user service with the author ID from the entry
+	userServiceURL := fmt.Sprintf("%s/api/auth/user?id=%s", config.App.API_GATEWAY_URL, entry.Author)
+	req, err = http.NewRequest("GET", userServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	req.Header.Set("X-Internal-Request", "true")
+	resp, err = client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("User service returned error")
+		http.Error(w, "Failed to retrieve user information", http.StatusInternalServerError)
+		return
+	}
+
+	var user struct {
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		Email       string `json:"email"`
+		EnableMails bool   `json:"enable_mails"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode user response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if user.EnableMails {
+		// email notification al autor de la entrada
+		notifyEmail("Tu entrada ha sido modificada",
+			"Hola {{ nombre }},\nTu entrada \"{{ entrada }}\" ha sido modificada.",
+			"<p> Hola {{ nombre }},</p><p>Tu entrada \"{{ entrada }}\" ha sido modificada.</p>",
+			user.Name,
+			user.Email,
+			entry.Title)
+	} else {
+		// notificación interna al autor de la entrada
+		notifyInterno("Tu entrada "+entry.Title+" ha sido modificada", entry.Author)
+	}
 }
 
 // PutVersion godoc
@@ -337,6 +431,8 @@ func PutVersion(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
+
+		req.Header.Set("X-Internal-Request", "true")
 		resp, err := client.Do(req)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to send request to media service")
@@ -459,7 +555,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 		}
 
 		config.App.Logger.Info().Str("url", mediaServiceURL).Msg("Sending delete request to media service")
-
+		req.Header.Set("X-Internal-Request", "true")
 		resp, err := client.Do(req)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to send delete request to media service")
@@ -489,7 +585,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	config.App.Logger.Info().Str("url", commentServiceURL).Msg("Sending request to delete associated comments")
-
+	req.Header.Set("X-Internal-Request", "true")
 	resp, err := client.Do(req)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to send request to comment service")
@@ -525,6 +621,95 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Str("versionID", id).Msg("Version and associated comments deleted successfully")
 	w.WriteHeader(http.StatusNoContent)
+
+	// Retrieve the entry from the entry service with the entry ID from the version
+	entryServiceURL := fmt.Sprintf("%s/api/entries/%s", config.App.API_GATEWAY_URL, version.EntryID)
+	req, err = http.NewRequest("GET", entryServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	req.Header.Set("X-Internal-Request", "true")
+	resp, err = client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to entry service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("Entry service returned error")
+		http.Error(w, "Failed to retrieve entry information", http.StatusInternalServerError)
+		return
+	}
+
+	var entry struct {
+		ID     string `json:"id"`
+		Author string `json:"author"`
+		Title  string `json:"title"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&entry); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode entry response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Retrieve the user from the user service with the editor ID from the version
+	userServiceURL := fmt.Sprintf("%s/api/auth/user?id=%s", config.App.API_GATEWAY_URL, version.Editor)
+	req, err = http.NewRequest("GET", userServiceURL, nil)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	req.Header.Set("X-Internal-Request", "true")
+	resp, err = client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().Int("status", resp.StatusCode).Str("body", bodyString).Msg("User service returned error")
+		http.Error(w, "Failed to retrieve user information", http.StatusInternalServerError)
+		return
+	}
+
+	var user struct {
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		Email       string `json:"email"`
+		EnableMails bool   `json:"enable_mails"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode user response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if user.EnableMails {
+		// email notification al editor
+		notifyEmail("Tu modificación ha sido eliminada",
+			"Hola {{ nombre }},\nTu versión de la entrada \"{{ entrada }}\" ha sido eliminada.",
+			"<p> Hola {{ nombre }},</p><p>Tu versión de la entrada \"{{ entrada }}\" ha sido eliminada.</p>",
+			user.Name,
+			user.Email,
+			entry.Title)
+	} else {
+		// notificación interna al editor
+		notifyInterno("Tu versión de la entrada "+entry.Title+" ha sido eliminada", version.Editor)
+	}
 }
 
 // DeleteVersionsByEntryID godoc
@@ -577,10 +762,10 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 		versionIDs = append(versionIDs, version.ID)
 	}
 
-	//this is the client to send requests to the media service
+	// this is the client to send requests to the media service
 	client := &http.Client{Timeout: 5 * time.Second}
 
-	//delete associated media files
+	// delete associated media files
 	for _, version := range versions {
 		for _, mediaID := range version.MediaIDs {
 			mediaServiceURL := fmt.Sprintf("%s/api/media/%s", config.App.API_GATEWAY_URL, mediaID)
@@ -590,6 +775,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
 				return
 			}
+			req.Header.Set("X-Internal-Request", "true")
 			resp, err := client.Do(req)
 			if err != nil {
 				config.App.Logger.Error().Err(err).Msg("Failed to send request to media service")
@@ -617,6 +803,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Internal-Request", "true")
 
 		config.App.Logger.Info().Str("url", commentServiceURL).Msg("Sending delete request to comment service")
 		client := &http.Client{
@@ -661,4 +848,273 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Int64("deletedCount", deleteResult.DeletedCount).Str("entryID", entryID).Msg("Versions deleted successfully")
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func notifyEmail(subject string, text string, html string, destinoNombre string, destinoEmail string, entryTitle string) {
+	ms := mailersend.NewMailersend("mlsn.9938f4dc11ca834ac853af3f07c9d9552a39e8007391e356dfb28d76094516c8")
+
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	from := mailersend.From{
+		Name:  "laWiki",
+		Email: "laWiki@trial-x2p0347d0v94zdrn.mlsender.net",
+	}
+
+	recipients := []mailersend.Recipient{
+		{
+			Name:  destinoNombre,
+			Email: destinoEmail,
+		},
+	}
+
+	personalization := []mailersend.Personalization{
+		{
+			Email: destinoEmail,
+			Data: map[string]interface{}{
+				"nombre":  destinoNombre,
+				"entrada": entryTitle,
+			},
+		},
+	}
+
+	tags := []string{}
+
+	message := ms.Email.NewMessage()
+
+	message.SetFrom(from)
+	message.SetRecipients(recipients)
+	message.SetSubject(subject)
+	message.SetHTML(html)
+	message.SetText(text)
+	message.SetTags(tags)
+	message.SetPersonalization(personalization)
+
+	res, _ := ms.Email.Send(ctx, message)
+
+	fmt.Printf(res.Header.Get("X-Message-Id"))
+}
+
+func notifyInterno(mensaje string, autor string) {
+	notificationMessage := fmt.Sprintf(
+		mensaje,
+	)
+
+	// Construir la URL del servicio de usuarios con query string
+	userServiceURL := fmt.Sprintf("%s/api/auth/notifications?id=%s", config.App.API_GATEWAY_URL, autor)
+
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	// Crear el cuerpo de la solicitud array con la cadena
+	notificationPayload := map[string]string{
+		"notification": notificationMessage,
+	}
+
+	payloadBytes, _ := json.Marshal(notificationPayload)
+
+	req, err := http.NewRequest("POST", userServiceURL, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Internal-Request", "true")
+
+	// Enviar la solicitud
+	resp, err := client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", bodyString).
+			Msg("User service returned error")
+		return
+	}
+
+	config.App.Logger.Info().
+		Str("userId", autor).
+		Msg("Notification sent to user service")
+}
+
+// TranslationRequest represents the request payload for translation.
+type TranslationRequest struct {
+	Fields     map[string]string `json:"fields"`
+	TargetLang string            `json:"targetLang"`
+}
+
+// TranslationResponse represents the response payload with translated fields and detected source language.
+type TranslationResponse struct {
+	TranslatedFields       map[string]string `json:"translatedFields"`
+	DetectedSourceLanguage string            `json:"detectedSourceLanguage"`
+}
+
+// TranslateVersion translates the 'content' field of a Version object.
+// It ensures that existing translations in other languages are preserved and skips already translated fields.
+func TranslateVersion(w http.ResponseWriter, r *http.Request) {
+	// Extract Version ID from URL parameters
+	versionID := chi.URLParam(r, "id")
+	if versionID == "" {
+		config.App.Logger.Warn().Msg("TranslateVersion called without version ID")
+		http.Error(w, "Version ID is required", http.StatusBadRequest)
+		return
+	}
+
+	// Get the target language from query parameters
+	targetLang := r.URL.Query().Get("targetLang")
+	if targetLang == "" {
+		config.App.Logger.Warn().Msg("TranslateVersion called without targetLang parameter")
+		http.Error(w, "Missing targetLang parameter", http.StatusBadRequest)
+		return
+	}
+
+	// Convert versionID to ObjectID
+	objID, err := primitive.ObjectIDFromHex(versionID)
+	if err != nil {
+		config.App.Logger.Warn().Err(err).Str("versionID", versionID).Msg("Invalid Version ID format")
+		http.Error(w, "Invalid Version ID", http.StatusBadRequest)
+		return
+	}
+
+	// Retrieve the Version from the database
+	var version model.Version
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = database.VersionCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&version)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Str("versionID", versionID).Msg("Version not found")
+		http.Error(w, "Version not found", http.StatusNotFound)
+		return
+	}
+
+	// Initialize TranslatedFields map if nil
+	if version.TranslatedFields == nil {
+		version.TranslatedFields = make(map[string]map[string]string)
+	}
+
+	// Check if 'content' is already translated to the target language
+	translatedContent, exists := version.TranslatedFields[targetLang]["content"]
+	if exists && translatedContent != "" {
+		// Log a warning and skip translation
+		config.App.Logger.Warn().
+			Str("versionID", version.ID).
+			Str("targetLang", targetLang).
+			Msg("Content is already translated to the target language, skipping translation")
+
+		// Return the existing Version object with existing translations
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(version)
+		return
+	}
+
+	// Prepare the translation request with fields that need translation
+	translationReq := TranslationRequest{
+		Fields: map[string]string{
+			"content": version.Content,
+		},
+		TargetLang: targetLang,
+	}
+
+	// Marshal the translation request to JSON
+	reqBody, err := json.Marshal(translationReq)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to marshal TranslationRequest")
+		http.Error(w, "Failed to marshal translation request", http.StatusInternalServerError)
+		return
+	}
+	config.App.Logger.Info().Msgf("Sending Translation Request: %s", string(reqBody))
+
+	// Define the translation service URL
+	translationURL := fmt.Sprintf("%s/api/translate", config.App.API_GATEWAY_URL) // Replace with actual URL if different
+
+	// Create an HTTP client with timeout
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	// Make the HTTP POST request to the translation service
+	resp, err := client.Post(translationURL, "application/json", bytes.NewBuffer(reqBody))
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to call translation service")
+		http.Error(w, "Failed to call translation service", http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Check if the translation service responded with success
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", string(body)).
+			Msg("Translation service returned error")
+		http.Error(w, "Translation service error: "+string(body), resp.StatusCode)
+		return
+	}
+
+	// Decode the translation response
+	var translationResp TranslationResponse
+	if err := json.NewDecoder(resp.Body).Decode(&translationResp); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode TranslationResponse")
+		http.Error(w, "Failed to decode translation response", http.StatusInternalServerError)
+		return
+	}
+
+	// Check if detected source language matches target language
+	if strings.EqualFold(translationResp.DetectedSourceLanguage, targetLang) {
+		config.App.Logger.Warn().
+			Str("versionID", version.ID).
+			Str("sourceLang", translationResp.DetectedSourceLanguage).
+			Str("targetLang", targetLang).
+			Msg("Source language matches target language, translation skipped")
+
+		http.Error(w, "Source language is the same as target language", http.StatusBadRequest)
+		return
+	}
+
+	// Assign translated fields for the target language
+	for field, translatedText := range translationResp.TranslatedFields {
+		if version.TranslatedFields[field] == nil {
+			version.TranslatedFields[field] = make(map[string]string)
+		}
+		version.TranslatedFields[field][targetLang] = translatedText
+	}
+
+	// Save the detected source language
+	version.SourceLang = translationResp.DetectedSourceLanguage
+
+	// Update the Version in the database with translated fields and source language
+	filter := bson.M{"_id": objID}
+	update := bson.M{
+		"$set": bson.M{
+			"translatedFields." + targetLang + ".content": translationResp.TranslatedFields["content"],
+			"sourceLang": version.SourceLang,
+		},
+	}
+
+	_, err = database.VersionCollection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to update translated version in database")
+		http.Error(w, "Failed to update translated version in database", http.StatusInternalServerError)
+		return
+	}
+
+	// Log successful translation
+	config.App.Logger.Info().
+		Str("versionID", version.ID).
+		Str("targetLang", targetLang).
+		Msg("Successfully translated version")
+
+	// Return the updated Version object as JSON
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(version)
 }
