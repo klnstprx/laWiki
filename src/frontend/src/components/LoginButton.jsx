@@ -1,17 +1,31 @@
 import { useEffect, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-import { Box, Button, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  IconButton,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { getAllUsers, postUser } from "../api/AuthApi";
 import Notificaciones from "./Notificaciones"; // Importa el nuevo componente
 import { putUser } from "../api/AuthApi";
+import {
+  Logout as LogoutIcon,
+  Notifications as NotificationsIcon,
+} from "@mui/icons-material";
 
 const LoginButton = () => {
   const [user, setUser] = useState(null); // Estado para el usuario autenticado
   const [usuario, setUsuario] = useState({ notifications: [] }); // Estado para el usuario con notificaciones
   const navigate = useNavigate();
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
@@ -149,13 +163,51 @@ const LoginButton = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+    <Box
+      sx={{ display: "flex", alignItems: "center", gap: 2 }}
+    >
       {user
         ? (
           <>
-            <Button variant="contained" color="secondary" onClick={handleClick}>
-              Notificaciones
-            </Button>
+            {isMobile
+              ? (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={handleClick}
+                  sx={{
+                    minWidth: "auto",
+                    p: 1,
+                  }}
+                >
+                  <NotificationsIcon
+                    sx={{ display: { xs: "flex", md: "none" } }}
+                  />
+                </Button>
+              )
+              : (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={handleClick}
+                  startIcon={
+                    <NotificationsIcon
+                      sx={{ display: { xs: "none", md: "inline" } }}
+                    />
+                  }
+                  sx={{
+                    minWidth: "auto",
+                    p: 1,
+                  }}
+                >
+                  <Typography
+                    noWrap
+                    sx={{ display: { xs: "none", md: "inline" } }}
+                  >
+                    Notificaciones
+                  </Typography>
+                </Button>
+              )}
             <Notificaciones
               anchorEl={anchorEl}
               open={open}
@@ -164,25 +216,63 @@ const LoginButton = () => {
               clearNotifications={clearNotifications}
             />
 
-            <Typography
-              variant="body1"
-              noWrap
+            <IconButton
+              onClick={goToProfile}
               sx={{
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
+                p: 1,
+                minWidth: "auto",
               }}
             >
-              Bienvenido, {user.name}
-            </Typography>
+              <Avatar
+                sx={{
+                  backgroundColor: "primary.main",
+                  "&:hover": {
+                    backgroundColor: "primary.dark",
+                  },
+                  boxShadow: (theme) => theme.shadows[2],
+                }}
+                alt={user.name}
+                src={user.picture}
+              />
+            </IconButton>
 
-            <Button variant="contained" color="info" onClick={goToProfile}>
-              Perfil
-            </Button>
-
-            <Button variant="contained" color="error" onClick={handleLogout}>
-              Cerrar sesión
-            </Button>
+            {isMobile
+              ? (
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={handleLogout}
+                  sx={{
+                    p: 1,
+                    minWidth: "auto",
+                  }}
+                >
+                  <LogoutIcon sx={{ display: { xs: "flex", md: "none" } }} />
+                </Button>
+              )
+              : (
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={handleLogout}
+                  sx={{
+                    p: 1,
+                    minWidth: "auto",
+                  }}
+                  startIcon={
+                    <LogoutIcon
+                      sx={{ display: { xs: "none", md: "inline" } }}
+                    />
+                  }
+                >
+                  <Typography
+                    noWrap
+                    sx={{ display: { xs: "none", md: "inline" } }}
+                  >
+                    Cerrar sesión
+                  </Typography>
+                </Button>
+              )}
           </>
         )
         : (
