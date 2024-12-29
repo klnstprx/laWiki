@@ -13,10 +13,11 @@ push: $(SERVICES:%=push-%)
 
 # Build each service
 build-%:
-	cd $* vice . && \
-		./translation-service > translation-service.log 2>&1 & \
-		echo $$! > translation-service.pid \
-	)
+	cd $* && sudo docker build -t klnstprx/$*-service .
+
+# Push each service
+push-%:
+	sudo docker push klnstprx/$*-service
 
 run-all: clean run-wiki-service run-entry-service run-comment-service run-version-service run-media-service run-api-gateway
 
@@ -43,9 +44,6 @@ combine-swagger:
 	npx swagger-combine swagger-config.json -o gateway/docs/swagger.json
 	@echo "Swagger documentation combined successfully."&& sudo docker build -t klnstprx/$*-service .
 
-# Push each service
-push-%:
-	sudo docker push klnstprx/$*-service
 
 run-wiki-service:
 	@echo "Running wiki-service..."
