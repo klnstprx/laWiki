@@ -11,9 +11,11 @@ import { ThemeProvider } from "@mui/material/styles";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import theme from "./styles/theme";
+import { LanguageProvider } from "./context/LanguageProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
-const clientId = "292807851260-m45leggn30hmsvp8vhko14ue0lfi5276.apps.googleusercontent.com";
+const clientId =
+  "292807851260-m45leggn30hmsvp8vhko14ue0lfi5276.apps.googleusercontent.com";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -21,9 +23,11 @@ createRoot(document.getElementById("root")).render(
       <ThemeProvider theme={theme}>
         <BrowserRouter>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <ToastProvider>
-              <App />
-            </ToastProvider>
+            <LanguageProvider>
+              <ToastProvider>
+                <App />
+              </ToastProvider>
+            </LanguageProvider>
           </LocalizationProvider>
         </BrowserRouter>
       </ThemeProvider>

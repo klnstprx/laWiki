@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
+// GlobalConfig holds the configuration for the application
 type GlobalConfig struct {
 	API_GATEWAY_URL string `toml:"API_GATEWAY_URL"`
 	PrettyLogs      *bool  `toml:"PRETTY_LOGS"`
@@ -19,40 +21,38 @@ type GlobalConfig struct {
 	DBName          string `toml:"DB_NAME"`
 }
 
-// WikiConfig holds the configuration specific to the wiki service
-type WikiConfig struct {
-	Port             int    `toml:"PORT"`
-	DBCollectionName string `toml:"DB_COLLECTION_NAME"`
+// TranslationConfig holds the configuration specific to the Translation service
+type TranslationConfig struct {
+	DeepLKey string `toml:"DEEPL_KEY"`
+	Port     int    `toml:"PORT"`
 }
 
 // Config represents the structure of the config.toml file
 type Config struct {
-	Wiki   WikiConfig   `toml:"wiki"`
-	Global GlobalConfig `toml:"global"`
+	Translation TranslationConfig `toml:"Translation"`
+	Global      GlobalConfig      `toml:"global"`
 }
-
-// AppConfig holds the application configuration
 type AppConfig struct {
 	Logger           *zerolog.Logger
+	Cld              *cloudinary.Cloudinary
 	Port             string
 	PrettyLogs       bool
 	Debug            bool
 	MongoDBURI       string
 	DBCollectionName string
 	DBName           string
-	API_GATEWAY_URL  string
+	MB_LIMIT         int64
 	DeepLKey         string
 }
 
-// App holds the global app configuration
+// App holds app configuration
 var App AppConfig
 
-// New initializes the global AppConfig
+// Creates global AppConfig
 func New() {
 	App = AppConfig{}
 }
 
-// LoadConfig reads the configuration from config.toml and populates AppConfig
 func (cfg *AppConfig) LoadConfig(configPath string) {
 	var config Config
 	// Check if the config.toml file exists
@@ -71,11 +71,11 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	missingVars := []string{}
 
 	// PORT with default value
-	if config.Wiki.Port == 0 {
-		cfg.Port = ":8001" // Default port
-		log.Warn().Msg("PORT not set in config file. Using default ':8001'.")
+	if config.Translation.Port == 0 {
+		cfg.Port = ":8082" // Default port
+		log.Warn().Msg("PORT not set in config file. Using default ':8082'.")
 	} else {
-		cfg.Port = fmt.Sprintf(":%d", config.Wiki.Port)
+		cfg.Port = fmt.Sprintf(":%d", config.Translation.Port)
 	}
 
 	// PRETTY_LOGS with default value
@@ -101,13 +101,6 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		cfg.DBName = "laWiki" // Default to "laWiki"
 		log.Warn().Msg("DBNAME not set in config file. Using default 'laWiki'.")
 	}
-	// DBCOLLECTIONNAME with default value
-	if config.Wiki.DBCollectionName != "" {
-		cfg.DBCollectionName = config.Wiki.DBCollectionName
-	} else {
-		cfg.DBCollectionName = "wikis" // Default to "wikis"
-		log.Warn().Msg("DBCOLLECTIONNAME not set in config file. Using default 'wiki'.")
-	}
 
 	// MONGODB_URI is required
 	if config.Global.MongoDBURI != "" {
@@ -117,12 +110,11 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		log.Warn().Msg("DMONGODB_URI not set in config file. Using default 'mongodb://localhost:27017'.")
 	}
 
-	// API_GATEWAY_URL is required
-	if config.Global.API_GATEWAY_URL != "" {
-		cfg.API_GATEWAY_URL = config.Global.API_GATEWAY_URL
+	// DEEPL_KEY is required
+	if config.Translation.DeepLKey != "" {
+		cfg.DeepLKey = config.Translation.DeepLKey
 	} else {
-		log.Warn().Msg("API_GATEWAY_URL not set in config file.")
-		missingVars = append(missingVars, "API_GATEWAY_URL")
+		missingVars = append(missingVars, "DEEPL_KEY")
 	}
 
 	// If there are missing required variables, log them and exit

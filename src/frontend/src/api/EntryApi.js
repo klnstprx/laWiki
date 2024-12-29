@@ -32,3 +32,10 @@ export async function searchEntries(params) {
   const queryString = new URLSearchParams(params).toString();
   return apiRequest(`/entries/search?${queryString}`);
 }
+
+export async function translateEntry(id, targetLang) {
+  const queryString = new URLSearchParams({ targetLang }).toString();
+  return apiRequest(`/entries/${encodeURIComponent(id)}/translate?${queryString}`, {
+    method: "POST",
+  });
+}
