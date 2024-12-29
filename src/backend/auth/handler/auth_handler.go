@@ -13,29 +13,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// HealthCheck godoc
-// @Summary      Health Check
-// @Description  Checks if the service is up
-// @Tags         Health
-// @Produce      plain
-// @Success      200  {string}  string  "OK"
-// @Router       /api/auth/health [get]
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
 }
 
-// A partir de aqui son las fuciones para la coleccion usuarios(no he borrado lo anterior por si hacia falta)
-// CRUD DE USUARIOS
-
-// GetVersions godoc
-// @Summary      Get all versions
-// @Description  Retrieves the list of all version JSON objects from the database.
-// @Tags         Versions
-// @Produce      application/json
-// @Success      200  {array}   model.Version
-// @Failure      500  {string}  string  "Internal server error"
-// @Router       /api/versions/ [get]
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var usuarios []model.User
 
@@ -80,17 +62,6 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetVersionByID godoc
-// @Summary      Get a version by ID
-// @Description  Retrieves a version by its ID.
-// @Tags         Versions
-// @Produce      application/json
-// @Param        id    query     string  true  "Version ID"
-// @Success      200   {object}  model.Version
-// @Failure      400   {string}  string  "Invalid ID"
-// @Failure      404   {string}  string  "Version not found"
-// @Failure      500   {string}  string  "Internal server error"
-// @Router       /api/versions/{id} [get]
 func GetUserByID(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	if id == "" {
@@ -125,17 +96,6 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// PostVersion godoc
-// @Summary      Create a new version
-// @Description  Creates a new version. Expects a JSON object in the request body.
-// @Tags         Versions
-// @Accept       application/json
-// @Produce      application/json
-// @Param        version  body      model.Version  true  "Version information"
-// @Success      201      {object}  model.Version
-// @Failure      400      {string}  string  "Invalid request body"
-// @Failure      500      {string}  string  "Internal server error"
-// @Router       /api/versions/ [post]
 func PostUser(w http.ResponseWriter, r *http.Request) {
 	var usuario model.User
 	decoder := json.NewDecoder(r.Body)
@@ -175,19 +135,6 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	config.App.Logger.Info().Interface("usuario", usuario).Msg("Added new user")
 }
 
-// PutVersion godoc
-// @Summary      Update a version by ID
-// @Description  Updates a version by its ID. Expects a JSON object in the request body.
-// @Tags         Versions
-// @Accept       application/json
-// @Produce      application/json
-// @Param        id      query     string          true  "Version ID"
-// @Param        version body      model.Version   true  "Updated version information"
-// @Success      200     {object}  model.Version
-// @Failure      400     {string}  string  "Invalid ID or request body"
-// @Failure      404     {string}  string  "Version not found"
-// @Failure      500     {string}  string  "Internal server error"
-// @Router       /api/versions/{id} [put]
 func PutUser(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	if id == "" {
@@ -289,16 +236,6 @@ func difference(slice1, slice2 []string) []string {
 	return diff
 }
 
-// DeleteVersion godoc
-// @Summary      Delete a version by ID
-// @Description  Deletes a version by its ID.
-// @Tags         Versions
-// @Param        id query string true "Version ID"
-// @Success      204 {string} string "No Content"
-// @Failure      400 {string} string "Invalid ID"
-// @Failure      404 {string} string "Version not found"
-// @Failure      500 {string} string "Internal server error"
-// @Router       /api/versions/{id} [delete]
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	if id == "" {

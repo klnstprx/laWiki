@@ -1,0 +1,235 @@
+basePath: /api/wikis
+definitions:
+  model.Wiki:
+    properties:
+      category:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      media_id:
+        type: string
+      sourceLang:
+        type: string
+      title:
+        type: string
+      translatedFields:
+        additionalProperties:
+          additionalProperties:
+            type: string
+          type: object
+        type: object
+      updated_at:
+        type: string
+    type: object
+host: localhost:8001
+info:
+  contact: {}
+  description: API documentation for the Wiki Service.
+  title: Wiki Service API
+  version: "1.0"
+paths:
+  /api/wikis/:
+    get:
+      description: Retrieves the list of all wiki JSON objects from the database.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Wiki'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get all wikis
+      tags:
+      - Wikis
+    post:
+      consumes:
+      - application/json
+      description: Creates a new wiki. Expects a JSON object in the request body.
+      parameters:
+      - description: Wiki information
+        in: body
+        name: wiki
+        required: true
+        schema:
+          $ref: '#/definitions/model.Wiki'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Wiki'
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Create a new wiki
+      tags:
+      - Wikis
+  /api/wikis/{id}:
+    delete:
+      description: Deletes a wiki by its ID.
+      parameters:
+      - description: Wiki ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Wiki not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete a wiki by ID
+      tags:
+      - Wikis
+    get:
+      description: Retrieves a wiki by its ID.
+      parameters:
+      - description: Wiki ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Wiki'
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Wiki not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get a wiki by ID
+      tags:
+      - Wikis
+    put:
+      consumes:
+      - application/json
+      description: Updates a wiki by its ID. Expects a JSON object in the request.
+      parameters:
+      - description: Wiki ID
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Updated wiki information
+        in: body
+        name: wiki
+        required: true
+        schema:
+          $ref: '#/definitions/model.Wiki'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Wiki'
+        "400":
+          description: Invalid ID or request body
+          schema:
+            type: string
+        "404":
+          description: Wiki not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update a wiki by ID
+      tags:
+      - Wikis
+  /api/wikis/health:
+    get:
+      description: Checks if the service is up
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health Check
+      tags:
+      - Health
+  /api/wikis/search:
+    get:
+      description: Search for wikis using various query parameters. You can search
+        by title, exact_title, description, or category. All parameters are optional
+        and can be combined.
+      parameters:
+      - description: Partial title to search for (case-insensitive)
+        in: query
+        name: title
+        type: string
+      - description: Exact title to search for
+        in: query
+        name: exact_title
+        type: string
+      - description: Description to search for (case-insensitive)
+        in: query
+        name: description
+        type: string
+      - description: Category to search for
+        in: query
+        name: category
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Wiki'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Search wikis
+      tags:
+      - Wikis
+swagger: "2.0"
