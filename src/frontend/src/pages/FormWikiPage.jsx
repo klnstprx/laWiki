@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import {
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Box,
-  IconButton,
   Alert,
-  Breadcrumbs
+  Box,
+  Breadcrumbs,
+  Button,
+  Container,
+  IconButton,
+  TextField,
+  Typography,
 } from "@mui/material";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getWiki, postWiki, putWiki } from "../api/WikiApi";
 import { postMedia } from "../api/MediaApi";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -24,7 +24,7 @@ function FormWikiPage() {
     title: "",
     description: "",
     category: "",
-    media_id: ""
+    media_id: "",
   });
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -35,17 +35,17 @@ function FormWikiPage() {
     title: "",
     description: "",
     category: "",
-    media_id: ""
+    media_id: "",
   });
 
   const [upload, setUpload] = useState(null);
   const [uploading, setUploading] = useState(false);
-  
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
+
+  const isLoggedIn = !!sessionStorage.getItem("user"); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate('/login');
+      navigate("/");
     }
   }, [isLoggedIn, navigate]);
 
@@ -175,7 +175,11 @@ function FormWikiPage() {
         <Typography className="breadcrumb-link" component={Link} to="/">
           Inicio
         </Typography>
-        <Typography className="breadcrumb-link" component={Link} to={`/wiki/${wikiId}`}>
+        <Typography
+          className="breadcrumb-link"
+          component={Link}
+          to={`/wiki/${wikiId}`}
+        >
           {wiki.title}
         </Typography>
       </Breadcrumbs>
@@ -183,7 +187,7 @@ function FormWikiPage() {
       <Typography variant="h4" gutterBottom>
         {wikiId ? "Editar Wiki" : "Crear Nueva Wiki"}
       </Typography>
-      {(error) && (
+      {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
@@ -245,7 +249,12 @@ function FormWikiPage() {
             },
           }}
         />
-        <Button variant="outlined" color="primary" component="label" sx={{ mt: 2 }}>
+        <Button
+          variant="outlined"
+          color="primary"
+          component="label"
+          sx={{ mt: 2 }}
+        >
           Añadir Imagen
           <input
             id="image-input"
@@ -273,8 +282,8 @@ function FormWikiPage() {
           {uploading
             ? "Subiendo..."
             : wikiId
-            ? "Guardar Cambios"
-            : "Crear Wiki"}
+              ? "Guardar Cambios"
+              : "Crear Wiki"}
         </Button>
       </Box>
 
@@ -282,9 +291,8 @@ function FormWikiPage() {
         show={isModalOpen}
         handleClose={() => setIsModalOpen(false)}
         handleConfirm={handleSubmit}
-        message={`¿Estás seguro de que quieres ${
-          wikiId ? "guardar los cambios" : "crear esta wiki"
-        }?`}
+        message={`¿Estás seguro de que quieres ${wikiId ? "guardar los cambios" : "crear esta wiki"
+          }?`}
       />
     </Container>
   );

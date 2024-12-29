@@ -1,13 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-import {
-  Typography,
-  Button,
-  Box,
-} from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { postUser, getAllUsers } from "../api/AuthApi";
+import { getAllUsers, postUser } from "../api/AuthApi";
 import Notificaciones from "./Notificaciones"; // Importa el nuevo componente
 import { putUser } from "../api/AuthApi";
 
@@ -42,7 +38,8 @@ const LoginButton = () => {
       setUser(decodedUser);
 
       //carga credentialResponse en las cookies con dominio localhost
-      document.cookie = `jwt_token=${credentialResponse.credential}; domain=localhost; path=/`;
+      document.cookie =
+        `jwt_token=${credentialResponse.credential}; domain=localhost; path=/`;
 
       const user = {
         email: decodedUser.email,
@@ -61,23 +58,31 @@ const LoginButton = () => {
       const users = await getAllUsers();
 
       if (users != null) {
-      
-      // Verifica si el usuario ya existe
-      let userExists = false;
-      for (let i = 0; i < users.length; i++) {
-        if (users[i].email === user.email) {
-          console.log("User already registered");
-          sessionStorage.setItem("id", users[i].id);
-          setUsuario(users[i]); // Actualiza el estado con el usuario existente
-          sessionStorage.setItem("usuario", JSON.stringify(users[i]));
-          sessionStorage.setItem("role", users[i].role);
-          document.cookie = `role=${users[i].role}; domain=localhost; path=/`;
-          userExists = true;
-          break;
+        // Verifica si el usuario ya existe
+        let userExists = false;
+        for (let i = 0; i < users.length; i++) {
+          if (users[i].email === user.email) {
+            console.log("User already registered");
+            sessionStorage.setItem("id", users[i].id);
+            setUsuario(users[i]); // Actualiza el estado con el usuario existente
+            sessionStorage.setItem("usuario", JSON.stringify(users[i]));
+            sessionStorage.setItem("role", users[i].role);
+            document.cookie = `role=${users[i].role}; domain=localhost; path=/`;
+            userExists = true;
+            break;
+          }
         }
-      }
 
-      if (!userExists) {
+        if (!userExists) {
+          console.log("User not registered");
+          const addedUser = await postUser(user);
+          sessionStorage.setItem("id", addedUser.id);
+          setUsuario(addedUser); // Actualiza el estado con el nuevo usuario
+          sessionStorage.setItem("usuario", JSON.stringify(addedUser));
+          document.cookie = `role=${addedUser.role}; domain=localhost; path=/`;
+          sessionStorage.setItem("role", addedUser.role);
+        }
+      } else {
         console.log("User not registered");
         const addedUser = await postUser(user);
         sessionStorage.setItem("id", addedUser.id);
@@ -86,26 +91,6 @@ const LoginButton = () => {
         document.cookie = `role=${addedUser.role}; domain=localhost; path=/`;
         sessionStorage.setItem("role", addedUser.role);
       }
-
-
-    } else {
-      console.log("User not registered");
-      const addedUser = await postUser(user);
-      sessionStorage.setItem("id", addedUser.id);
-      setUsuario(addedUser); // Actualiza el estado con el nuevo usuario
-      sessionStorage.setItem("usuario", JSON.stringify(addedUser));
-      document.cookie = `role=${addedUser.role}; domain=localhost; path=/`;
-      sessionStorage.setItem("role", addedUser.role);
-    }
-
-    //si la direccion actual es /login, recarga la pagina
-    if (window.location.pathname === "/login") {
-      window.location.href = "/";
-    } else {
-      window.location.reload();
-    }
-
-
     } catch (error) {
       console.error("Error al procesar las credenciales:", error);
     }
@@ -154,7 +139,10 @@ const LoginButton = () => {
         console.log("Notificaciones eliminadas en la base de datos.");
       })
       .catch((error) => {
-        console.error("Error al eliminar notificaciones en la base de datos:", error);
+        console.error(
+          "Error al eliminar notificaciones en la base de datos:",
+          error,
+        );
         // Opcional: restaurar notificaciones locales si ocurre un error
         setUsuario(usuario);
         sessionStorage.setItem("usuario", JSON.stringify(usuario));
@@ -163,42 +151,47 @@ const LoginButton = () => {
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-      {user ? (
-        <>
-          <Button variant="contained" color="secondary" onClick={handleClick}>
-            Notificaciones
-          </Button>
-          <Notificaciones
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleClose}
-            notifications={usuario.notifications}
-            clearNotifications={clearNotifications}
+      {user
+        ? (
+          <>
+            <Button variant="contained" color="secondary" onClick={handleClick}>
+              Notificaciones
+            </Button>
+            <Notificaciones
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              notifications={usuario.notifications}
+              clearNotifications={clearNotifications}
+            />
+
+            <Typography
+              variant="body1"
+              noWrap
+              sx={{
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              Bienvenido, {user.name}
+            </Typography>
+
+            <Button variant="contained" color="info" onClick={goToProfile}>
+              Perfil
+            </Button>
+
+            <Button variant="contained" color="error" onClick={handleLogout}>
+              Cerrar sesión
+            </Button>
+          </>
+        )
+        : (
+          <GoogleLogin
+            onSuccess={handleLoginSuccess}
+            onError={handleLoginError}
           />
-
-          <Typography
-            variant="body1"
-            noWrap
-            sx={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            Bienvenido, {user.name}
-          </Typography>
-
-          <Button variant="contained" color="info" onClick={goToProfile}>
-            Perfil
-          </Button>
-
-          <Button variant="contained" color="error" onClick={handleLogout}>
-            Cerrar sesión
-          </Button>
-        </>
-      ) : (
-        <GoogleLogin onSuccess={handleLoginSuccess} onError={handleLoginError} />
-      )}
+        )}
     </Box>
   );
 };

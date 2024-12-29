@@ -22,7 +22,7 @@ function FormEntradaPage() {
   const { showToast } = useToast();
   const [error, setError] = useState(null);
   const [titleError, setTitleError] = useState("");
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
+  const isLoggedIn = !!sessionStorage.getItem("user"); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -43,7 +43,7 @@ function FormEntradaPage() {
     const entryData = {
       title,
       wiki_id: wikiId,
-      author: idAutor
+      author: idAutor,
     };
 
     try {
@@ -60,7 +60,7 @@ function FormEntradaPage() {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate('/login');
+      navigate("/");
     }
   }, [isLoggedIn, navigate]);
 

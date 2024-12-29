@@ -9,8 +9,8 @@ export default async function apiRequest(endpoint, options = {}) {
   }
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    mode: 'cors', // Esto indica que la solicitud será una solicitud CORS
-    credentials: 'include',
+    mode: "cors", // Esto indica que la solicitud será una solicitud CORS
+    credentials: "include",
     headers: {
       ...headers,
     },
@@ -19,7 +19,7 @@ export default async function apiRequest(endpoint, options = {}) {
 
   // Si la respuesta es un 401 Unauthorized, redirigimos al usuario a la página de inicio de sesión
   if (response.status === 401) {
-    window.location.href = "/login";
+    window.location.href = "/";
     //cerrar sesion ususario
     sessionStorage.removeItem("user");
     sessionStorage.removeItem("usuario");
@@ -30,7 +30,7 @@ export default async function apiRequest(endpoint, options = {}) {
     document.cookie = `role=; domain=localhost; path=/;`;
     return;
   }
-    
+
   // Comprobamos si la respuesta fue correcta (status 200-299)
   if (!response.ok) {
     let errorMessage = `HTTP error! status: ${response.status}`;

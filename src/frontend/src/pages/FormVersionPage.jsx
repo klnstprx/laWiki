@@ -56,7 +56,7 @@ function FormVersionPage() {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate("/login");
+      navigate("/");
     }
   }, [isLoggedIn, navigate]);
 
