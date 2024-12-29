@@ -14,6 +14,7 @@ const VersionCard = ({
   onDelete,
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
 
   const handleDelete = () => {
     setShowDeleteModal(true);
@@ -51,9 +52,11 @@ const VersionCard = ({
             </Typography>
           </Grid>
           <Grid>
+          {isLoggedIn && (sessionStorage.getItem("role") != "redactor") &&(
             <IconButton color="error" onClick={handleDelete}>
               <DeleteIcon />
             </IconButton>
+          )}
           </Grid>
         </Grid>
       </CardContent>

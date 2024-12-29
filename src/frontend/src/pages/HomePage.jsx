@@ -38,6 +38,7 @@ function HomePage() {
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const selectedWikis = wikis.slice(startIndex, startIndex + itemsPerPage);
+  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -49,6 +50,7 @@ function HomePage() {
           <Typography variant="h2" gutterBottom>
             Wikis
           </Typography>
+          {isLoggedIn && (sessionStorage.getItem("role") != "redactor") && (
           <Button
             variant="contained"
             color="primary"
@@ -58,6 +60,7 @@ function HomePage() {
           >
             Crear Wiki
           </Button>
+        )}
         </Paper>
 
         <Paper sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}>

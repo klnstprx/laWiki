@@ -10,11 +10,20 @@ import (
 func NewRouter() http.Handler {
 	r := chi.NewRouter()
 
-	r.Get("/health", handler.HealthCheck)
+	r.Route("/", func(r chi.Router) {
+		r.Get("/", handler.GetUsers)
+		r.Post("/", handler.PostUser)
 
-	r.Get("/login", handler.Login)
+		r.Route("/user", func(r chi.Router) {
+			r.Get("/", handler.GetUserByID)
+			r.Put("/", handler.PutUser)
+			r.Delete("/", handler.DeleteUser)
+		})
 
-	// Handle callback from Google
-	r.Get("/callback", handler.Callback)
+		r.Route("/notifications", func(r chi.Router) {
+			r.Post("/", handler.AddUserNotification)
+		})
+	})
+
 	return r
 }

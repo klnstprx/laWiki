@@ -11,10 +11,15 @@ import (
 	"time"
 
 	"github.com/laWiki/auth/config"
+	"github.com/laWiki/auth/database"
 	"github.com/laWiki/auth/model"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/golang-jwt/jwt"
 )
+
+const FRONTEND_URL = "http://localhost:5173"
 
 // HealthCheck godoc
 // @Summary      Health Check
@@ -35,7 +40,15 @@ func generateStateOauthCookie(w http.ResponseWriter) string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	state := base64.URLEncoding.EncodeToString(b)
-	cookie := http.Cookie{Name: "oauthstate", Value: state, Expires: expiration}
+
+	cookie := http.Cookie{
+		Name:     "oauthstate",
+		Value:    state,
+		Expires:  expiration,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	}
 	http.SetCookie(w, &cookie)
 	return state
 }
@@ -69,16 +82,28 @@ func Login(w http.ResponseWriter, r *http.Request) {
 // @Failure      500    {string}  string  "Could not create JWT"
 // @Router       /api/auth/callback [get]
 func Callback(w http.ResponseWriter, r *http.Request) {
+	// Validate 'state' and 'code' parameters
+	state := r.FormValue("state")
+	code := r.FormValue("code")
+	if state == "" || code == "" {
+		http.Error(w, "Missing 'state' or 'code' parameters", http.StatusBadRequest)
+		return
+	}
+
 	// Get state from the cookie
-	oauthState, _ := r.Cookie("oauthstate")
-	if r.FormValue("state") != oauthState.Value {
-		// Invalid state, possible CSRF attack
+	oauthState, err := r.Cookie("oauthstate")
+	if err != nil {
+		http.Error(w, "State cookie not found", http.StatusUnauthorized)
+		return
+	}
+
+	if state != oauthState.Value {
 		http.Error(w, "Invalid OAuth state", http.StatusUnauthorized)
 		return
 	}
 
 	// Exchange code for access token and retrieve user data
-	data, err := getUserDataFromGoogle(r.FormValue("code"))
+	data, err := getUserDataFromGoogle(code)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to get user data from Google")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
@@ -93,17 +118,18 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set the JWT token in a cookie
+	// Set the JWT token in a secure cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt_token",
 		Value:    jwtToken,
 		Expires:  time.Now().UTC().Add(24 * time.Hour),
 		HttpOnly: true,
 		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
 	})
 
-	// Redirect to home page or wherever you want
-	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	// Redirect to the frontend application
+	http.Redirect(w, r, FRONTEND_URL, http.StatusSeeOther)
 }
 
 // getUserDataFromGoogle exchanges the code for a token and gets user info from Google
@@ -140,13 +166,22 @@ func createJWTToken(data []byte) (string, error) {
 		return "", fmt.Errorf("failed to unmarshal user data: %v", err)
 	}
 
-	// Create the JWT claims, which includes the user information and standard claims
-	claims := jwt.MapClaims{}
-	claims["email"] = user.Email
-	claims["name"] = user.Name
-	claims["exp"] = time.Now().UTC().Add(time.Hour * 72).Unix()
+	// Validate or set user role
+	if user.Role == "" {
+		user.Role = "user" // Set a default role
+	}
 
-	// Create the token using the claims
+	// Create the JWT claims
+	claims := jwt.MapClaims{
+		"email": user.Email,
+		"name":  user.Name,
+		"role":  user.Role,
+		"exp":   time.Now().UTC().Add(time.Hour * 1).Unix(), // Token expires in 1 hour
+		"iat":   time.Now().UTC().Unix(),
+		"iss":   "auth_service", // Issuer identifier
+	}
+
+	// Create the token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Sign the token with the secret key
@@ -156,4 +191,446 @@ func createJWTToken(data []byte) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+// Logout godoc
+// @Summary      Logout
+// @Description  Clears the JWT token cookie
+// @Tags         Authentication
+// @Success      302  {string}  string  "Redirect after logout"
+// @Router       /api/auth/logout [get]
+func Logout(w http.ResponseWriter, r *http.Request) {
+	// Clear the jwt_token cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt_token",
+		Value:    "",
+		Expires:  time.Now().UTC().Add(-1 * time.Hour), // Set expiration in the past
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	// Redirect to the login page or home page
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+// UserInfo godoc
+// @Summary      Get User Info
+// @Description  Returns user information for the authenticated user
+// @Tags         Authentication
+// @Success      200  {object}  model.User
+// @Failure      401  {string}  string  "Unauthorized"
+// @Router       /api/auth/userinfo [get]
+func UserInfo(w http.ResponseWriter, r *http.Request) {
+	// Get the JWT token from the cookie
+	cookie, err := r.Cookie("jwt_token")
+	if err != nil {
+		http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
+		return
+	}
+
+	tokenString := cookie.Value
+
+	// Parse and validate the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Ensure the signing method is HMAC
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(config.App.JWTSecret), nil
+	})
+
+	if err != nil || !token.Valid {
+		http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	// Extract user claims
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		user := model.User{
+			Email: claims["email"].(string),
+			Name:  claims["name"].(string),
+			Role:  claims["role"].(string),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(user)
+	} else {
+		http.Error(w, "Unauthorized: invalid token claims", http.StatusUnauthorized)
+		return
+	}
+
+}
+
+//A partir de aqui son las fuciones para la coleccion usuarios(no he borrado lo anterior por si hacia falta)
+//CRUD DE USUARIOS
+
+// GetVersions godoc
+// @Summary      Get all versions
+// @Description  Retrieves the list of all version JSON objects from the database.
+// @Tags         Versions
+// @Produce      application/json
+// @Success      200  {array}   model.Version
+// @Failure      500  {string}  string  "Internal server error"
+// @Router       /api/versions/ [get]
+func GetUsers(w http.ResponseWriter, r *http.Request) {
+	var usuarios []model.User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := database.UsuarioCollection.Find(ctx, bson.M{})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var usuario model.User
+		if err := cursor.Decode(&usuario); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode user")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		usuarios = append(usuarios, usuario)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(usuarios) == 0 {
+		config.App.Logger.Info().Msg("No users found")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(usuarios); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+// GetVersionByID godoc
+// @Summary      Get a version by ID
+// @Description  Retrieves a version by its ID.
+// @Tags         Versions
+// @Produce      application/json
+// @Param        id    query     string  true  "Version ID"
+// @Success      200   {object}  model.Version
+// @Failure      400   {string}  string  "Invalid ID"
+// @Failure      404   {string}  string  "Version not found"
+// @Failure      500   {string}  string  "Internal server error"
+// @Router       /api/versions/{id} [get]
+func GetUserByID(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing user ID", http.StatusBadRequest)
+		return
+	}
+
+	// Verifica si el ID es un ObjectID válido
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	var version model.User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = database.UsuarioCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&version)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Version not found")
+		http.Error(w, "Version not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(version); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+// PostVersion godoc
+// @Summary      Create a new version
+// @Description  Creates a new version. Expects a JSON object in the request body.
+// @Tags         Versions
+// @Accept       application/json
+// @Produce      application/json
+// @Param        version  body      model.Version  true  "Version information"
+// @Success      201      {object}  model.Version
+// @Failure      400      {string}  string  "Invalid request body"
+// @Failure      500      {string}  string  "Internal server error"
+// @Router       /api/versions/ [post]
+func PostUser(w http.ResponseWriter, r *http.Request) {
+	var usuario model.User
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&usuario); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := database.UsuarioCollection.InsertOne(ctx, usuario)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Ensure InsertedID is of type primitive.ObjectID
+	objID, ok := result.InsertedID.(primitive.ObjectID)
+	if !ok {
+		config.App.Logger.Error().Msg("Failed to convert InsertedID to ObjectID")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	usuario.ID = objID.Hex()
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated) // Return 201 Created
+	if err := json.NewEncoder(w).Encode(usuario); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	config.App.Logger.Info().Interface("usuario", usuario).Msg("Added new user")
+}
+
+// PutVersion godoc
+// @Summary      Update a version by ID
+// @Description  Updates a version by its ID. Expects a JSON object in the request body.
+// @Tags         Versions
+// @Accept       application/json
+// @Produce      application/json
+// @Param        id      query     string          true  "Version ID"
+// @Param        version body      model.Version   true  "Updated version information"
+// @Success      200     {object}  model.Version
+// @Failure      400     {string}  string  "Invalid ID or request body"
+// @Failure      404     {string}  string  "Version not found"
+// @Failure      500     {string}  string  "Internal server error"
+// @Router       /api/versions/{id} [put]
+func PutUser(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing user ID", http.StatusBadRequest)
+		return
+	}
+
+	// Verifica si el ID es un ObjectID válido
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	var payload map[string]interface{}
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var existingUser model.User
+	err = database.UsuarioCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&existingUser)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("User not found")
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	// Fusiona los campos nuevos con los existentes
+	updatedFields := bson.M{}
+
+	// Verifica si `enable_mails` está presente en el payload
+	if enableMails, ok := payload["enable_mails"]; ok {
+		if enableMailsBool, isBool := enableMails.(bool); isBool {
+			updatedFields["enable_mails"] = enableMailsBool
+		} else {
+			http.Error(w, "Invalid type for enable_mails", http.StatusBadRequest)
+			return
+		}
+	} else {
+		updatedFields["enable_mails"] = existingUser.EnableMails
+	}
+
+	if role, ok := payload["role"]; ok {
+		updatedFields["role"] = role
+	}
+
+	if valoration, ok := payload["valoration"]; ok {
+		updatedFields["valoration"] = valoration
+	}
+
+	if notifications, ok := payload["notifications"]; ok {
+		updatedFields["notifications"] = notifications
+	}
+
+	update := bson.M{
+		"$set": updatedFields,
+	}
+
+	result, err := database.UsuarioCollection.UpdateOne(ctx, bson.M{"_id": objID}, update)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if result.MatchedCount == 0 {
+		config.App.Logger.Warn().Str("id", id).Msg("User not found for update")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(payload); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+// Helper function to find the difference between two slices
+func difference(slice1, slice2 []string) []string {
+	var diff []string
+	m := make(map[string]bool)
+
+	for _, item := range slice2 {
+		m[item] = true
+	}
+
+	for _, item := range slice1 {
+		if _, found := m[item]; !found {
+			diff = append(diff, item)
+		}
+	}
+
+	return diff
+}
+
+// DeleteVersion godoc
+// @Summary      Delete a version by ID
+// @Description  Deletes a version by its ID.
+// @Tags         Versions
+// @Param        id query string true "Version ID"
+// @Success      204 {string} string "No Content"
+// @Failure      400 {string} string "Invalid ID"
+// @Failure      404 {string} string "Version not found"
+// @Failure      500 {string} string "Internal server error"
+// @Router       /api/versions/{id} [delete]
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing user ID", http.StatusBadRequest)
+		return
+	}
+
+	// Verifica si el ID es un ObjectID válido
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Get the MediaIDs associated with the version
+
+	var usuario model.User
+
+	err = database.UsuarioCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&usuario)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("User not found")
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	result, err := database.UsuarioCollection.DeleteOne(ctx, bson.M{"_id": objID})
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to delete User")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if result.DeletedCount == 0 {
+		config.App.Logger.Info().Msg("User not found")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	config.App.Logger.Info().Str("usuarioID", id).Msg("User deleted successfully")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func AddUserNotification(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing user ID", http.StatusBadRequest)
+		return
+	}
+
+	// Verifica si el ID es un ObjectID válido
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	var body struct {
+		Notification string `json:"notification"`
+	}
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&body); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode provided request body")
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var existingUser model.User
+	err = database.UsuarioCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&existingUser)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("User not found")
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	//Hago que solo se pueda actualizar el rol y la valoracion del usuario(por ahora no queremos otro)
+	update := bson.M{
+		"$set": bson.M{
+			"notifications": append(existingUser.Notifications, body.Notification),
+		},
+	}
+
+	result, err := database.UsuarioCollection.UpdateOne(ctx, bson.M{"_id": objID}, update)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if result.MatchedCount == 0 {
+		config.App.Logger.Warn().Str("id", id).Msg("User not found for update")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
 }

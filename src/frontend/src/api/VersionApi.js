@@ -32,3 +32,10 @@ export async function searchVersions(params) {
   const queryString = new URLSearchParams(params).toString();
   return apiRequest(`/versions/search?${queryString}`);
 }
+
+export async function translateVersion(id, targetLang) {
+  const queryString = new URLSearchParams({ targetLang }).toString();
+  return apiRequest(`/versions/${encodeURIComponent(id)}/translate?${queryString}`, {
+    method: "POST",
+  });
+}

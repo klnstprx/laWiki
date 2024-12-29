@@ -10,6 +10,7 @@ services:
     environment:
       - DOCKER=true
 
+
   wiki-service:
     build: ./wiki
     networks:
@@ -54,16 +55,17 @@ services:
     environment:
       - DOCKER=true
 
-  # auth-service:
-  #   build: ./auth
-  #   networks:
-  #     - app-network
-  #   expose:
-  #     - "8080"
-  #   volumes:
-  #     - ./config.docker.toml:/app/config.toml
-  #   environment:
-  #     - DOCKER=true
+  auth-service:
+    build: ./auth
+    networks:
+      - app-network
+    expose:
+      - "8080"
+    volumes:
+      - ./config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+      - DEEPL_API_KEY=4fa938db-960c-44fb-a509-f7ccfa7cd3c7:fx
 
   media-service:
     build: ./media
@@ -71,6 +73,17 @@ services:
       - app-network
     expose:
       - "8081"
+    volumes:
+      - ./config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+
+  translation-service:
+    build: ./translation
+    networks:
+      - app-network
+    expose:
+      - "8082"
     volumes:
       - ./config.docker.toml:/app/config.toml
     environment:

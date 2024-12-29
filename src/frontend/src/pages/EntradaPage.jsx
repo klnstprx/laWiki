@@ -4,7 +4,7 @@ import {
   postComment,
   searchComments,
 } from "../api/CommentApi.js";
-import { getEntry } from "../api/EntryApi.js";
+import { getEntry, translateEntry } from "../api/EntryApi.js";
 import { getVersion, searchVersions } from "../api/VersionApi.js";
 import { Link, useParams } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
@@ -21,12 +21,18 @@ import {
   Stack,
   TextField,
   Typography,
+  Menu,
+  MenuItem,
+  Divider,
 } from "@mui/material";
 import { getWiki } from "../api/WikiApi.js";
 import HistoryIcon from "@mui/icons-material/History";
 import EditIcon from "@mui/icons-material/Edit";
+import { getUser } from "../api/AuthApi.js";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 import Grid from "@mui/joy/Grid";
+import { availableLanguages } from "../constants/languages.js";
 
 function EntradaPage() {
   const { entryId, versionId } = useParams();
@@ -38,6 +44,7 @@ function EntradaPage() {
   const [commentsError, setCommentsError] = useState(null);
   const [versionError, setVersionError] = useState(null);
   const [coordinates, setCoordinates] = useState(null);
+  const [usuario, setUsuario] = useState({}); // add state
 
   const [showModal, setShowModal] = useState(false);
   const [pendingComment, setPendingComment] = useState(null);
@@ -45,6 +52,7 @@ function EntradaPage() {
   const formRef = useRef(null);
 
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
+  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
 
   const geoCacheRef = useRef(
     JSON.parse(sessionStorage.getItem("geoCache")) || {},
@@ -139,6 +147,14 @@ function EntradaPage() {
         .then((data) => {
           if (data && Object.keys(data).length > 0) {
             setEntry(data);
+
+            //cargar usuario de la base de datos
+            getUser(data.author)
+              .then((user) => {
+                setUsuario(user);
+              })
+              .catch(() => setEntryError("No se pudo cargar el autor."));
+
           } else {
             setEntryError("No se encontró la entrada solicitada.");
           }
@@ -235,6 +251,8 @@ function EntradaPage() {
     }
   }, [actualVersionId, fetchCoordinatesNominatim]);
 
+ 
+
   // Handler to submit a new comment
   async function subirComentario(event) {
     event.preventDefault();
@@ -243,9 +261,75 @@ function EntradaPage() {
     jsonData["version_id"] = actualVersionId;
     jsonData["entry_id"] = entryId;
     jsonData["rating"] = parseInt(jsonData["rating"], 10);
+    jsonData["author"] = sessionStorage.getItem("id");
     setPendingComment(jsonData);
     setShowModal(true);
   }
+
+  // Language selector state and handlers
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { selectedOption, setSelectedOption } = useLanguage();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [pendingLanguage, setPendingLanguage] = useState(null);
+
+  const handleDropdownClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleDropdownClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleOptionSelect = (option) => {
+    setPendingLanguage(option);
+    setIsModalOpen(true);
+    setAnchorEl(null);
+  };
+
+  const handleTranslateEntry = async () => {
+    if (entry.sourceLang !== pendingLanguage) {
+      try {
+        await translateEntry(entryId, pendingLanguage);
+        showToast(`Entrada traducida a ${pendingLanguage} correctamente`, "success");
+        // Fetch the updated entry data to reflect the translation
+        const updatedEntry = await getEntry(entryId);
+        setEntry(updatedEntry);
+        setSelectedOption(pendingLanguage);
+      } catch (error) {
+        console.error("Error al traducir la entrada:", error);
+        showToast("Error al traducir la entrada", "error");
+      }
+      setIsModalOpen(false);
+    } else {
+      showToast(`Entrada traducida a ${pendingLanguage} correctamente`, "success");
+      setSelectedOption(pendingLanguage);
+      setIsModalOpen(false);
+    }
+  };
+
+  const getTranslatedField = (field) => {
+    if (entry.sourceLang === selectedOption) {
+      return entry[field];
+    } else {
+      return entry.translatedFields?.[selectedOption]?.[field] || entry[field];
+    }
+  };
+
+  const getTranslatedFieldWiki = (field) => {
+    if (entry.sourceLang === selectedOption) {
+      return wiki[field];
+    } else {
+      return wiki.translatedFields?.[selectedOption]?.[field] || wiki[field];
+    }
+  };
+
+  const getTranslatedFieldVersion = (field) => {
+    if (entry.sourceLang === selectedOption) {
+      return version[field];
+    } else {
+      return version.translatedFields?.[selectedOption]?.[field] || version[field];
+    }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -261,7 +345,7 @@ function EntradaPage() {
               component={Link}
               to={`/wiki/${wiki.id}`}
             >
-              {wiki.title}
+              {getTranslatedFieldWiki("title")}
             </Typography>
           )
           : (
@@ -271,7 +355,7 @@ function EntradaPage() {
           )}
 
         {entry
-          ? <Typography className="breadcrumb-active">{entry.title}</Typography>
+          ? <Typography className="breadcrumb-active">{getTranslatedField("title")}</Typography>
           : (
             <Typography className="breadcrumb-active">
               Cargando entrada...
@@ -290,14 +374,21 @@ function EntradaPage() {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Typography variant="subtitle2">Autor: {entry.author}</Typography>
+            <Typography variant="subtitle2">Autor: <a href={`/perfil/${usuario.id}`}>{usuario.name}</a></Typography>
             <Typography variant="caption" color="text.secondary">
               {new Date(entry.created_at).toLocaleDateString()}
             </Typography>
           </Stack>
-          <Typography variant="h2" component="h1">
-            {entry.title}
+
+          <Divider sx={{ my: 2 }} />
+
+          <Typography variant="h2" component="h1" style={{ padding: "16px" }}>
+            {getTranslatedField("title")}
           </Typography>
+          <Divider sx={{ my: 2 }} />
+          {isLoggedIn && (
+
+          
           <Stack
             direction="row"
             spacing={2}
@@ -320,11 +411,30 @@ function EntradaPage() {
             >
               Editar contenido
             </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleDropdownClick}
+            >
+              Cambiar Idioma: {availableLanguages.find(lang => lang.code === selectedOption)?.name || "Seleccionar"}
+            </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleDropdownClose}
+            >
+              {availableLanguages.map((lang) => (
+              <MenuItem key={lang.code} onClick={() => handleOptionSelect(lang.code)}>
+                {lang.name}
+              </MenuItem>
+              ))}
+            </Menu>
           </Stack>
+          )}
         </Paper>
       )}
 
-      {/* Version Content */}
+          {/* Version Content */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
         {loadingVersion
           ? <Typography variant="body1">Cargando versión...</Typography>
@@ -338,7 +448,7 @@ function EntradaPage() {
           )
           : (
             <Version
-              content={version.content}
+              content={getTranslatedFieldVersion("content")}
               editor={version.editor}
               created_at={version.created_at}
               entry_id={version.entry_id}
@@ -379,8 +489,9 @@ function EntradaPage() {
             )
           )}
       </Paper>
-
+      
       {/* Form to Add Comment */}
+      {isLoggedIn && ( 
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
         <Typography variant="h5" gutterBottom>
           Añadir comentario
@@ -409,20 +520,6 @@ function EntradaPage() {
               </Typography>
               <Rating name="rating" id="rating" size="large" />
             </Grid>
-            <Grid xs={12} sm={6} md={4} alignContent="center">
-              <TextField
-                id="author"
-                name="author"
-                label="Autor"
-                required
-                fullWidth
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                  },
-                }}
-              />
-            </Grid>
             <Grid xs={12} md={4}>
               <Button
                 type="submit"
@@ -437,6 +534,9 @@ function EntradaPage() {
           </Grid>
         </form>
       </Paper>
+      )}
+
+      
 
       <ConfirmationModal
         message="¿Estás seguro de que quieres crear este comentario?"
@@ -450,6 +550,13 @@ function EntradaPage() {
         handleClose={() => setShowDeleteCommentModal(false)}
         handleConfirm={confirmDeleteComment}
         message="¿Estás seguro de que deseas eliminar este comentario?"
+      />
+
+      <ConfirmationModal
+        show={isModalOpen}
+        handleClose={() => setIsModalOpen(false)}
+        handleConfirm={handleTranslateEntry}
+        message={`¿Estás seguro de que quieres traducir esta entrada a ${pendingLanguage}?`}
       />
     </Container>
   );

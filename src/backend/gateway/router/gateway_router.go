@@ -19,6 +19,7 @@ func NewRouter() http.Handler {
 	r.Use(middleware.Recoverer)
 	// Custom middleware for authentication, etc.
 	r.Use(custommw.RequestID)
+	r.Use(custommw.AuthMiddleware)
 	r.Use(custommw.LoggerMiddleware(config.App.Logger))
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://lawiki.mooo.com"}, // Use this to allow specific origin hosts
@@ -61,6 +62,9 @@ func NewRouter() http.Handler {
 
 		// Media Service Routes
 		r.Mount("/media", proxyHandler(config.App.MediaServiceURL, "/api/media"))
+
+		// Translation Service Routes
+		r.Mount("/translate", proxyHandler(config.App.TranslationServiceURL, "/api/translate"))
 	})
 
 	return r
