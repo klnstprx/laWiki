@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import {
-  Container,
-  Typography,
   Alert,
-  Button,
   Breadcrumbs,
+  Button,
+  Container,
   Pagination,
   Paper,
+  Typography,
 } from "@mui/material";
 
 import Grid from "@mui/joy/Grid";
@@ -38,19 +38,19 @@ function HomePage() {
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const selectedWikis = wikis.slice(startIndex, startIndex + itemsPerPage);
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
+  const isLoggedIn = !!sessionStorage.getItem("user"); // Verifica si el usuario está logueado
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Breadcrumbs sx={{ mb: 2 }}>
-          <Typography className="breadcrumb-active">Inicio</Typography>
-        </Breadcrumbs>
+      <Breadcrumbs sx={{ mb: 2 }}>
+        <Typography className="breadcrumb-active">Inicio</Typography>
+      </Breadcrumbs>
 
-        <Paper sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}>
-          <Typography variant="h2" gutterBottom>
-            Wikis
-          </Typography>
-          {isLoggedIn && (sessionStorage.getItem("role") != "redactor") && (
+      <Paper sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}>
+        <Typography variant="h2" gutterBottom>
+          Wikis
+        </Typography>
+        {isLoggedIn && (sessionStorage.getItem("role") != "redactor") && (
           <Button
             variant="contained"
             color="primary"
@@ -61,41 +61,45 @@ function HomePage() {
             Crear Wiki
           </Button>
         )}
-        </Paper>
+      </Paper>
 
-        <Paper sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}>
-          {error && <Alert severity="error">{error}</Alert>}
-          {!error && wikis.length > 0 ? (
-            <><Grid
-              container
-              spacing={4}
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              {selectedWikis.map((wiki) => (
-                <Grid
-                  key={wiki.id}
-                  xs={12}
-                  sm={6}
-                  md={4}
-                  lg={4}
-                  sx={{ flexBasis: '30%', maxWidth: '30%' }}
-                >
-                  <WikiCard wiki={wiki} />
-                </Grid>
-              ))}
-            </Grid>
-            <Pagination
+      <Paper sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}>
+        {error && <Alert severity="error">{error}</Alert>}
+        {!error && wikis.length > 0
+          ? (
+            <>
+              <Grid
+                container
+                spacing={4}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                {selectedWikis.map((wiki) => (
+                  <Grid
+                    key={wiki.id}
+                    xs={12}
+                    sm={6}
+                    md={4}
+                    lg={3}
+                  >
+                    <WikiCard wiki={wiki} />
+                  </Grid>
+                ))}
+              </Grid>
+              <Pagination
                 count={Math.ceil(wikis.length / itemsPerPage)}
                 page={currentPage}
                 onChange={handlePageChange}
-                sx={{ mt: 4, display: "flex", justifyContent: "center"}} /></>
-          ) : null}
-        </Paper>
-      </Container>
+                sx={{ mt: 4, display: "flex", justifyContent: "center" }}
+              />
+            </>
+          )
+          : null}
+      </Paper>
+    </Container>
   );
 }
 

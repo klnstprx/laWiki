@@ -1,9 +1,0 @@
-basePath: /api
-host: localhost:8000
-info:
-  contact: {}
-  description: Combined API documentation for all services.
-  title: API Gateway
-  version: "1.0"
-paths: {}
-swagger: "2.0"
