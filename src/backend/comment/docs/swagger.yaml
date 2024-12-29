@@ -1,0 +1,255 @@
+basePath: /api/comments
+definitions:
+  model.Comment:
+    properties:
+      author:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      entry_id:
+        type: string
+      id:
+        type: string
+      rating:
+        type: integer
+      updated_at:
+        type: string
+      version_id:
+        type: string
+    type: object
+host: localhost:8003
+info:
+  contact: {}
+  description: API documentation for the Comment Service.
+  title: Comment Service API
+  version: "1.0"
+paths:
+  /api/comments/:
+    get:
+      description: Retrieves a list of all comments.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Comment'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get all comments
+      tags:
+      - Comments
+    post:
+      consumes:
+      - application/json
+      description: Creates a new comment. Expects a JSON object in the request body.
+      parameters:
+      - description: Comment to create
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/model.Comment'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Comment'
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Create a new comment
+      tags:
+      - Comments
+  /api/comments/{id}:
+    delete:
+      description: Deletes a comment by its ID.
+      parameters:
+      - description: Comment ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Comment not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete comment by ID
+      tags:
+      - Comments
+    get:
+      description: Retrieves a comment by its ID.
+      parameters:
+      - description: Comment ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Comment'
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Comment not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get comment by ID
+      tags:
+      - Comments
+    put:
+      consumes:
+      - application/json
+      description: Updates a comment by its ID. Expects a JSON object in the request
+        body.
+      parameters:
+      - description: Comment ID
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Updated comment
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/model.Comment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Comment'
+        "400":
+          description: Invalid ID or request body
+          schema:
+            type: string
+        "404":
+          description: Comment not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update comment by ID
+      tags:
+      - Comments
+  /api/comments/health:
+    get:
+      description: Checks if the service is up
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health Check
+      tags:
+      - Health
+  /api/comments/search:
+    get:
+      description: Search for comments using various query parameters. You can search
+        by content, author, createdAt, rating, or versionID. All parameters are optional
+        and can be combined.
+      parameters:
+      - description: Partial content to search for (case-insensitive)
+        in: query
+        name: content
+        type: string
+      - description: Author nickname to search for
+        in: query
+        name: author
+        type: string
+      - description: Creation date (YYYY-MM-DD)
+        in: query
+        name: createdAt
+        type: string
+      - description: Rating to filter by
+        in: query
+        name: rating
+        type: integer
+      - description: Version ID to search for
+        in: query
+        name: versionID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Comment'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Search comments
+      tags:
+      - Comments
+  /api/comments/version:
+    delete:
+      description: Deletes all comments associated with a specific version.
+      parameters:
+      - description: Version ID
+        in: query
+        name: versionID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete comments by version ID
+      tags:
+      - Comments
+swagger: "2.0"
