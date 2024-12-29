@@ -1,4 +1,23 @@
-.PHONY: run-all run-api-gateway run-wiki-service run-entry-service run-comment-service run-version-service run-media-service clean combine-swagger
+.PHONY: all build push $(SERVICES:%=build-%) run-all run-api-gateway run-wiki-service run-entry-service run-comment-service run-version-service run-media-service clean combine-swagger
+# Define your services
+SERVICES = auth comment entry gateway media translation wiki
+
+# Default target when you run 'make' without arguments
+all: build push
+
+# Build all services
+build: $(SERVICES:%=build-%)
+
+# Push all services
+push: $(SERVICES:%=push-%)
+
+# Build each service
+build-%:
+	cd $* && sudo docker build -t klnstprx/$*-service .
+
+# Push each service
+push-%:
+	sudo docker push klnstprx/$*-service
 
 run-wiki-service:
 	@echo "Running wiki-service..."
