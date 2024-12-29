@@ -74,7 +74,7 @@ services:
       - DOCKER=true
 
   auth-service:
-    build: klnstprx/auth-service
+    image: klnstprx/auth-service
     networks:
       - app-network
     expose:
@@ -85,7 +85,7 @@ services:
       - DOCKER=true
 
   translation-service:
-    build: klnstprx/translation-service
+    image: klnstprx/translation-service
     networks:
       - app-network
     expose:
