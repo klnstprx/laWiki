@@ -26,8 +26,8 @@ export default async function apiRequest(endpoint, options = {}) {
     sessionStorage.removeItem("id");
     sessionStorage.removeItem("role");
     //Elimina el token de las cookies
-    document.cookie = `jwt_token=; domain=localhost; path=/;`;
-    document.cookie = `role=; domain=localhost; path=/;`;
+    document.cookie = `jwt_token=; path=/;`;
+    document.cookie = `role=; path=/;`;
     return;
   }
 
