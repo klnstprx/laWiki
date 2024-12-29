@@ -1,9 +1,10 @@
 [global]
 API_GATEWAY_URL = "http://localhost:8000"
-DB_NAME = "laWikiCopia"
+DB_NAME = "laWikiCopia2"
 PRETTY_LOGS = true
 DEBUG = true
 MONGODB_URI = ""
+JWT_SECRET = "prueba"
 
 [gateway]
 PORT = 8000
@@ -32,10 +33,10 @@ DB_COLLECTION_NAME = "versiones"
 
 [auth]
 PORT = 8080
-GOOGLE_OAUTH_CLIENT_ID = ""
-GOOGLE_OAUTH_CLIENT_SECRET = ""
-GOOGLE_OAUTH_REDIRECT_URL = ""
-JWT_SECRET = ""
+DB_COLLECTION_NAME = "usuarios"
+GOOGLE_OAUTH_CLIENT_ID = "prueba"
+GOOGLE_OAUTH_CLIENT_SECRET = "prueba"
+GOOGLE_OAUTH_REDIRECT_URL = "prueba"
 
 [media]
 PORT = 8081

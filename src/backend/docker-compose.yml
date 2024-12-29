@@ -54,16 +54,16 @@ services:
     environment:
       - DOCKER=true
 
-  # auth-service:
-  #   build: ./auth
-  #   networks:
-  #     - app-network
-  #   expose:
-  #     - "8080"
-  #   volumes:
-  #     - ./config.docker.toml:/app/config.toml
-  #   environment:
-  #     - DOCKER=true
+  auth-service:
+    build: ./auth
+    networks:
+      - app-network
+    expose:
+      - "8080"
+    volumes:
+      - ./config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
 
   media-service:
     build: ./media

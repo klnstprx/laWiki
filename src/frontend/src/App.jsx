@@ -7,6 +7,8 @@ import MainLayout from "./layout/MainLayout.jsx";
 import FormVersionPage from "./pages/FormVersionPage.jsx";
 import AdvancedSearchPage from "./pages/AdvancedSearchPage.jsx";
 import FormWikiPage from "./pages/FormWikiPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
 
 function App() {
   return (
@@ -18,9 +20,14 @@ function App() {
         <Route path="/wiki/form" element={<FormWikiPage />} />
         <Route path="/wiki/form/:wikiId" element={<FormWikiPage />} />
         <Route path="/versiones/:entryId" element={<VersionPage />} />
-        <Route path="/crear-entrada/:wikiId" element={<FormVersionPage />} />
-        <Route path="/version/form/:entryId/:versionId?" element={<FormVersionPage />} />
+        <Route path="/crear-entrada/:id" element={<FormEntradaPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/version/form/:entryId/:versionId?"
+          element={<FormVersionPage />}
+        />
         <Route path="/advanced-search" element={<AdvancedSearchPage />} />
+        <Route path="/perfil/:id" element={<ProfilePage />} />
         {/* <Route path="/about" element={<About />} /> */}
         {/* <Route path="/articles/:id" element={<Article />} /> */}
       </Route>

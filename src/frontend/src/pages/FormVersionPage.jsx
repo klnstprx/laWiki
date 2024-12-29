@@ -1,19 +1,19 @@
-import { useEffect, useState, useRef } from "react";
-import { postVersion, getVersion } from "../api/VersionApi.js";
+import { useEffect, useRef, useState } from "react";
+import { getVersion, postVersion } from "../api/VersionApi.js";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  Container,
-  Paper,
-  Typography,
-  Button,
-  TextField,
-  Box,
-  IconButton,
-  Alert,
-  Divider,
   Accordion,
-  AccordionSummary,
   AccordionDetails,
+  AccordionSummary,
+  Alert,
+  Box,
+  Button,
+  Container,
+  Divider,
+  IconButton,
+  Paper,
+  TextField,
+  Typography,
 } from "@mui/material";
 import Grid from "@mui/joy/Grid";
 import ReactQuill from "react-quill";
@@ -22,7 +22,7 @@ import { Link } from "react-router-dom";
 import { Breadcrumbs } from "@mui/material";
 import { getEntry, postEntry } from "../api/EntryApi.js";
 import { getWiki } from "../api/WikiApi.js";
-import { postMedia, getMedia } from "../api/MediaApi";
+import { getMedia, postMedia } from "../api/MediaApi";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
@@ -51,6 +51,14 @@ function FormVersionPage() {
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif"];
+  const isLoggedIn = !!sessionStorage.getItem("user"); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
+  const id = sessionStorage.getItem("id"); // Suponiendo que guardas el id del usuario en sessionStorage
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/login");
+    }
+  }, [isLoggedIn, navigate]);
 
   // State for the confirmation modal
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
@@ -71,7 +79,7 @@ function FormVersionPage() {
             }
           })
           .catch(() =>
-            setVersionError("Se produjo un error al obtener la versión."),
+            setVersionError("Se produjo un error al obtener la versión.")
           );
       }
     }
@@ -90,7 +98,7 @@ function FormVersionPage() {
             }
           })
           .catch(() =>
-            setVersionError("Se produjo un error al obtener la entrada."),
+            setVersionError("Se produjo un error al obtener la entrada.")
           );
       } else {
         setVersionError("No se proporcionó un ID de entrada válido.");
@@ -111,7 +119,7 @@ function FormVersionPage() {
           }
         })
         .catch(() =>
-          setVersionError("Se produjo un error al obtener la wiki asociada."),
+          setVersionError("Se produjo un error al obtener la wiki asociada.")
         );
     }
   }, [entry, entryId, wikiId]);
@@ -135,8 +143,8 @@ function FormVersionPage() {
   const handleToggleVisibility = (index) => {
     setExistingImages((prevImages) =>
       prevImages.map((image, i) =>
-        i === index ? { ...image, isVisible: !image.isVisible } : image,
-      ),
+        i === index ? { ...image, isVisible: !image.isVisible } : image
+      )
     );
   };
 
@@ -154,18 +162,6 @@ function FormVersionPage() {
     const { name, value } = event.target;
     setVersion((prevVersion) => ({
       ...prevVersion,
-      [name]: value,
-    }));
-    setFormErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: "",
-    }));
-  };
-
-  const handleEntryChange = (event) => {
-    const { name, value } = event.target;
-    setEntry((prevEntry) => ({
-      ...prevEntry,
       [name]: value,
     }));
     setFormErrors((prevErrors) => ({
@@ -202,7 +198,7 @@ function FormVersionPage() {
   const handleRemoveImage = (index, isExisting = false) => {
     if (isExisting) {
       setExistingImages((prevImages) =>
-        prevImages.filter((_, i) => i !== index),
+        prevImages.filter((_, i) => i !== index)
       );
     } else {
       setUploads((prevUploads) => prevUploads.filter((_, i) => i !== index));
@@ -216,10 +212,6 @@ function FormVersionPage() {
       editor: "",
       content: "",
     };
-    if (!version.editor && !isNewEntry) {
-      errors.editor = "Introduzca un editor";
-      isValid = false;
-    }
     if (
       !version.content ||
       version.content.replace(/<[^>]+>/g, "").trim().length === 0
@@ -294,7 +286,7 @@ function FormVersionPage() {
 
     const versionData = {
       content: version.content,
-      editor: version.editor ? version.editor : entry.author,
+      editor: id,
       entry_id: entryId,
       address: version.address,
       media_ids: [
@@ -321,6 +313,9 @@ function FormVersionPage() {
     // Close the modal without submitting
     setOpenConfirmDialog(false);
   };
+  if (!isLoggedIn) {
+    return null; // O puedes mostrar un mensaje de carga o redirección
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -354,44 +349,6 @@ function FormVersionPage() {
                 {isNewEntry ? "Crear Entrada" : "Editar entrada"}
               </Typography>
             </Grid>
-            <Grid xs={12} sm={4}>
-              <TextField
-                id={isNewEntry ? "author" : "editor"}
-                name={isNewEntry ? "author" : "editor"}
-                label={isNewEntry ? "Autor *" : "Editor *"}
-                value={isNewEntry ? entry.author || "" : version.editor || ""}
-                onChange={isNewEntry ? handleEntryChange : handleVersionChange}
-                variant="outlined"
-                error={isNewEntry ? !!formErrors.author : !!formErrors.editor}
-                helperText={isNewEntry ? formErrors.author : formErrors.editor}
-                fullWidth
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                  },
-                }}
-              />
-            </Grid>
-            {isNewEntry && (
-              <Grid xs={12} sm={4}>
-                <TextField
-                  id="title"
-                  name="title"
-                  label="Título *"
-                  value={entry.title || ""}
-                  onChange={handleEntryChange}
-                  variant="outlined"
-                  error={!!formErrors.title}
-                  helperText={formErrors.title}
-                  fullWidth
-                  slotProps={{
-                    inputLabel: {
-                      shrink: true,
-                    },
-                  }}
-                />
-              </Grid>
-            )}
             <Grid xs={12} sm={4}>
               <TextField
                 id="address"
@@ -519,11 +476,9 @@ function FormVersionPage() {
                       onClick={() => handleToggleVisibility(index)}
                       sx={{ ml: 1 }}
                     >
-                      {image.isVisible ? (
-                        <VisibilityIcon />
-                      ) : (
-                        <VisibilityOffIcon />
-                      )}
+                      {image.isVisible
+                        ? <VisibilityIcon />
+                        : <VisibilityOffIcon />}
                     </IconButton>
                   </Box>
                 ))}

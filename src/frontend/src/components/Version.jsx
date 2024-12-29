@@ -25,6 +25,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+import { getUser } from "../api/AuthApi";
 
 // Custom Previous Arrow Component
 function PrevArrow(props) {
@@ -88,10 +89,29 @@ const Version = ({
   const [medias, setMedias] = useState(null);
   const [mediaError, setMediaError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [usuario, setUsuario] = useState({}); // add state
 
   // New state variables for dialog
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+
+  //carga el usuario
+
+//carga el usuario
+  useEffect(() => {
+    const fetchUsuario = async () => {
+      try {
+        const userData = await getUser(editor);
+        setUsuario(userData);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+
+    if (editor) {
+      fetchUsuario();
+    }
+  }, [editor]);
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -133,11 +153,11 @@ const Version = ({
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Box sx={{ display: "flex", alignItems: "center", gap: "1em" }}>
           <Avatar
-            src={`https://ui-avatars.com/api/?name=${editor}&background=random`}
+            src={usuario.picture}
             alt={editor}
           />
           <Typography variant="subtitle1" fontWeight="bold">
-            {editor}
+            <a href={`/perfil/${usuario.id}`}>{usuario.name}</a>
           </Typography>
         </Box>
         <Typography variant="caption" color="text.secondary">

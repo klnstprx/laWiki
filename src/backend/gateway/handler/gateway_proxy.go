@@ -45,8 +45,7 @@ func ReverseProxy(target string, prefixToStrip string) func(http.ResponseWriter,
 	// Error handler
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
 		config.App.Logger.Error().Err(err).Msg("Proxy error")
-		w.WriteHeader(http.StatusBadGateway)
-		w.Write([]byte("Bad Gateway"))
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
