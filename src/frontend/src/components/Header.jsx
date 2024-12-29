@@ -1,25 +1,27 @@
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
+import { Tune as TuneIcon } from "@mui/icons-material";
 import {
   AppBar,
+  Box,
+  Button,
+  CircularProgress,
+  ClickAwayListener,
+  InputBase,
+  Paper,
+  Popper,
   Toolbar,
   Typography,
-  InputBase,
-  IconButton,
-  Button,
-  Popper,
-  Paper,
-  ClickAwayListener,
-  CircularProgress,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import { Search as SearchIcon, Home as HomeIcon } from "@mui/icons-material";
+import { Home as HomeIcon, Search as SearchIcon } from "@mui/icons-material";
 import { alpha, styled } from "@mui/material/styles";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { searchWikis } from "../api/WikiApi";
 import { searchEntries } from "../api/EntryApi";
 import { searchComments } from "../api/CommentApi";
 import { searchVersions } from "../api/VersionApi";
 import SearchResultsList from "./SearchResultsList";
-import { GoogleLogin } from "@react-oauth/google";
 import LoginButton from "./LoginButton";
 
 const Search = styled("div")(({ theme }) => ({
@@ -32,7 +34,7 @@ const Search = styled("div")(({ theme }) => ({
   marginLeft: theme.spacing(2),
   marginRight: theme.spacing(2),
   width: "100%",
-  [theme.breakpoints.up("sm")]: {
+  [theme.breakpoints.up("md")]: {
     marginLeft: theme.spacing(2),
     width: "auto",
   },
@@ -66,6 +68,13 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 const Header = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [showSearch, setShowSearch] = useState(false);
+
+  const handleSearchToggle = () => {
+    setShowSearch(!showSearch);
+  };
 
   const [searchResults, setSearchResults] = useState({
     wikis: [],
@@ -136,104 +145,213 @@ const Header = () => {
     navigate("/advanced-search");
   };
 
-  
-
+  const goHome = () => {
+    navigate("/");
+  };
   return (
     <AppBar position="static">
-      <Toolbar>
-        <IconButton
-          component={RouterLink}
-          to="/"
-          sx={{
-            display: { xs: "block", sm: "none" },
-            color: "inherit",
-            textDecoration: "none",
-            mr: 2,
-          }}
-        >
-          <HomeIcon />
-        </IconButton>
-
-        <Typography
-          variant="h6"
-          noWrap
-          component={RouterLink}
-          to="/"
-          sx={{
-            display: { xs: "none", sm: "block" },
-            color: "inherit",
-            textDecoration: "none",
-            flexGrow: 1,
-            "&:hover": {
-              color: "pink",
-            },
-          }}
-        >
-          Home
-        </Typography>
-
-        <LoginButton/>
-
-        <Search ref={searchRef}>
-          <SearchIconWrapper>
-            <SearchIcon />
-          </SearchIconWrapper>
-          <StyledInputBase
-            placeholder="Buscar…"
-            inputProps={{ "aria-label": "search" }}
-            value={searchQuery}
-            onChange={handleSearchInputChange}
-          />
-          <Popper
-            open={open}
-            anchorEl={searchRef.current}
-            placement="bottom-start"
-            style={{ zIndex: 1100 }}
-          >
-            <ClickAwayListener onClickAway={handleClickAway}>
-              <Paper
-                elevation={3}
-                style={{
-                  width: searchRef.current
-                    ? searchRef.current.clientWidth
-                    : 200,
-                  maxHeight: "400px",
-                  overflowY: "auto",
+      <Toolbar sx={{ gap: 2 }}>
+        {isMobile
+          ? (
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={goHome}
+              sx={{
+                p: 1,
+                minWidth: "auto",
+              }}
+            >
+              <HomeIcon />
+            </Button>
+          )
+          : (
+            <Button
+              variant="contained"
+              color="secondary"
+              sx={{
+                p: 1,
+                minWidth: "auto",
+              }}
+              onClick={goHome}
+              startIcon={<HomeIcon />}
+            >
+              <Typography
+                variant="h6"
+                noWrap
+                sx={{
+                  color: "inherit",
+                  textDecoration: "none",
+                  "&:hover": {
+                    color: "pink",
+                  },
                 }}
               >
-                {loading ? (
-                  <div
+                Home
+              </Typography>
+            </Button>
+          )}
+        <Box sx={{ flexGrow: 1 }} />
+        {isMobile
+          ? (
+            <>
+              <Button
+                variant="contained"
+                color="secondary"
+                sx={{
+                  p: 1,
+                  minWidth: "auto",
+                }}
+                onClick={handleSearchToggle}
+              >
+                <SearchIcon />
+              </Button>
+            </>
+          )
+          : (
+            <Search ref={searchRef}>
+              <SearchIconWrapper>
+                <SearchIcon />
+              </SearchIconWrapper>
+              <StyledInputBase
+                placeholder="Buscar…"
+                inputProps={{ "aria-label": "search" }}
+                value={searchQuery}
+                onChange={handleSearchInputChange}
+              />
+              <Popper
+                open={open}
+                anchorEl={searchRef.current}
+                placement="bottom-start"
+                style={{ zIndex: 1100 }}
+              >
+                <ClickAwayListener onClickAway={handleClickAway}>
+                  <Paper
+                    elevation={3}
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      padding: "10px",
+                      width: searchRef.current
+                        ? searchRef.current.clientWidth
+                        : 200,
+                      maxHeight: "400px",
+                      overflowY: "auto",
                     }}
                   >
-                    <CircularProgress size={24} />
-                    <Typography variant="body2" sx={{ ml: 2 }}>
-                      Cargando...
-                    </Typography>
-                  </div>
-                ) : (
-                  <SearchResultsList
-                    results={searchResults}
-                    onItemClick={handleClickAway}
-                  />
-                )}
-              </Paper>
-            </ClickAwayListener>
-          </Popper>
-        </Search>
+                    {loading
+                      ? (
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            padding: "10px",
+                          }}
+                        >
+                          <CircularProgress size={24} />
+                          <Typography variant="body2" sx={{ ml: 2 }}>
+                            Cargando...
+                          </Typography>
+                        </div>
+                      )
+                      : (
+                        <SearchResultsList
+                          results={searchResults}
+                          onItemClick={handleClickAway}
+                        />
+                      )}
+                  </Paper>
+                </ClickAwayListener>
+              </Popper>
+            </Search>
+          )}
 
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleAdvancedSearch}
-          startIcon={<SearchIcon />}
-        >
-          Búsqueda Avanzada
-        </Button>
+        {isMobile
+          ? (
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleAdvancedSearch}
+              sx={{
+                p: 1,
+                minWidth: "auto",
+              }}
+            >
+              <TuneIcon />
+            </Button>
+          )
+          : (
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleAdvancedSearch}
+              startIcon={<SearchIcon />}
+              sx={{
+                p: 1,
+              }}
+            >
+              <Typography
+                noWrap
+              >
+                Búsqueda Avanzada
+              </Typography>
+            </Button>
+          )}
+        <LoginButton />
       </Toolbar>
+      {isMobile && showSearch && (
+        <Box sx={{ p: 3 }}>
+          <Search sx={{ m: 0 }} ref={searchRef}>
+            <SearchIconWrapper>
+              <SearchIcon />
+            </SearchIconWrapper>
+            <StyledInputBase
+              placeholder="Buscar…"
+              inputProps={{ "aria-label": "search" }}
+              value={searchQuery}
+              onChange={handleSearchInputChange}
+            />
+            <Popper
+              open={open}
+              anchorEl={searchRef.current}
+              placement="bottom-start"
+              style={{ zIndex: 1100 }}
+            >
+              <ClickAwayListener onClickAway={handleClickAway}>
+                <Paper
+                  elevation={3}
+                  style={{
+                    width: searchRef.current
+                      ? searchRef.current.clientWidth
+                      : 200,
+                    maxHeight: "400px",
+                    overflowY: "auto",
+                  }}
+                >
+                  {loading
+                    ? (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          padding: "10px",
+                        }}
+                      >
+                        <CircularProgress size={24} />
+                        <Typography variant="body2">
+                          Cargando...
+                        </Typography>
+                      </div>
+                    )
+                    : (
+                      <SearchResultsList
+                        results={searchResults}
+                        onItemClick={handleClickAway}
+                      />
+                    )}
+                </Paper>
+              </ClickAwayListener>
+            </Popper>
+          </Search>
+        </Box>
+      )}
     </AppBar>
   );
 };

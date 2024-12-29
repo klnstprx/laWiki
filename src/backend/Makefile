@@ -19,6 +19,32 @@ build-%:
 push-%:
 	sudo docker push klnstprx/$*-service
 
+run-all: clean run-wiki-service run-entry-service run-comment-service run-version-service run-media-service run-api-gateway
+
+clean:
+	@echo "Stopping services..."
+	-@cd wiki && test -e wiki-service.pid && kill `cat wiki-service.pid` 2>/dev/null && rm wiki-service.pid || true
+	-@cd entry && test -e entry-service.pid && kill `cat entry-service.pid` 2>/dev/null && rm entry-service.pid || true
+	-@cd comment && test -e comment-service.pid && kill `cat comment-service.pid` 2>/dev/null && rm comment-service.pid || true
+	-@cd version && test -e version-service.pid && kill `cat version-service.pid` 2>/dev/null && rm version-service.pid || true
+	-@cd media && test -e media-service.pid && kill `cat media-service.pid` 2>/dev/null && rm media-service.pid || true
+	-@cd auth && test -e auth-service.pid && kill `cat auth-service.pid` 2>/dev/null && rm auth-service.pid || true
+	-@cd gateway && test -e api-gateway.pid && kill `cat api-gateway.pid` 2>/dev/null && rm api-gateway.pid || true
+
+combine-swagger:
+	@echo "Generating Swagger documentation for all services..."
+	cd wiki && swag init
+	cd entry && swag init
+	cd comment && swag init
+	cd version && swag init
+	cd media && swag init
+	cd auth && swag init
+	cd gateway && swag init
+	@echo "Combining Swagger documentation..."
+	npx swagger-combine swagger-config.json -o gateway/docs/swagger.json
+	@echo "Swagger documentation combined successfully."&& sudo docker build -t klnstprx/$*-service .
+
+
 run-wiki-service:
 	@echo "Running wiki-service..."
 	cd wiki && ( \
@@ -83,27 +109,3 @@ run-translation-service:
 		echo $$! > translation-service.pid \
 	)
 
-run-all: clean run-wiki-service run-entry-service run-comment-service run-version-service run-media-service run-api-gateway
-
-clean:
-	@echo "Stopping services..."
-	-@cd wiki && test -e wiki-service.pid && kill `cat wiki-service.pid` 2>/dev/null && rm wiki-service.pid || true
-	-@cd entry && test -e entry-service.pid && kill `cat entry-service.pid` 2>/dev/null && rm entry-service.pid || true
-	-@cd comment && test -e comment-service.pid && kill `cat comment-service.pid` 2>/dev/null && rm comment-service.pid || true
-	-@cd version && test -e version-service.pid && kill `cat version-service.pid` 2>/dev/null && rm version-service.pid || true
-	-@cd media && test -e media-service.pid && kill `cat media-service.pid` 2>/dev/null && rm media-service.pid || true
-	-@cd auth && test -e auth-service.pid && kill `cat auth-service.pid` 2>/dev/null && rm auth-service.pid || true
-	-@cd gateway && test -e api-gateway.pid && kill `cat api-gateway.pid` 2>/dev/null && rm api-gateway.pid || true
-
-combine-swagger:
-	@echo "Generating Swagger documentation for all services..."
-	cd wiki && swag init
-	cd entry && swag init
-	cd comment && swag init
-	cd version && swag init
-	cd media && swag init
-	cd auth && swag init
-	cd gateway && swag init
-	@echo "Combining Swagger documentation..."
-	npx swagger-combine swagger-config.json -o gateway/docs/swagger.json
-	@echo "Swagger documentation combined successfully."

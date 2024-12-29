@@ -13,9 +13,10 @@ import (
 
 // GlobalConfig holds the configuration for the application
 type GlobalConfig struct {
-	PrettyLogs *bool  `toml:"PRETTY_LOGS"`
-	Debug      *bool  `toml:"DEBUG"`
-	JWTSecret  string `toml:"JWT_SECRET"`
+	PrettyLogs  *bool  `toml:"PRETTY_LOGS"`
+	Debug       *bool  `toml:"DEBUG"`
+	JWTSecret   string `toml:"JWT_SECRET"`
+	FrontendURL string `toml:"FRONTEND_URL"`
 }
 
 // GatewayConfig holds the configuration specific to the gateway service
@@ -48,6 +49,7 @@ type AppConfig struct {
 	CommentServiceURL     string
 	MediaServiceURL       string
 	TranslationServiceURL string
+	FrontendURL           string
 	JWTSecret             string
 }
 
@@ -99,6 +101,13 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	} else {
 		cfg.Debug = true // Default to true
 		log.Warn().Msg("DEBUG not set in config file. Using default 'true'.")
+	}
+
+	if config.Global.FrontendURL != "" {
+		cfg.FrontendURL = config.Global.FrontendURL
+	} else {
+		cfg.FrontendURL = "localhost:5173"
+		log.Warn().Msg("FRONTEND_URL not set in config gile. Using default 'localhost:5173'.")
 	}
 
 	// WIKI_SERVICE_URL is required

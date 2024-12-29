@@ -14,12 +14,11 @@ import theme from "./styles/theme";
 import { LanguageProvider } from "./context/LanguageProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
-const clientId =
-  "292807851260-m45leggn30hmsvp8vhko14ue0lfi5276.apps.googleusercontent.com";
+const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <GoogleOAuthProvider clientId={clientId}>
+    <GoogleOAuthProvider clientId={CLIENT_ID}>
       <ThemeProvider theme={theme}>
         <BrowserRouter>
           <LocalizationProvider dateAdapter={AdapterDayjs}>

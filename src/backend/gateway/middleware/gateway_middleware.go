@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
+	"github.com/laWiki/gateway/config"
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/rs/zerolog"
 )
@@ -39,7 +40,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Skip authentication for auth routes and health check
 
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173") // Reemplaza con el dominio del frontend
+		w.Header().Set("Access-Control-Allow-Origin", config.App.FrontendURL) // Reemplaza con el dominio del frontend
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -56,10 +57,10 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		//haz que el servidor muestre por pantalla el path de la solicitud
+		// haz que el servidor muestre por pantalla el path de la solicitud
 		fmt.Println(r.URL.Path)
 
-		//Asi para que a las solicitudes get(y las que son a auth) no se les pida autenticacion
+		// Asi para que a las solicitudes get(y las que son a auth) no se les pida autenticacion
 		if strings.Contains(r.URL.Path, "/api/auth") || r.URL.Path == "/health" || r.Method == http.MethodGet {
 			next.ServeHTTP(w, r)
 			return
@@ -113,7 +114,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			}
 			return pubKey, nil
 		})
-
 		if err != nil {
 			http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
 			return
@@ -129,7 +129,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			ctx := context.WithValue(r.Context(), "user", claims)
 
 			if role == "redactor" {
-
 				if strings.Contains(r.URL.Path, "/api/entries") || strings.Contains(r.URL.Path, "/api/comments") || strings.Contains(r.URL.Path, "/api/media") || strings.Contains(r.URL.Path, "/api/versions") {
 					if r.Method == http.MethodPost || r.Method == http.MethodPut {
 						next.ServeHTTP(w, r.WithContext(ctx))
@@ -142,9 +141,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 					http.Error(w, "Forbidden: insufficient privileges", http.StatusForbidden)
 					return
 				}
-
 			} else if role == "editor" {
-
 				if strings.Contains(r.URL.Path, "/api/media") || strings.Contains(r.URL.Path, "/api/wikis") {
 					if r.Method == http.MethodPost || r.Method == http.MethodPut {
 						next.ServeHTTP(w, r.WithContext(ctx))
@@ -165,7 +162,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 					http.Error(w, "Forbidden: insufficient privileges", http.StatusForbidden)
 					return
 				}
-
 			} else if role == "admin" {
 				next.ServeHTTP(w, r.WithContext(ctx))
 				return
