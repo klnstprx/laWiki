@@ -1,22 +1,26 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  Container,
-  Paper,
-  Typography,
-  Button,
   Alert,
   Box,
   Breadcrumbs,
+  Button,
+  Container,
+  Menu,
+  MenuItem,
   Pagination,
+  Paper,
+  Typography,
 } from "@mui/material";
 
 import Grid from "@mui/joy/Grid";
 import { deleteEntry, searchEntries } from "../api/EntryApi.js";
-import { getWiki, deleteWiki } from "../api/WikiApi.js";
+import { deleteWiki, getWiki, translateWiki } from "../api/WikiApi.js";
 import EntradaCard from "../components/EntradaCard.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
+import { availableLanguages } from "../constants/languages.js";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 function WikiPage() {
   const [wiki, setWiki] = useState({});
@@ -40,7 +44,11 @@ function WikiPage() {
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
+  const isLoggedIn = !!sessionStorage.getItem("user"); // Verifica si el usuario está logueado
+
+  const { selectedOption, setSelectedOption } = useLanguage();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [pendingLanguage, setPendingLanguage] = useState(null);
 
   useEffect(() => {
     getWiki(id)
@@ -70,7 +78,7 @@ function WikiPage() {
     try {
       await deleteEntry(entryID);
       setEntradas((prevEntries) =>
-        prevEntries.filter((entry) => entry.id !== entryID),
+        prevEntries.filter((entry) => entry.id !== entryID)
       );
       showToast("Entrada eliminada correctamente", "success");
     } catch (error) {
@@ -89,6 +97,54 @@ function WikiPage() {
       showToast("Error al eliminar la wiki", "error");
     }
   };
+  const handleDropdownClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleDropdownClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleOptionSelect = (option) => {
+    setPendingLanguage(option);
+    setIsModalOpen(true);
+    setAnchorEl(null);
+  };
+
+  const handleTranslateWiki = async () => {
+    if (wiki.sourceLang !== pendingLanguage) {
+      try {
+        await translateWiki(id, pendingLanguage);
+        showToast(
+          `Wiki traducida a ${pendingLanguage} correctamente`,
+          "success",
+        );
+        // Fetch the updated wiki data to reflect the translation
+        const updatedWiki = await getWiki(id);
+        setWiki(updatedWiki);
+        setSelectedOption(pendingLanguage);
+        // Fetch the updated entries to reflect the translation
+        const updatedEntries = await searchEntries({ wikiID: id });
+        setEntradas(updatedEntries);
+      } catch (error) {
+        console.error("Error al traducir la wiki:", error);
+        showToast("Error al traducir la wiki", "error");
+      }
+      setIsModalOpen(false);
+    } else {
+      showToast(`Wiki traducida a ${pendingLanguage} correctamente`, "success");
+      setSelectedOption(pendingLanguage);
+      setIsModalOpen(false);
+    }
+  };
+
+  const getTranslatedField = (field) => {
+    if (wiki.sourceLang === selectedOption) {
+      return wiki[field];
+    } else {
+      return wiki.translatedFields?.[selectedOption]?.[field] || wiki[field];
+    }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -102,7 +158,7 @@ function WikiPage() {
           Inicio
         </Typography>
         <Typography color="textPrimary" className="breadcrumb-active">
-          {wiki.title}
+          {getTranslatedField("title")}
         </Typography>
       </Breadcrumbs>
 
@@ -117,16 +173,16 @@ function WikiPage() {
           {/* Page Header */}
           <Paper
             elevation={3}
-            sx={{ p: 2,  mb: 4, textAlign: "center", borderRadius: 1 }}
+            sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}
           >
             <Typography variant="h3" component="h1" sx={{ m: 0 }}>
-              {wiki.title}
+              {getTranslatedField("title")}
             </Typography>
             <Typography variant="h6" gutterBottom>
-              <strong>Descripción:</strong> {wiki.description}
+              <strong>Descripción:</strong> {getTranslatedField("description")}
             </Typography>
             <Typography variant="h6" gutterBottom>
-              <strong>Categoría:</strong> {wiki.category}
+              <strong>Categoría:</strong> {getTranslatedField("category")}
             </Typography>
           </Paper>
 
@@ -139,23 +195,27 @@ function WikiPage() {
             >
               Entradas
             </Typography>
-            {selectedEntradas && selectedEntradas.length > 0 ? (
-              <Grid container spacing={2}>
-                {selectedEntradas.map((entrada) => (
-                  <Grid xs={12} sm={6} md={4} key={entrada.id}>
-                    <EntradaCard
-                      id={entrada.id}
-                      title={entrada.title}
-                      author={entrada.author}
-                      createdAt={entrada.created_at}
-                      onDelete={handleDeleteEntry}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            ) : (
-              <Typography>No entries available</Typography>
-            )}
+            {selectedEntradas && selectedEntradas.length > 0
+              ? (
+                <Grid container spacing={2}>
+                  {selectedEntradas.map((entrada) => (
+                    <Grid xs={12} sm={6} md={4} key={entrada.id}>
+                      <EntradaCard
+                        id={entrada.id}
+                        title={entrada.translatedFields &&
+                          entrada.translatedFields[selectedOption] &&
+                          entrada.translatedFields[selectedOption].title
+                          ? entrada.translatedFields[selectedOption].title
+                          : entrada.title}
+                        author={entrada.author}
+                        createdAt={entrada.created_at}
+                        onDelete={handleDeleteEntry}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              )
+              : <Typography>No entries available</Typography>}
             <Pagination
               count={Math.ceil(entradas.length / itemsPerPage)}
               page={currentPage}
@@ -166,49 +226,77 @@ function WikiPage() {
 
           {/* Buttons */}
           {isLoggedIn && (
-          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-            <Button
-              component={Link}
-              to={`/crear-entrada/${id}`}
-              variant="contained"
-              color="primary"
-              sx={{ mt: 2 }}
-            >
-              Crear Nueva Entrada
-            </Button>
-            
-            <Box>
-            { sessionStorage.getItem("role") != "redactor" &&
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Button
                 component={Link}
-                to={`/wiki/form/${id}`}
-                variant="outlined"
-                color="primary"
-                sx={{ mt: 2, mr: 2 }}
-              >
-                Editar Wiki
-              </Button>
-            }
-              { sessionStorage.getItem("role") == "admin" &&
-              <Button
+                to={`/crear-entrada/${id}`}
                 variant="contained"
-                color="error"
+                color="primary"
                 sx={{ mt: 2 }}
-                onClick={() => setIsModalOpen(true)}
               >
-                Borrar Wiki
+                Crear Nueva Entrada
               </Button>
-              }     
+
+              <Box>
+                {sessionStorage.getItem("role") != "redactor" &&
+                  (
+                    <Button
+                      component={Link}
+                      to={`/wiki/form/${id}`}
+                      variant="outlined"
+                      color="primary"
+                      sx={{ mt: 2, mr: 2 }}
+                    >
+                      Editar Wiki
+                    </Button>
+                  )}
+                {sessionStorage.getItem("role") == "admin" &&
+                  (
+                    <Button
+                      variant="contained"
+                      color="error"
+                      sx={{ mt: 2 }}
+                      onClick={() => setIsModalOpen(true)}
+                    >
+                      Borrar Wiki
+                    </Button>
+                  )}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2, ml: 2 }}
+                  onClick={handleDropdownClick}
+                >
+                  Cambiar Idioma: {selectedOption || "Seleccionar"}
+                </Button>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleDropdownClose}
+                >
+                  {availableLanguages.map((lang) => (
+                    <MenuItem
+                      key={lang.code}
+                      onClick={() => handleOptionSelect(lang.code)}
+                    >
+                      {lang.name}
+                    </MenuItem>
+                  ))}
+                </Menu>
+              </Box>
             </Box>
-          </Box>
           )}
 
           {/* Confirmation Modal */}
           <ConfirmationModal
             show={isModalOpen}
             handleClose={() => setIsModalOpen(false)}
-            handleConfirm={handleDeleteWiki}
-            message="¿Estás seguro de que quieres borrar esta wiki?"
+            handleConfirm={pendingLanguage
+              ? handleTranslateWiki
+              : handleDeleteWiki}
+            message={pendingLanguage
+              ? `¿Estás seguro de que quieres traducir esta wiki a ${pendingLanguage}?`
+              : "¿Estás seguro de que quieres borrar esta wiki?"}
           />
         </>
       )}

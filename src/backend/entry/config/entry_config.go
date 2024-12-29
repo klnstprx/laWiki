@@ -40,6 +40,7 @@ type AppConfig struct {
 	DBCollectionName string
 	DBName           string
 	API_GATEWAY_URL  string
+	DeepLKey         string
 }
 
 // App holds app configuration

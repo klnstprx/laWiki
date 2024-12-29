@@ -16,6 +16,7 @@ services:
       - version-service
       - media-service
       - auth-service
+      - translation-service
 
   wiki-service:
     build: ./src/backend/wiki
@@ -78,6 +79,17 @@ services:
       - app-network
     expose:
       - "8080"
+    volumes:
+      - ./src/backend/config.docker.toml:/app/config.toml
+    environment:
+      - DOCKER=true
+
+  translation-service:
+    build: ./src/backend/translation
+    networks:
+      - app-network
+    expose:
+      - "8082"
     volumes:
       - ./src/backend/config.docker.toml:/app/config.toml
     environment:

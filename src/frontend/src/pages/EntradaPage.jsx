@@ -4,7 +4,7 @@ import {
   postComment,
   searchComments,
 } from "../api/CommentApi.js";
-import { getEntry } from "../api/EntryApi.js";
+import { getEntry, translateEntry } from "../api/EntryApi.js";
 import { getVersion, searchVersions } from "../api/VersionApi.js";
 import { Link, useParams } from "react-router-dom";
 import Comentario from "../components/Comentario.jsx";
@@ -21,13 +21,18 @@ import {
   Stack,
   TextField,
   Typography,
+  Menu,
+  MenuItem,
+  Divider,
 } from "@mui/material";
 import { getWiki } from "../api/WikiApi.js";
 import HistoryIcon from "@mui/icons-material/History";
 import EditIcon from "@mui/icons-material/Edit";
 import { getUser } from "../api/AuthApi.js";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 import Grid from "@mui/joy/Grid";
+import { availableLanguages } from "../constants/languages.js";
 
 function EntradaPage() {
   const { entryId, versionId } = useParams();
@@ -261,6 +266,71 @@ function EntradaPage() {
     setShowModal(true);
   }
 
+  // Language selector state and handlers
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { selectedOption, setSelectedOption } = useLanguage();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [pendingLanguage, setPendingLanguage] = useState(null);
+
+  const handleDropdownClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleDropdownClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleOptionSelect = (option) => {
+    setPendingLanguage(option);
+    setIsModalOpen(true);
+    setAnchorEl(null);
+  };
+
+  const handleTranslateEntry = async () => {
+    if (entry.sourceLang !== pendingLanguage) {
+      try {
+        await translateEntry(entryId, pendingLanguage);
+        showToast(`Entrada traducida a ${pendingLanguage} correctamente`, "success");
+        // Fetch the updated entry data to reflect the translation
+        const updatedEntry = await getEntry(entryId);
+        setEntry(updatedEntry);
+        setSelectedOption(pendingLanguage);
+      } catch (error) {
+        console.error("Error al traducir la entrada:", error);
+        showToast("Error al traducir la entrada", "error");
+      }
+      setIsModalOpen(false);
+    } else {
+      showToast(`Entrada traducida a ${pendingLanguage} correctamente`, "success");
+      setSelectedOption(pendingLanguage);
+      setIsModalOpen(false);
+    }
+  };
+
+  const getTranslatedField = (field) => {
+    if (entry.sourceLang === selectedOption) {
+      return entry[field];
+    } else {
+      return entry.translatedFields?.[selectedOption]?.[field] || entry[field];
+    }
+  };
+
+  const getTranslatedFieldWiki = (field) => {
+    if (entry.sourceLang === selectedOption) {
+      return wiki[field];
+    } else {
+      return wiki.translatedFields?.[selectedOption]?.[field] || wiki[field];
+    }
+  };
+
+  const getTranslatedFieldVersion = (field) => {
+    if (entry.sourceLang === selectedOption) {
+      return version[field];
+    } else {
+      return version.translatedFields?.[selectedOption]?.[field] || version[field];
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Breadcrumbs sx={{ mb: 2 }}>
@@ -275,7 +345,7 @@ function EntradaPage() {
               component={Link}
               to={`/wiki/${wiki.id}`}
             >
-              {wiki.title}
+              {getTranslatedFieldWiki("title")}
             </Typography>
           )
           : (
@@ -285,7 +355,7 @@ function EntradaPage() {
           )}
 
         {entry
-          ? <Typography className="breadcrumb-active">{entry.title}</Typography>
+          ? <Typography className="breadcrumb-active">{getTranslatedField("title")}</Typography>
           : (
             <Typography className="breadcrumb-active">
               Cargando entrada...
@@ -309,10 +379,16 @@ function EntradaPage() {
               {new Date(entry.created_at).toLocaleDateString()}
             </Typography>
           </Stack>
-          <Typography variant="h2" component="h1">
-            {entry.title}
+
+          <Divider sx={{ my: 2 }} />
+
+          <Typography variant="h2" component="h1" style={{ padding: "16px" }}>
+            {getTranslatedField("title")}
           </Typography>
+          <Divider sx={{ my: 2 }} />
           {isLoggedIn && (
+
+          
           <Stack
             direction="row"
             spacing={2}
@@ -335,12 +411,30 @@ function EntradaPage() {
             >
               Editar contenido
             </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleDropdownClick}
+            >
+              Cambiar Idioma: {availableLanguages.find(lang => lang.code === selectedOption)?.name || "Seleccionar"}
+            </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleDropdownClose}
+            >
+              {availableLanguages.map((lang) => (
+              <MenuItem key={lang.code} onClick={() => handleOptionSelect(lang.code)}>
+                {lang.name}
+              </MenuItem>
+              ))}
+            </Menu>
           </Stack>
           )}
         </Paper>
       )}
 
-      {/* Version Content */}
+          {/* Version Content */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
         {loadingVersion
           ? <Typography variant="body1">Cargando versión...</Typography>
@@ -354,7 +448,7 @@ function EntradaPage() {
           )
           : (
             <Version
-              content={version.content}
+              content={getTranslatedFieldVersion("content")}
               editor={version.editor}
               created_at={version.created_at}
               entry_id={version.entry_id}
@@ -442,6 +536,8 @@ function EntradaPage() {
       </Paper>
       )}
 
+      
+
       <ConfirmationModal
         message="¿Estás seguro de que quieres crear este comentario?"
         show={showModal}
@@ -454,6 +550,13 @@ function EntradaPage() {
         handleClose={() => setShowDeleteCommentModal(false)}
         handleConfirm={confirmDeleteComment}
         message="¿Estás seguro de que deseas eliminar este comentario?"
+      />
+
+      <ConfirmationModal
+        show={isModalOpen}
+        handleClose={() => setIsModalOpen(false)}
+        handleConfirm={handleTranslateEntry}
+        message={`¿Estás seguro de que quieres traducir esta entrada a ${pendingLanguage}?`}
       />
     </Container>
   );

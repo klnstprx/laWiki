@@ -19,6 +19,7 @@ func NewRouter() http.Handler {
 			r.Get("/", handler.GetWikiByID)
 			r.Put("/", handler.PutWiki)
 			r.Delete("/", handler.DeleteWiki)
+			r.Post("/translate", handler.TranslateWiki)
 		})
 	})
 

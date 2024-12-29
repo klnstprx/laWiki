@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/laWiki/entry/config"
 	"github.com/laWiki/entry/database"
+	"github.com/laWiki/entry/dto"
 	"github.com/laWiki/entry/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -678,6 +680,7 @@ func notifyInterno(mensaje string, editor string) {
 		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
 		return
 	}
+
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
@@ -693,4 +696,293 @@ func notifyInterno(mensaje string, editor string) {
 	config.App.Logger.Info().
 		Str("userId", editor).
 		Msg("Notification sent to user service")
+}
+
+// TranslationRequest represents the request payload for translation.
+type TranslationRequest struct {
+	Fields     map[string]string `json:"fields"`
+	TargetLang string            `json:"targetLang"`
+}
+
+// TranslationResponse represents the response payload with translated fields and detected source language.
+type TranslationResponse struct {
+	TranslatedFields       map[string]string `json:"translatedFields"`
+	DetectedSourceLanguage string            `json:"detectedSourceLanguage"`
+}
+
+// TranslateEntry translates the 'title' field of an Entry object.
+// It ensures existing translations are preserved and translates all associated Versions.
+func TranslateEntry(w http.ResponseWriter, r *http.Request) {
+	// Extract Entry ID from URL parameters
+	entryID := chi.URLParam(r, "id")
+	if entryID == "" {
+		config.App.Logger.Warn().Msg("TranslateEntry called without entry ID")
+		http.Error(w, "Entry ID is required", http.StatusBadRequest)
+		return
+	}
+
+	// Get the target language from query parameters
+	targetLang := r.URL.Query().Get("targetLang")
+	if targetLang == "" {
+		config.App.Logger.Warn().Msg("TranslateEntry called without targetLang parameter")
+		http.Error(w, "missing targetLang param", http.StatusBadRequest)
+		return
+	}
+
+	// Retrieve the Entry from the database
+	var entry model.Entry
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(entryID)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Str("entryID", entryID).Msg("Invalid entry ID format")
+		http.Error(w, "Invalid entry ID", http.StatusBadRequest)
+		return
+	}
+
+	err = database.EntryCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&entry)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Str("entryID", entryID).Msg("Entry not found")
+		http.Error(w, "Entry not found", http.StatusNotFound)
+		return
+	}
+
+	// Initialize TranslatedFields map if nil
+	if entry.TranslatedFields == nil {
+		entry.TranslatedFields = make(map[string]map[string]string)
+	}
+
+	// Check if 'title' is already translated to the target language
+	translatedTitle, exists := entry.TranslatedFields[targetLang]["title"]
+	if exists && translatedTitle != "" {
+		// Log a warning and skip translation
+		config.App.Logger.Warn().
+			Str("entryID", entry.ID).
+			Str("targetLang", targetLang).
+			Msg("Title is already translated to the target language, skipping translation")
+
+		// Continue translating versions even if title is already translated
+		go func(entryID string, targetLang string) {
+			versions, err := fetchVersions(entryID)
+			if err != nil {
+				config.App.Logger.Error().Err(err).Str("entryID", entryID).Msg("Failed to fetch versions for translation")
+				return
+			}
+
+			for _, version := range versions {
+				// Prepare TranslateVersion request URL
+				translateVersionURL := fmt.Sprintf("%s/api/versions/%s/translate?targetLang=%s", config.App.API_GATEWAY_URL, version.ID, targetLang)
+
+				// Create an empty POST request to TranslateVersion
+				req, err := http.NewRequest("POST", translateVersionURL, nil)
+				if err != nil {
+					config.App.Logger.Error().Err(err).Str("versionID", version.ID).Msg("Failed to create TranslateVersion request")
+					continue
+				}
+
+				client := &http.Client{
+					Timeout: 5 * time.Second,
+				}
+
+				// Send the request
+				resp, err := client.Do(req)
+				if err != nil {
+					config.App.Logger.Error().Err(err).Str("versionID", version.ID).Msg("Failed to send TranslateVersion request")
+					continue
+				}
+				resp.Body.Close()
+
+				if resp.StatusCode != http.StatusOK {
+					config.App.Logger.Warn().
+						Int("status", resp.StatusCode).
+						Str("versionID", version.ID).
+						Msg("TranslateVersion returned non-OK status")
+					continue
+				}
+
+				config.App.Logger.Info().
+					Str("versionID", version.ID).
+					Str("targetLang", targetLang).
+					Msg("Successfully initiated translation for Version")
+			}
+		}(entry.ID, targetLang)
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(entry)
+		return
+	}
+
+	// Prepare the translation request only with fields that need translation
+	fieldsToTranslate := map[string]string{
+		"title": entry.Title,
+	}
+
+	translationReq := TranslationRequest{
+		Fields:     fieldsToTranslate,
+		TargetLang: targetLang,
+	}
+
+	// Marshal the translation request to JSON
+	reqBody, err := json.Marshal(translationReq)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to marshal TranslationRequest")
+		http.Error(w, "Failed to marshal translation request", http.StatusInternalServerError)
+		return
+	}
+
+	// Define the translation service URL
+	translationURL := fmt.Sprintf("%s/api/translate/", config.App.API_GATEWAY_URL) // Replace with actual URL if different
+
+	// Create an HTTP client with timeout
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	// Make the HTTP POST request to the translation service
+	resp, err := client.Post(translationURL, "application/json", bytes.NewBuffer(reqBody))
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to call translation service")
+		http.Error(w, "Failed to call translation service", http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Check if the translation service responded with success
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		config.App.Logger.Error().
+			Int("status", resp.StatusCode).
+			Str("body", string(body)).
+			Msg("Translation service returned error")
+		http.Error(w, "Translation service error: "+string(body), resp.StatusCode)
+		return
+	}
+
+	// Decode the translation response
+	var translationResp TranslationResponse
+	if err := json.NewDecoder(resp.Body).Decode(&translationResp); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to decode TranslationResponse")
+		http.Error(w, "Failed to decode translation response", http.StatusInternalServerError)
+		return
+	}
+
+	// Check if detected source language matches target language
+	if strings.EqualFold(translationResp.DetectedSourceLanguage, targetLang) {
+		config.App.Logger.Warn().
+			Str("entryID", entry.ID).
+			Str("sourceLang", translationResp.DetectedSourceLanguage).
+			Str("targetLang", targetLang).
+			Msg("Source language matches target language, translation skipped")
+
+		http.Error(w, "Source language is the same as target language", http.StatusBadRequest)
+		TranslateAssociatedVersions(entry.ID, targetLang) // The associated versions are translated even if the source language of the entry itself is the same as the target language
+		return
+	}
+
+	// Assign translated fields for the target language
+	entry.TranslatedFields[targetLang] = translationResp.TranslatedFields
+
+	// Save the detected source language
+	entry.SourceLang = translationResp.DetectedSourceLanguage
+
+	// Update the Entry in the database with translated fields and source language
+	filter := bson.M{"_id": objID}
+	update := bson.M{
+		"$set": bson.M{
+			"translatedFields." + targetLang + ".title": translationResp.TranslatedFields["title"],
+			"sourceLang": entry.SourceLang,
+		},
+	}
+	_, err = database.EntryCollection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to update translated entry in database")
+		http.Error(w, "Failed to update translated entry in database", http.StatusInternalServerError)
+		return
+	}
+
+	TranslateAssociatedVersions(entry.ID, targetLang)
+
+	// Log successful translation
+	config.App.Logger.Info().
+		Str("entryID", entry.ID).
+		Str("targetLang", targetLang).
+		Msg("Successfully translated entry and initiated translation for associated versions")
+
+	// Return the updated Entry object as JSON
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(entry)
+}
+
+// SearchVersionsResponse represents the response from the searchVersions endpoint.
+type SearchVersionsResponse struct {
+	Versions []dto.VersionDTO `json:"versions"`
+}
+
+// fetchVersions retrieves Versions associated with an Entry via HTTP.
+func fetchVersions(entryID string) ([]dto.VersionDTO, error) {
+	url := fmt.Sprintf("%s/api/versions/search?entryID=%s", config.App.API_GATEWAY_URL, entryID)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to fetch versions: %s", resp.Status)
+	}
+
+	// Decode directly into a slice
+	var versions []dto.VersionDTO
+	if err := json.NewDecoder(resp.Body).Decode(&versions); err != nil {
+		return nil, err
+	}
+
+	return versions, nil
+}
+
+// Cascade Translation: Translate all associated Versions via HTTP
+func TranslateAssociatedVersions(entryID string, targetLang string) {
+	versions, err := fetchVersions(entryID)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Str("entryID", entryID).Msg("Failed to fetch versions for translation")
+		return
+	}
+
+	for _, version := range versions {
+		// Prepare TranslateVersion request URL
+		translateVersionURL := fmt.Sprintf("%s/api/versions/%s/translate?targetLang=%s", config.App.API_GATEWAY_URL, version.ID, targetLang)
+
+		// Create an empty POST request to TranslateVersion
+		req, err := http.NewRequest("POST", translateVersionURL, nil)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Str("versionID", version.ID).Msg("Failed to create TranslateVersion request")
+			continue
+		}
+
+		client := &http.Client{
+			Timeout: 5 * time.Second,
+		}
+
+		// Send the request
+		resp, err := client.Do(req)
+		if err != nil {
+			config.App.Logger.Error().Err(err).Str("versionID", version.ID).Msg("Failed to send TranslateVersion request")
+			continue
+		}
+		resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			config.App.Logger.Warn().
+				Int("status", resp.StatusCode).
+				Str("versionID", version.ID).
+				Msg("TranslateVersion returned non-OK status")
+			continue
+		}
+
+		config.App.Logger.Info().
+			Str("versionID", version.ID).
+			Str("targetLang", targetLang).
+			Msg("Successfully initiated translation for Version")
+	}
 }
