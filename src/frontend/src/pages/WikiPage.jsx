@@ -97,9 +97,6 @@ function WikiPage() {
       showToast("Error al eliminar la wiki", "error");
     }
   };
-  const handleDropdownClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
 
   const handleDropdownClose = () => {
     setAnchorEl(null);
@@ -238,50 +235,93 @@ function WikiPage() {
               </Button>
 
               <Box>
-                {sessionStorage.getItem("role") != "redactor" &&
-                  (
-                    <Button
-                      component={Link}
-                      to={`/wiki/form/${id}`}
-                      variant="outlined"
-                      color="primary"
-                      sx={{ mt: 2, mr: 2 }}
-                    >
-                      Editar Wiki
-                    </Button>
-                  )}
-                {sessionStorage.getItem("role") == "admin" &&
-                  (
-                    <Button
-                      variant="contained"
-                      color="error"
-                      sx={{ mt: 2 }}
-                      onClick={() => setIsModalOpen(true)}
-                    >
-                      Borrar Wiki
-                    </Button>
-                  )}
+                {sessionStorage.getItem("role") != "redactor" && (
+                  <Button
+                    component={Link}
+                    to={`/wiki/form/${id}`}
+                    variant="outlined"
+                    color="primary"
+                    sx={{ mt: 2, mr: 2 }}
+                  >
+                    Editar Wiki
+                  </Button>
+                )}
+                
+                {/* Cambiar Idioma - Available for all users */}
                 <Button
                   variant="contained"
                   color="primary"
-                  sx={{ mt: 2, ml: 2 }}
-                  onClick={handleDropdownClick}
+                  sx={{ mt: 2, mr: 2 }}
+                  onClick={(e) => {
+                    setAnchorEl(e.currentTarget);
+                    setPendingLanguage(null); // Indicate this is for language change, not translation
+                  }}
                 >
                   Cambiar Idioma: {selectedOption || "Seleccionar"}
                 </Button>
+
+                {/* Traducir a - Only for authorized roles */}
+                {["admin", "editor", "redactor"].includes(sessionStorage.getItem("role")) && (
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    sx={{ mt: 2 }}
+                    onClick={(e) => {
+                      setAnchorEl(e.currentTarget);
+                      setPendingLanguage("translate"); // Indicate this is for translation
+                    }}
+                  >
+                    Traducir
+                  </Button>
+                )}
+
+                {sessionStorage.getItem("role") == "admin" && (
+                  <Button
+                    variant="contained"
+                    color="error"
+                    sx={{ mt: 2, ml: 2 }}
+                    onClick={() => setIsModalOpen(true)}
+                  >
+                    Borrar Wiki
+                  </Button>
+                )}
+
                 <Menu
                   anchorEl={anchorEl}
                   open={Boolean(anchorEl)}
                   onClose={handleDropdownClose}
                 >
-                  {availableLanguages.map((lang) => (
-                    <MenuItem
-                      key={lang.code}
-                      onClick={() => handleOptionSelect(lang.code)}
-                    >
-                      {lang.name}
-                    </MenuItem>
-                  ))}
+                  {availableLanguages.map((lang) => {
+                    // For language change, only show available translations
+                    if (!pendingLanguage) {
+                      if (wiki.translatedFields?.[lang.code] || wiki.sourceLang === lang.code) {
+                        return (
+                          <MenuItem
+                            key={lang.code}
+                            onClick={() => {
+                              setSelectedOption(lang.code);
+                              handleDropdownClose();
+                            }}
+                          >
+                            {lang.name}
+                          </MenuItem>
+                        );
+                      }
+                      return null;
+                    }
+                    // For translation, show all languages except source
+                    else if (wiki.sourceLang !== lang.code) {
+                      return (
+                        <MenuItem
+                          key={lang.code}
+                          onClick={() => handleOptionSelect(lang.code)}
+                        >
+                          {lang.name} {wiki.translatedFields?.[lang.code] ? '(Actualizar)' : ''}
+                        </MenuItem>
+                      );
+                    }
+                    return null;
+                  })}
                 </Menu>
               </Box>
             </Box>
