@@ -20,7 +20,7 @@ function App() {
         <Route path="/wiki/form" element={<FormWikiPage />} />
         <Route path="/wiki/form/:wikiId" element={<FormWikiPage />} />
         <Route path="/versiones/:entryId" element={<VersionPage />} />
-        <Route path="/crear-entrada/:id" element={<FormEntradaPage />} />
+        <Route path="/crear-entrada/:wikiId" element={<FormEntradaPage />} />
         <Route
           path="/version/form/:entryId/:versionId?"
           element={<FormVersionPage />}
