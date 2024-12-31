@@ -44,7 +44,19 @@ function WikiPage() {
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const isLoggedIn = !!sessionStorage.getItem("appUser"); // Verifica si el usuario está logueado
+  // Retrieve the JSON string for 'appUser' from sessionStorage
+  const appUserJson = sessionStorage.getItem("appUser");
+
+  // Check if 'appUser' exists in sessionStorage
+  const isLoggedIn = !!appUserJson;
+
+  let role = null;
+
+  if (isLoggedIn) {
+    const appUser = JSON.parse(appUserJson);
+
+    role = appUser.role;
+  }
 
   const { selectedOption, setSelectedOption } = useLanguage();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -248,7 +260,7 @@ function WikiPage() {
               </Button>
 
               <Box>
-                {sessionStorage.getItem("role") != "redactor" && (
+                {role != "redactor" && (
                   <Button
                     component={Link}
                     to={`/wiki/form/${wikiId}`}
@@ -261,7 +273,7 @@ function WikiPage() {
                 )}
 
                 {["admin", "editor", "redactor"].includes(
-                  sessionStorage.getItem("role"),
+                  role,
                 ) && (
                     <Button
                       variant="contained"
@@ -276,7 +288,7 @@ function WikiPage() {
                     </Button>
                   )}
 
-                {sessionStorage.getItem("role") == "admin" && (
+                {role == "admin" && (
                   <Button
                     variant="contained"
                     color="error"

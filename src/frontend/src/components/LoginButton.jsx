@@ -72,10 +72,8 @@ const LoginButton = () => {
 
       if (existingUser) {
         console.log("User already registered");
-        sessionStorage.setItem("id", existingUser.id);
         setAppUser(existingUser);
         sessionStorage.setItem("appUser", JSON.stringify(existingUser));
-        sessionStorage.setItem("role", existingUser.role);
         document.cookie = `role=${existingUser.role}; path=/`;
       } else {
         console.log("User not registered");
@@ -83,7 +81,6 @@ const LoginButton = () => {
         sessionStorage.setItem("id", addedUser.id);
         setAppUser(addedUser);
         sessionStorage.setItem("appUser", JSON.stringify(addedUser));
-        sessionStorage.setItem("role", addedUser.role);
         document.cookie = `role=${addedUser.role}; path=/`;
       }
       window.location.reload();
@@ -100,8 +97,6 @@ const LoginButton = () => {
   const handleLogout = () => {
     sessionStorage.removeItem("googleUser");
     sessionStorage.removeItem("appUser");
-    sessionStorage.removeItem("id");
-    sessionStorage.removeItem("role");
     // Remove tokens from cookies
     document.cookie = `jwt_token=; path=/;`;
     document.cookie = `role=; path=/;`;

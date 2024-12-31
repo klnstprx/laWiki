@@ -47,8 +47,19 @@ function FormEntradaPage() {
   const [versionError, setVersionError] = useState(null);
 
   const formRef = useRef(null);
-  const isLoggedIn = !!sessionStorage.getItem("appUser");
-  const userId = sessionStorage.getItem("id");
+  // Retrieve the JSON string for 'appUser' from sessionStorage
+  const appUserJson = sessionStorage.getItem("appUser");
+
+  // Check if 'appUser' exists in sessionStorage
+  const isLoggedIn = !!appUserJson;
+
+  let userId = null;
+
+  if (isLoggedIn) {
+    const appUser = JSON.parse(appUserJson);
+
+    userId = appUser.userId;
+  }
 
   // Determine if we're creating a new entry
   const isNewEntry = !entryId;

@@ -52,7 +52,21 @@ function EntradaPage() {
   const formRef = useRef(null);
 
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
-  const isLoggedIn = !!sessionStorage.getItem("appUser"); // Verifica si el usuario está logueado
+  // Retrieve the JSON string for 'appUser' from sessionStorage
+  const appUserJson = sessionStorage.getItem("appUser");
+
+  // Check if 'appUser' exists in sessionStorage
+  const isLoggedIn = !!appUserJson;
+
+  let role = null;
+  let userId = null;
+
+  if (isLoggedIn) {
+    const appUser = JSON.parse(appUserJson);
+
+    role = appUser.role;
+    userId = appUser.id;
+  }
 
   const geoCacheRef = useRef(
     JSON.parse(sessionStorage.getItem("geoCache")) || {},
@@ -73,11 +87,10 @@ function EntradaPage() {
     }
 
     // Si no está en el cache, realiza la solicitud a la API
-    const url = `https://nominatim.openstreetmap.org/search?q=${
-      encodeURIComponent(
-        address,
-      )
-    }&format=json&addressdetails=1&limit=1`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+      address,
+    )
+      }&format=json&addressdetails=1&limit=1`;
 
     try {
       const response = await fetch(url);
@@ -258,7 +271,7 @@ function EntradaPage() {
     jsonData["version_id"] = actualVersionId;
     jsonData["entry_id"] = entryId;
     jsonData["rating"] = parseInt(jsonData["rating"], 10);
-    jsonData["author"] = sessionStorage.getItem("id");
+    jsonData["author"] = userId;
     setPendingComment(jsonData);
     setShowModal(true);
   }
@@ -373,148 +386,148 @@ function EntradaPage() {
       </Breadcrumbs>
 
       {/* Entry Title */}
-        {!entryError && entry && (
-          <Paper
-            elevation={3}
-            sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}
+      {!entryError && entry && (
+        <Paper
+          elevation={3}
+          sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}
+        >
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
           >
-            <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-            >
-          <Typography variant="subtitle2">
-            Autor: <a href={`/perfil/${usuario.id}`}>{usuario.name}</a>
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {new Date(entry.created_at).toLocaleDateString()}
-          </Typography>
-            </Stack>
-
-            <Divider sx={{ my: 2 }} />
-
-            <Typography variant="h2" component="h1" style={{ padding: "16px" }}>
-          {getTranslatedField("title")}
+            <Typography variant="subtitle2">
+              Autor: <a href={`/perfil/${usuario.id}`}>{usuario.name}</a>
             </Typography>
-            <Divider sx={{ my: 2 }} />
-            <Stack
-          direction="row"
-          spacing={2}
-          justifyContent="center"
-          alignItems="center"
-            >
-          {isLoggedIn && (
-            <>
-              <Button
-            variant="contained"
-            component={Link}
-            to={`/versiones/${entry.id}/`}
-            startIcon={<HistoryIcon />}
-              >
-            Ver historial
-              </Button>
-              <Button
-            variant="contained"
-            component={Link}
-            to={`/entrada/form/${entry.id}/${actualVersionId || ""}`}
-            startIcon={<EditIcon />}
-              >
-            Editar contenido
-              </Button>
-            </>
-          )}
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ mt: 2, mr: 2 }}
-            onClick={(e) => {
-              setAnchorEl(e.currentTarget);
-              setPendingLanguage(null);
-            }}
+            <Typography variant="caption" color="text.secondary">
+              {new Date(entry.created_at).toLocaleDateString()}
+            </Typography>
+          </Stack>
+
+          <Divider sx={{ my: 2 }} />
+
+          <Typography variant="h2" component="h1" style={{ padding: "16px" }}>
+            {getTranslatedField("title")}
+          </Typography>
+          <Divider sx={{ my: 2 }} />
+          <Stack
+            direction="row"
+            spacing={2}
+            justifyContent="center"
+            alignItems="center"
           >
-            Cambiar Idioma: {selectedOption || "Seleccionar"}
-          </Button>
-          {isLoggedIn && ["admin", "editor", "redactor"].includes(
-            sessionStorage.getItem("role"),
-          ) && (
+            {isLoggedIn && (
+              <>
+                <Button
+                  variant="contained"
+                  component={Link}
+                  to={`/versiones/${entry.id}/`}
+                  startIcon={<HistoryIcon />}
+                >
+                  Ver historial
+                </Button>
+                <Button
+                  variant="contained"
+                  component={Link}
+                  to={`/entrada/form/${entry.id}/${actualVersionId || ""}`}
+                  startIcon={<EditIcon />}
+                >
+                  Editar contenido
+                </Button>
+              </>
+            )}
             <Button
               variant="contained"
-              color="secondary"
-              sx={{ mt: 2 }}
+              color="primary"
+              sx={{ mt: 2, mr: 2 }}
               onClick={(e) => {
-            setAnchorEl(e.currentTarget);
-            setPendingLanguage("translate");
+                setAnchorEl(e.currentTarget);
+                setPendingLanguage(null);
               }}
             >
-              Traducir
+              Cambiar Idioma: {selectedOption || "Seleccionar"}
             </Button>
-          )}
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleDropdownClose}
-          >
-            {availableLanguages.map((lang) => {
-              if (!pendingLanguage) {
-            if (
-              entry.translatedFields?.[lang.code] ||
-              entry.sourceLang === lang.code
-            ) {
-              return (
-                <MenuItem
-              key={lang.code}
-              onClick={() => {
-                setSelectedOption(lang.code);
-                handleDropdownClose();
-              }}
+            {isLoggedIn && ["admin", "editor", "redactor"].includes(role) &&
+              (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  sx={{ mt: 2 }}
+                  onClick={(e) => {
+                    setAnchorEl(e.currentTarget);
+                    setPendingLanguage("translate");
+                  }}
                 >
-              {lang.name}
-                </MenuItem>
-              );
-            }
-            return null;
-              } else if (entry.sourceLang !== lang.code) {
-            return (
-              <MenuItem
-                key={lang.code}
-                onClick={() => handleOptionSelect(lang.code)}
-              >
-                {lang.name} {entry.translatedFields?.[lang.code]
-              ? "(Actualizar)"
-              : ""}
-              </MenuItem>
-            );
-              }
-              return null;
-            })}
-          </Menu>
-            </Stack>
-          </Paper>
-        )}
+                  Traducir
+                </Button>
+              )}
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleDropdownClose}
+            >
+              {availableLanguages.map((lang) => {
+                if (!pendingLanguage) {
+                  if (
+                    entry.translatedFields?.[lang.code] ||
+                    entry.sourceLang === lang.code
+                  ) {
+                    return (
+                      <MenuItem
+                        key={lang.code}
+                        onClick={() => {
+                          setSelectedOption(lang.code);
+                          handleDropdownClose();
+                        }}
+                      >
+                        {lang.name}
+                      </MenuItem>
+                    );
+                  }
+                  return null;
+                } else if (entry.sourceLang !== lang.code) {
+                  return (
+                    <MenuItem
+                      key={lang.code}
+                      onClick={() => handleOptionSelect(lang.code)}
+                    >
+                      {lang.name}{" "}
+                      {entry.translatedFields?.[lang.code]
+                        ? "(Actualizar)"
+                        : ""}
+                    </MenuItem>
+                  );
+                }
+                return null;
+              })}
+            </Menu>
+          </Stack>
+        </Paper>
+      )}
 
-        {/* Version Content */}
+      {/* Version Content */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
         {loadingVersion
           ? <Typography variant="body1">Cargando versión...</Typography>
           : versionError
-          ? <Alert severity="error">{versionError}</Alert>
-          : !version
-          ? (
-            <Alert severity="info">
-              No se ha encontrado niguna version asignada a esta entrada.
-            </Alert>
-          )
-          : (
-            <Version
-              content={getTranslatedFieldVersion("content")}
-              editor={version.editor}
-              created_at={version.created_at}
-              entry_id={version.entry_id}
-              address={version.address}
-              coordinates={coordinates}
-              media_ids={version.media_ids}
-            />
-          )}
+            ? <Alert severity="error">{versionError}</Alert>
+            : !version
+              ? (
+                <Alert severity="info">
+                  No se ha encontrado niguna version asignada a esta entrada.
+                </Alert>
+              )
+              : (
+                <Version
+                  content={getTranslatedFieldVersion("content")}
+                  editor={version.editor}
+                  created_at={version.created_at}
+                  entry_id={version.entry_id}
+                  address={version.address}
+                  coordinates={coordinates}
+                  media_ids={version.media_ids}
+                />
+              )}
       </Paper>
 
       {entryError && <Alert severity="error">{entryError}</Alert>}
@@ -535,7 +548,7 @@ function EntradaPage() {
                   content={comment.content}
                   rating={comment.rating}
                   created_at={comment.created_at}
-                  author={comment.author}
+                  authorId={comment.author}
                   onDelete={(id) => handleDeleteComment(id)}
                 />
               ))}
