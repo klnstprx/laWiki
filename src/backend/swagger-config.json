@@ -6,10 +6,6 @@
   },
   "apis": [
     {
-      "url": "./auth/docs/swagger.json",
-      "pathPrepend": "/api/auth"
-    },
-    {
       "url": "./wiki/docs/swagger.json",
       "pathPrepend": "/api/wiki"
     },
