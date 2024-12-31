@@ -38,11 +38,10 @@ combine-swagger:
 	cd comment && swag init
 	cd version && swag init
 	cd media && swag init
-	cd auth && swag init
 	cd gateway && swag init
 	@echo "Combining Swagger documentation..."
 	npx swagger-combine swagger-config.json -o gateway/docs/swagger.json
-	@echo "Swagger documentation combined successfully."&& sudo docker build -t klnstprx/$*-service .
+	@echo "Swagger documentation combined successfully."
 
 
 run-wiki-service:
@@ -104,4 +103,8 @@ run-auth-service:
 run-translation-service: 
 	@echo "Running translation-service..."
 	cd translation && ( \
-		go build -o translation-ser
+		go build -o translation-service . && \
+		./translation-service > translation-service.log 2>&1 & \
+		echo $$! > translation-service.pid \
+	)
+
