@@ -59,7 +59,6 @@ const EntradaCard = ({
         transition: "box-shadow 0.3s",
       }}
     >
-      {/* CardActionArea wraps the content that links to the entry */}
       <CardActionArea
         component={Link}
         to={`/entrada/${id}`}
@@ -88,7 +87,6 @@ const EntradaCard = ({
         </CardContent>
       </CardActionArea>
 
-      {/* Author info and delete button are outside CardActionArea */}
       <CardContent sx={{ pt: 0 }}>
         <Grid container alignItems="center" justifyContent="space-between">
           <Grid xs={12} sm={6}>
