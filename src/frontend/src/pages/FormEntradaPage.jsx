@@ -58,7 +58,7 @@ function FormEntradaPage() {
   if (isLoggedIn) {
     const appUser = JSON.parse(appUserJson);
 
-    userId = appUser.userId;
+    userId = appUser.id;
   }
 
   // Determine if we're creating a new entry
