@@ -1,0 +1,269 @@
+basePath: /api/versions
+definitions:
+  model.Version:
+    properties:
+      address:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      editor:
+        type: string
+      entry_id:
+        type: string
+      id:
+        type: string
+      media_ids:
+        items:
+          type: string
+        type: array
+      sourceLang:
+        type: string
+      translatedFields:
+        additionalProperties:
+          additionalProperties:
+            type: string
+          type: object
+        type: object
+      updated_at:
+        type: string
+    type: object
+host: localhost:8004
+info:
+  contact: {}
+  description: API documentation for the Version Service.
+  title: Version Service API
+  version: "1.0"
+paths:
+  /api/versions/:
+    get:
+      description: Retrieves the list of all version JSON objects from the database.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Version'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get all versions
+      tags:
+      - Versions
+    post:
+      consumes:
+      - application/json
+      description: Creates a new version. Expects a JSON object in the request body.
+      parameters:
+      - description: Version information
+        in: body
+        name: version
+        required: true
+        schema:
+          $ref: '#/definitions/model.Version'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Version'
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Create a new version
+      tags:
+      - Versions
+  /api/versions/{id}:
+    delete:
+      description: Deletes a version by its ID.
+      parameters:
+      - description: Version ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Version not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete a version by ID
+      tags:
+      - Versions
+    get:
+      description: Retrieves a version by its ID.
+      parameters:
+      - description: Version ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Version'
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Version not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get a version by ID
+      tags:
+      - Versions
+    put:
+      consumes:
+      - application/json
+      description: Updates a version by its ID. Expects a JSON object in the request
+        body.
+      parameters:
+      - description: Version ID
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Updated version information
+        in: body
+        name: version
+        required: true
+        schema:
+          $ref: '#/definitions/model.Version'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Version'
+        "400":
+          description: Invalid ID or request body
+          schema:
+            type: string
+        "404":
+          description: Version not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update a version by ID
+      tags:
+      - Versions
+  /api/versions/entry/:
+    delete:
+      description: Deletes all versions associated with a specific Entry ID.
+      parameters:
+      - description: Entry ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: EntryID is required
+          schema:
+            type: string
+        "404":
+          description: No versions found for the given entry ID
+          schema:
+            type: string
+        "500":
+          description: Failed to delete associated comments
+          schema:
+            type: string
+      summary: Deletes all versions by the Entry ID
+      tags:
+      - Versions
+  /api/versions/health:
+    get:
+      description: Checks if the service is up
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health Check
+      tags:
+      - Health
+  /api/versions/search:
+    get:
+      description: Search for versions using various query parameters. You can search
+        by content, editor, createdAt, or entryID. All parameters are optional and
+        can be combined.
+      parameters:
+      - description: Partial content to search for (case-insensitive)
+        in: query
+        name: content
+        type: string
+      - description: Editor to search for
+        in: query
+        name: editor
+        type: string
+      - description: Creation date (YYYY-MM-DD)
+        in: query
+        name: createdAt
+        type: string
+      - description: Entry ID to search for
+        in: query
+        name: entryID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Version'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Search versions
+      tags:
+      - Versions
+swagger: "2.0"

@@ -2,17 +2,16 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useToast } from "../context/ToastContext.jsx";
 import {
+  Alert,
+  Breadcrumbs,
   Container,
   Paper,
   Typography,
-  Alert,
-  List,
-  ListItem,
 } from "@mui/material";
+import Grid from "@mui/joy/Grid";
+import { Link } from "react-router-dom";
 import VersionCard from "../components/VersionCard.jsx";
 import { deleteVersion, searchVersions } from "../api/VersionApi.js";
-import { Breadcrumbs } from "@mui/material";
-import { Link } from "react-router-dom";
 import { getEntry } from "../api/EntryApi.js";
 import { getWiki } from "../api/WikiApi.js";
 
@@ -39,7 +38,7 @@ function VersionPage() {
           setError("Se ha producido un error al obtener las versiones.")
         );
 
-        getEntry(entryId)
+      getEntry(entryId)
         .then((data) => {
           if (data && Object.keys(data).length > 0) {
             setEntry(data);
@@ -47,9 +46,7 @@ function VersionPage() {
             setError("No se encontró la entrada solicitada.");
           }
         })
-        .catch(() =>
-          setError("Se produjo un error al obtener la entrada."),
-        );
+        .catch(() => setError("Se produjo un error al obtener la entrada."));
     } else {
       setError("No se proporcionó un ID de entrada válido.");
     }
@@ -67,22 +64,22 @@ function VersionPage() {
           }
         })
         .catch(() =>
-          setError("Se produjo un error al obtener la wiki asociada."),
+          setError("Se produjo un error al obtener la wiki asociada.")
         );
     }
   }, [entry, entryId]);
 
-  // Handler to delete a comment
+  // Handler to delete a version
   const handleDeleteVersion = async (versionId) => {
     try {
       await deleteVersion(versionId);
       setVersiones((prevVersiones) =>
         prevVersiones.filter((version) => version.id !== versionId)
       );
-      showToast("Version eliminada correctamente", "success");
+      showToast("Versión eliminada correctamente", "success");
     } catch (error) {
-      console.error("Error al eliminar la version:", error);
-      showToast("Error al eliminar la version", "error");
+      console.error("Error al eliminar la versión:", error);
+      showToast("Error al eliminar la versión", "error");
     }
   };
 
@@ -92,10 +89,18 @@ function VersionPage() {
         <Typography className="breadcrumb-link" component={Link} to="/">
           Inicio
         </Typography>
-        <Typography className="breadcrumb-link" component={Link} to={`/wiki/${wiki.id}`}>
+        <Typography
+          className="breadcrumb-link"
+          component={Link}
+          to={`/wiki/${wiki.id}`}
+        >
           {wiki.title}
         </Typography>
-        <Typography className="breadcrumb-link" component={Link} to={`/entrada/${entry.id}`}>
+        <Typography
+          className="breadcrumb-link"
+          component={Link}
+          to={`/entrada/${entry.id}`}
+        >
           {entry.title}
         </Typography>
       </Breadcrumbs>
@@ -111,29 +116,31 @@ function VersionPage() {
         )}
       </Paper>
 
-      {!error && versiones.length > 0 ? (
-        <Paper elevation={3} sx={{ p: 3 }}>
-          <List>
-            {versiones.map((version) => (
-              <ListItem key={version.id} divider>
-                <VersionCard
-                  entradaId={entryId}
-                  versionId={version.id}
-                  editor={version.editor}
-                  created_at={version.created_at}
-                  onDelete={handleDeleteVersion}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
-      ) : (
-        !error && (
-          <Alert severity="info" sx={{ mt: 2 }}>
-            No se encontraron versiones para esta entrada.
-          </Alert>
+      {!error && versiones.length > 0
+        ? (
+          <Paper elevation={3} sx={{ p: 3 }}>
+            <Grid container spacing={2} justifyContent="center">
+              {versiones.map((version) => (
+                <Grid item key={version.id} xs={12} sm={8} md={6}>
+                  <VersionCard
+                    entradaId={entryId}
+                    versionId={version.id}
+                    editorId={version.editor}
+                    created_at={version.created_at}
+                    onDelete={handleDeleteVersion}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </Paper>
         )
-      )}
+        : (
+          !error && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              No se encontraron versiones para esta entrada.
+            </Alert>
+          )
+        )}
     </Container>
   );
 }

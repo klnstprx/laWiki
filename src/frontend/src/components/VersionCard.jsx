@@ -1,20 +1,33 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { Card, CardContent, Typography, IconButton } from "@mui/material";
+import { Card, CardContent, IconButton, Typography } from "@mui/material";
+import Grid from "@mui/joy/Grid";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
-import { useState } from "react";
-import Grid from "@mui/joy/Grid";
+import { useEffect, useState } from "react";
+import { getUser } from "../api/AuthApi";
 
 const VersionCard = ({
   entradaId,
   versionId,
-  editor,
+  editorId,
   created_at,
   onDelete,
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
+  // Retrieve the JSON string for 'appUser' from sessionStorage
+  const appUserJson = sessionStorage.getItem("appUser");
+
+  // Check if 'appUser' exists in sessionStorage
+  const isLoggedIn = !!appUserJson;
+
+  let role = null;
+
+  if (isLoggedIn) {
+    const appUser = JSON.parse(appUserJson);
+
+    role = appUser.role;
+  }
 
   const handleDelete = () => {
     setShowDeleteModal(true);
@@ -25,11 +38,36 @@ const VersionCard = ({
     setShowDeleteModal(false);
   };
 
+  const [editor, setEditor] = useState({}); // add state
+
+  useEffect(() => {
+    const fetchUsuario = async () => {
+      try {
+        const userData = await getUser(editorId);
+        setEditor(userData);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+
+    if (editorId) {
+      fetchUsuario();
+    }
+  }, [editorId]);
+
   return (
-    <Card sx={{ mb: 2 }}>
+    <Card
+      sx={{
+        mb: 2,
+        "&:hover": {
+          boxShadow: 6,
+        },
+        transition: "box-shadow 0.3s",
+      }}
+    >
       <CardContent>
         <Grid container spacing={2} alignItems="center">
-          <Grid xs={12} sm={5}>
+          <Grid item xs={12} sm={5}>
             <Typography variant="body1">
               <strong>Fecha:</strong>{" "}
               {new Date(created_at).toLocaleString("es-ES", {
@@ -41,23 +79,23 @@ const VersionCard = ({
               })}
             </Typography>
           </Grid>
-          <Grid xs={12} sm={5}>
+          <Grid item xs={12} sm={5}>
             <Typography variant="body1">
-              <strong>Editor:</strong> {editor}
+              Editor: <a href={`/perfil/${editor.id}`}>{editor.name}</a>
             </Typography>
           </Grid>
-          <Grid xs={12} sm={2}>
+          <Grid item xs={12} sm={2}>
             <Typography variant="body1">
               <Link to={`/entrada/${entradaId}/${versionId}`}>Ver</Link>
             </Typography>
           </Grid>
-          <Grid>
-          {isLoggedIn && (sessionStorage.getItem("role") != "redactor") &&(
-            <IconButton color="error" onClick={handleDelete}>
-              <DeleteIcon />
-            </IconButton>
+          {isLoggedIn && role !== "redactor" && (
+            <Grid item xs="auto">
+              <IconButton color="error" onClick={handleDelete}>
+                <DeleteIcon />
+              </IconButton>
+            </Grid>
           )}
-          </Grid>
         </Grid>
       </CardContent>
       <ConfirmationModal
@@ -73,7 +111,7 @@ const VersionCard = ({
 VersionCard.propTypes = {
   entradaId: PropTypes.string.isRequired,
   versionId: PropTypes.string.isRequired,
-  editor: PropTypes.string.isRequired,
+  editorId: PropTypes.string.isRequired,
   created_at: PropTypes.string.isRequired,
   onDelete: PropTypes.func.isRequired,
 };

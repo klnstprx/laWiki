@@ -11,17 +11,16 @@ import {
   useTheme,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { getAllUsers, postUser } from "../api/AuthApi";
-import Notificaciones from "./Notificaciones"; // Importa el nuevo componente
-import { putUser } from "../api/AuthApi";
+import { getUserByEmail, postUser, putUser } from "../api/AuthApi";
+import Notificaciones from "./Notificaciones";
 import {
   Logout as LogoutIcon,
   Notifications as NotificationsIcon,
 } from "@mui/icons-material";
 
 const LoginButton = () => {
-  const [user, setUser] = useState(null); // Estado para el usuario autenticado
-  const [usuario, setUsuario] = useState({ notifications: [] }); // Estado para el usuario con notificaciones
+  const [googleUser, setGoogleUser] = useState(null); // State for authenticated Google user
+  const [appUser, setAppUser] = useState({ notifications: [] }); // State for user in our app
   const navigate = useNavigate();
 
   const theme = useTheme();
@@ -29,101 +28,80 @@ const LoginButton = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
-  // Carga inicial del usuario y sus notificaciones desde sessionStorage
+  // Initial load of user and notifications from sessionStorage
   useEffect(() => {
-    const savedUser = sessionStorage.getItem("user");
-    const savedUsuario = sessionStorage.getItem("usuario");
+    const savedGoogleUser = sessionStorage.getItem("googleUser");
+    const savedAppUser = sessionStorage.getItem("appUser");
 
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    if (savedGoogleUser) {
+      setGoogleUser(JSON.parse(savedGoogleUser));
     }
-    if (savedUsuario) {
-      setUsuario(JSON.parse(savedUsuario));
+    if (savedAppUser) {
+      setAppUser(JSON.parse(savedAppUser));
     }
   }, []);
 
   const handleLoginSuccess = async (credentialResponse) => {
     try {
-      const decodedUser = jwtDecode(credentialResponse.credential);
-      console.log("Usuario autenticado:", decodedUser);
+      const decodedGoogleUser = jwtDecode(credentialResponse.credential);
+      console.log("Authenticated user:", decodedGoogleUser);
 
-      // Guarda el usuario en la sesión y en el estado
-      sessionStorage.setItem("user", JSON.stringify(decodedUser));
-      setUser(decodedUser);
+      // Save the Google user in session and state
+      sessionStorage.setItem("googleUser", JSON.stringify(decodedGoogleUser));
+      setGoogleUser(decodedGoogleUser);
 
-      //carga credentialResponse en las cookies con dominio localhost
+      // Store the JWT token in cookies
       document.cookie = `jwt_token=${credentialResponse.credential}; path=/`;
 
-      const user = {
-        email: decodedUser.email,
-        name: decodedUser.name,
-        given_name: decodedUser.given_name,
-        family_name: decodedUser.family_name,
-        picture: decodedUser.picture,
-        locale: decodedUser.locale,
-        email_verified: decodedUser.email_verified,
+      const newUser = {
+        email: decodedGoogleUser.email,
+        name: decodedGoogleUser.name,
+        given_name: decodedGoogleUser.given_name,
+        family_name: decodedGoogleUser.family_name,
+        picture: decodedGoogleUser.picture,
+        locale: decodedGoogleUser.locale,
+        email_verified: decodedGoogleUser.email_verified,
         role: "redactor",
         valoration: [],
         notifications: [],
         enable_emails: false,
       };
 
-      const users = await getAllUsers();
+      // Check if the user already exists
+      const existingUser = await getUserByEmail(newUser.email);
 
-      if (users != null) {
-        // Verifica si el usuario ya existe
-        let userExists = false;
-        for (let i = 0; i < users.length; i++) {
-          if (users[i].email === user.email) {
-            console.log("User already registered");
-            sessionStorage.setItem("id", users[i].id);
-            setUsuario(users[i]); // Actualiza el estado con el usuario existente
-            sessionStorage.setItem("usuario", JSON.stringify(users[i]));
-            sessionStorage.setItem("role", users[i].role);
-            document.cookie = `role=${users[i].role}; path=/`;
-            userExists = true;
-            break;
-          }
-        }
-
-        if (!userExists) {
-          console.log("User not registered");
-          const addedUser = await postUser(user);
-          sessionStorage.setItem("id", addedUser.id);
-          setUsuario(addedUser); // Actualiza el estado con el nuevo usuario
-          sessionStorage.setItem("usuario", JSON.stringify(addedUser));
-          document.cookie = `role=${addedUser.role}; path=/`;
-          sessionStorage.setItem("role", addedUser.role);
-        }
+      if (existingUser) {
+        console.log("User already registered");
+        setAppUser(existingUser);
+        sessionStorage.setItem("appUser", JSON.stringify(existingUser));
+        document.cookie = `role=${existingUser.role}; path=/`;
       } else {
         console.log("User not registered");
-        const addedUser = await postUser(user);
+        const addedUser = await postUser(newUser);
         sessionStorage.setItem("id", addedUser.id);
-        setUsuario(addedUser); // Actualiza el estado con el nuevo usuario
-        sessionStorage.setItem("usuario", JSON.stringify(addedUser));
+        setAppUser(addedUser);
+        sessionStorage.setItem("appUser", JSON.stringify(addedUser));
         document.cookie = `role=${addedUser.role}; path=/`;
-        sessionStorage.setItem("role", addedUser.role);
       }
+      window.location.reload();
     } catch (error) {
-      console.error("Error al procesar las credenciales:", error);
+      console.error("Error processing credentials:", error);
     }
   };
 
   const handleLoginError = () => {
-    console.error("Error al iniciar sesión");
-    alert("Hubo un problema al iniciar sesión. Inténtalo de nuevo.");
+    console.error("Error logging in");
+    alert("There was a problem logging in. Please try again.");
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem("user");
-    sessionStorage.removeItem("usuario");
-    sessionStorage.removeItem("id");
-    sessionStorage.removeItem("role");
-    //Elimina el token de las cookies
+    sessionStorage.removeItem("googleUser");
+    sessionStorage.removeItem("appUser");
+    // Remove tokens from cookies
     document.cookie = `jwt_token=; path=/;`;
     document.cookie = `role=; path=/;`;
-    setUser(null);
-    setUsuario({ notifications: [] });
+    setGoogleUser(null);
+    setAppUser({ notifications: [] });
     window.location.reload();
   };
 
@@ -140,33 +118,28 @@ const LoginButton = () => {
   };
 
   const clearNotifications = () => {
-    const updatedUsuario = { ...usuario, notifications: [] };
+    const updatedAppUser = { ...appUser, notifications: [] };
 
-    // Actualiza de inmediato en el estado y sessionStorage para mejorar la percepción del usuario.
-    setUsuario(updatedUsuario);
-    sessionStorage.setItem("usuario", JSON.stringify(updatedUsuario));
+    // Update state and sessionStorage immediately for better user experience
+    setAppUser(updatedAppUser);
+    sessionStorage.setItem("appUser", JSON.stringify(updatedAppUser));
 
-    // Llama a la API para actualizar en la base de datos
+    // Call the API to update in the database
     putUser(sessionStorage.getItem("id"), { notifications: [] })
       .then(() => {
-        console.log("Notificaciones eliminadas en la base de datos.");
+        console.log("Notifications cleared in the database.");
       })
       .catch((error) => {
-        console.error(
-          "Error al eliminar notificaciones en la base de datos:",
-          error,
-        );
-        // Opcional: restaurar notificaciones locales si ocurre un error
-        setUsuario(usuario);
-        sessionStorage.setItem("usuario", JSON.stringify(usuario));
+        console.error("Error clearing notifications in the database:", error);
+        // Optionally: restore local notifications if an error occurs
+        setAppUser(appUser);
+        sessionStorage.setItem("appUser", JSON.stringify(appUser));
       });
   };
 
   return (
-    <Box
-      sx={{ display: "flex", alignItems: "center", gap: 2 }}
-    >
-      {user
+    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+      {googleUser
         ? (
           <>
             {isMobile
@@ -212,7 +185,7 @@ const LoginButton = () => {
               anchorEl={anchorEl}
               open={open}
               onClose={handleClose}
-              notifications={usuario.notifications}
+              notifications={appUser.notifications}
               clearNotifications={clearNotifications}
             />
 
@@ -231,8 +204,8 @@ const LoginButton = () => {
                   },
                   boxShadow: (theme) => theme.shadows[2],
                 }}
-                alt={user.name}
-                src={user.picture}
+                alt={googleUser.name}
+                src={googleUser.picture}
               />
             </IconButton>
 
