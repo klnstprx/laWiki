@@ -86,6 +86,7 @@ const LoginButton = () => {
         sessionStorage.setItem("role", addedUser.role);
         document.cookie = `role=${addedUser.role}; path=/`;
       }
+      window.location.reload();
     } catch (error) {
       console.error("Error processing credentials:", error);
     }
