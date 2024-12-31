@@ -73,10 +73,11 @@ function EntradaPage() {
     }
 
     // Si no está en el cache, realiza la solicitud a la API
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-      address,
-    )
-      }&format=json&addressdetails=1&limit=1`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${
+      encodeURIComponent(
+        address,
+      )
+    }&format=json&addressdetails=1&limit=1`;
 
     try {
       const response = await fetch(url);
@@ -372,146 +373,148 @@ function EntradaPage() {
       </Breadcrumbs>
 
       {/* Entry Title */}
-      {!entryError && entry && (
-        <Paper
-          elevation={3}
-          sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}
-        >
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
+        {!entryError && entry && (
+          <Paper
+            elevation={3}
+            sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}
           >
-            <Typography variant="subtitle2">
-              Autor: <a href={`/perfil/${usuario.id}`}>{usuario.name}</a>
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {new Date(entry.created_at).toLocaleDateString()}
-            </Typography>
-          </Stack>
-
-          <Divider sx={{ my: 2 }} />
-
-          <Typography variant="h2" component="h1" style={{ padding: "16px" }}>
-            {getTranslatedField("title")}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-          {isLoggedIn && (
             <Stack
-              direction="row"
-              spacing={2}
-              justifyContent="center"
-              alignItems="center"
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
             >
-              <Button
-                variant="contained"
-                component={Link}
-                to={`/versiones/${entry.id}/`}
-                startIcon={<HistoryIcon />}
-              >
-                Ver historial
-              </Button>
-              <Button
-                variant="contained"
-                component={Link}
-                to={`/entrada/form/${entry.id}/${actualVersionId || ""}`}
-                startIcon={<EditIcon />}
-              >
-                Editar contenido
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ mt: 2, mr: 2 }}
-                onClick={(e) => {
-                  setAnchorEl(e.currentTarget);
-                  setPendingLanguage(null);
-                }}
-              >
-                Cambiar Idioma: {selectedOption || "Seleccionar"}
-              </Button>
-              {["admin", "editor", "redactor"].includes(
-                sessionStorage.getItem("role"),
-              ) && (
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    sx={{ mt: 2 }}
-                    onClick={(e) => {
-                      setAnchorEl(e.currentTarget);
-                      setPendingLanguage("translate");
-                    }}
-                  >
-                    Traducir
-                  </Button>
-                )}
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleDropdownClose}
-              >
-                {availableLanguages.map((lang) => {
-                  if (!pendingLanguage) {
-                    if (
-                      entry.translatedFields?.[lang.code] ||
-                      entry.sourceLang === lang.code
-                    ) {
-                      return (
-                        <MenuItem
-                          key={lang.code}
-                          onClick={() => {
-                            setSelectedOption(lang.code);
-                            handleDropdownClose();
-                          }}
-                        >
-                          {lang.name}
-                        </MenuItem>
-                      );
-                    }
-                    return null;
-                  } else if (entry.sourceLang !== lang.code) {
-                    return (
-                      <MenuItem
-                        key={lang.code}
-                        onClick={() => handleOptionSelect(lang.code)}
-                      >
-                        {lang.name} {entry.translatedFields?.[lang.code]
-                          ? "(Actualizar)"
-                          : ""}
-                      </MenuItem>
-                    );
-                  }
-                  return null;
-                })}
-              </Menu>
+          <Typography variant="subtitle2">
+            Autor: <a href={`/perfil/${usuario.id}`}>{usuario.name}</a>
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {new Date(entry.created_at).toLocaleDateString()}
+          </Typography>
             </Stack>
-          )}
-        </Paper>
-      )}
 
-      {/* Version Content */}
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="h2" component="h1" style={{ padding: "16px" }}>
+          {getTranslatedField("title")}
+            </Typography>
+            <Divider sx={{ my: 2 }} />
+            <Stack
+          direction="row"
+          spacing={2}
+          justifyContent="center"
+          alignItems="center"
+            >
+          {isLoggedIn && (
+            <>
+              <Button
+            variant="contained"
+            component={Link}
+            to={`/versiones/${entry.id}/`}
+            startIcon={<HistoryIcon />}
+              >
+            Ver historial
+              </Button>
+              <Button
+            variant="contained"
+            component={Link}
+            to={`/entrada/form/${entry.id}/${actualVersionId || ""}`}
+            startIcon={<EditIcon />}
+              >
+            Editar contenido
+              </Button>
+            </>
+          )}
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ mt: 2, mr: 2 }}
+            onClick={(e) => {
+              setAnchorEl(e.currentTarget);
+              setPendingLanguage(null);
+            }}
+          >
+            Cambiar Idioma: {selectedOption || "Seleccionar"}
+          </Button>
+          {isLoggedIn && ["admin", "editor", "redactor"].includes(
+            sessionStorage.getItem("role"),
+          ) && (
+            <Button
+              variant="contained"
+              color="secondary"
+              sx={{ mt: 2 }}
+              onClick={(e) => {
+            setAnchorEl(e.currentTarget);
+            setPendingLanguage("translate");
+              }}
+            >
+              Traducir
+            </Button>
+          )}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleDropdownClose}
+          >
+            {availableLanguages.map((lang) => {
+              if (!pendingLanguage) {
+            if (
+              entry.translatedFields?.[lang.code] ||
+              entry.sourceLang === lang.code
+            ) {
+              return (
+                <MenuItem
+              key={lang.code}
+              onClick={() => {
+                setSelectedOption(lang.code);
+                handleDropdownClose();
+              }}
+                >
+              {lang.name}
+                </MenuItem>
+              );
+            }
+            return null;
+              } else if (entry.sourceLang !== lang.code) {
+            return (
+              <MenuItem
+                key={lang.code}
+                onClick={() => handleOptionSelect(lang.code)}
+              >
+                {lang.name} {entry.translatedFields?.[lang.code]
+              ? "(Actualizar)"
+              : ""}
+              </MenuItem>
+            );
+              }
+              return null;
+            })}
+          </Menu>
+            </Stack>
+          </Paper>
+        )}
+
+        {/* Version Content */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
         {loadingVersion
           ? <Typography variant="body1">Cargando versión...</Typography>
           : versionError
-            ? <Alert severity="error">{versionError}</Alert>
-            : !version
-              ? (
-                <Alert severity="info">
-                  No se ha encontrado niguna version asignada a esta entrada.
-                </Alert>
-              )
-              : (
-                <Version
-                  content={getTranslatedFieldVersion("content")}
-                  editor={version.editor}
-                  created_at={version.created_at}
-                  entry_id={version.entry_id}
-                  address={version.address}
-                  coordinates={coordinates}
-                  media_ids={version.media_ids}
-                />
-              )}
+          ? <Alert severity="error">{versionError}</Alert>
+          : !version
+          ? (
+            <Alert severity="info">
+              No se ha encontrado niguna version asignada a esta entrada.
+            </Alert>
+          )
+          : (
+            <Version
+              content={getTranslatedFieldVersion("content")}
+              editor={version.editor}
+              created_at={version.created_at}
+              entry_id={version.entry_id}
+              address={version.address}
+              coordinates={coordinates}
+              media_ids={version.media_ids}
+            />
+          )}
       </Paper>
 
       {entryError && <Alert severity="error">{entryError}</Alert>}

@@ -221,119 +221,120 @@ function WikiPage() {
             />
           </Paper>
 
-          {/* Buttons */}
-          {isLoggedIn && (
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Button
-                component={Link}
-                to={`/entrada/form/${wikiId}`}
+          {/* Language Change Button - Available for all users */}
+                <Button
                 variant="contained"
                 color="primary"
-                sx={{ mt: 2 }}
-              >
-                Crear Nueva Entrada
-              </Button>
-
-              <Box>
-                {sessionStorage.getItem("role") != "redactor" &&
-                  (
-                    <Button
-                      component={Link}
-                      to={`/wiki/form/${wikiId}`}
-                      variant="outlined"
-                      color="primary"
-                      sx={{ mt: 2, mr: 2 }}
-                    >
-                      Editar Wiki
-                    </Button>
-                  )}
-                {/* Cambiar Idioma - Available for all users */}
-                <Button
-                  variant="contained"
-                  color="primary"
-                  sx={{ mt: 2, mr: 2 }}
-                  onClick={(e) => {
-                    setAnchorEl(e.currentTarget);
-                    setPendingLanguage(null); // Indicate this is for language change, not translation
-                  }}
+                sx={{ mt: 2, mb: 2 }}
+                onClick={(e) => {
+                  setAnchorEl(e.currentTarget);
+                  setPendingLanguage(null);
+                }}
                 >
-                  Cambiar Idioma: {selectedOption || "Seleccionar"}
+                Cambiar Idioma: {selectedOption || "Seleccionar"}
                 </Button>
 
-                {/* Traducir a - Only for authorized roles */}
-                {["admin", "editor", "redactor"].includes(
-                  sessionStorage.getItem("role"),
-                ) && (
+                {/* Buttons requiring login */}
+                {isLoggedIn && (
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Button
+                  component={Link}
+                  to={`/entrada/form/${wikiId}`}
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2 }}
+                  >
+                  Crear Nueva Entrada
+                  </Button>
+
+                  <Box>
+                  {sessionStorage.getItem("role") != "redactor" && (
                     <Button
-                      variant="contained"
-                      color="secondary"
-                      sx={{ mt: 2 }}
-                      onClick={(e) => {
-                        setAnchorEl(e.currentTarget);
-                        setPendingLanguage("translate"); // Indicate this is for translation
-                      }}
+                    component={Link}
+                    to={`/wiki/form/${wikiId}`}
+                    variant="outlined"
+                    color="primary"
+                    sx={{ mt: 2, mr: 2 }}
                     >
-                      Traducir
+                    Editar Wiki
                     </Button>
                   )}
 
-                {sessionStorage.getItem("role") == "admin" && (
-                  <Button
+                  {/* Traducir a - Only for authorized roles */}
+                  {["admin", "editor", "redactor"].includes(
+                    sessionStorage.getItem("role"),
+                  ) && (
+                    <Button
+                    variant="contained"
+                    color="secondary"
+                    sx={{ mt: 2 }}
+                    onClick={(e) => {
+                      setAnchorEl(e.currentTarget);
+                      setPendingLanguage("translate");
+                    }}
+                    >
+                    Traducir
+                    </Button>
+                  )}
+
+                  {sessionStorage.getItem("role") == "admin" && (
+                    <Button
                     variant="contained"
                     color="error"
                     sx={{ mt: 2, ml: 2 }}
                     onClick={() => setIsModalOpen(true)}
-                  >
+                    >
                     Borrar Wiki
-                  </Button>
+                    </Button>
+                  )}
+                  </Box>
+                </Box>
                 )}
 
+                {/* Menu - Available for all users */}
                 <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleDropdownClose}
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleDropdownClose}
                 >
-                  {availableLanguages.map((lang) => {
-                    // For language change, only show available translations
-                    if (!pendingLanguage) {
-                      if (
-                        wiki.translatedFields?.[lang.code] ||
-                        wiki.sourceLang === lang.code
-                      ) {
-                        return (
-                          <MenuItem
-                            key={lang.code}
-                            onClick={() => {
-                              setSelectedOption(lang.code);
-                              handleDropdownClose();
-                            }}
-                          >
-                            {lang.name}
-                          </MenuItem>
-                        );
-                      }
-                      return null;
-                    } // For translation, show all languages except source
-                    else if (wiki.sourceLang !== lang.code) {
-                      return (
-                        <MenuItem
-                          key={lang.code}
-                          onClick={() => handleOptionSelect(lang.code)}
-                        >
-                          {lang.name} {wiki.translatedFields?.[lang.code]
-                            ? "(Actualizar)"
-                            : ""}
-                        </MenuItem>
-                      );
-                    }
-                    return null;
-                  })}
+                {availableLanguages.map((lang) => {
+                  // For language change, only show available translations
+                  if (!pendingLanguage) {
+                  if (
+                    wiki.translatedFields?.[lang.code] ||
+                    wiki.sourceLang === lang.code
+                  ) {
+                    return (
+                    <MenuItem
+                      key={lang.code}
+                      onClick={() => {
+                      setSelectedOption(lang.code);
+                      handleDropdownClose();
+                      }}
+                    >
+                      {lang.name}
+                    </MenuItem>
+                    );
+                  }
+                  return null;
+                  } // For translation, show all languages except source
+                  else if (wiki.sourceLang !== lang.code) {
+                  return (
+                    <MenuItem
+                    key={lang.code}
+                    onClick={() => handleOptionSelect(lang.code)}
+                    >
+                    {lang.name} {wiki.translatedFields?.[lang.code]
+                      ? "(Actualizar)"
+                      : ""}
+                    </MenuItem>
+                  );
+                  }
+                  return null;
+                })}
                 </Menu>
-              </Box>
-            </Box>
-          )}
 
-          {/* Confirmation Modal */}
+                {/* Confirmation Modal */}
           <ConfirmationModal
             show={isModalOpen}
             handleClose={() => setIsModalOpen(false)}
