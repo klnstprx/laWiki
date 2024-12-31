@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import {
   Card,
   CardActionArea,
-  CardMedia,
   CardContent,
+  CardMedia,
   Typography,
 } from "@mui/material";
 import { Link } from "react-router-dom";
@@ -42,9 +42,19 @@ const WikiCard = ({ wiki }) => {
   if (mediaError) {
     return <Typography color="error">{mediaError}</Typography>;
   }
-  const defaultImageUrl = "https://res.cloudinary.com/dxj6khc6b/image/upload/v1733154871/abstract_background.png";
+  const defaultImageUrl =
+    "https://res.cloudinary.com/dxj6khc6b/image/upload/v1733154871/abstract_background.png";
   return (
-    <Card sx={{ width: "100%" }}>
+    <Card
+      sx={{
+        width: "100%",
+        mb: 2,
+        "&:hover": {
+          boxShadow: 6,
+        },
+        transition: "box-shadow 0.3s",
+      }}
+    >
       <CardActionArea component={Link} to={`/wiki/${wiki.id}`}>
         <CardMedia
           component="img"
@@ -75,3 +85,4 @@ WikiCard.propTypes = {
 };
 
 export default WikiCard;
+
