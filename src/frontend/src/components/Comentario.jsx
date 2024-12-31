@@ -38,7 +38,16 @@ const Comentario = ({ id, content, rating, created_at, author, onDelete }) => {
   }, [author]);
 
   return (
-    <Card sx={{ width: "100%" }}>
+    <Card
+      sx={{
+        width: "100%",
+        mb: 2,
+        "&:hover": {
+          boxShadow: 6,
+        },
+        transition: "box-shadow 0.3s",
+      }}
+    >
       <CardContent>
         <Stack direction="row" spacing={2}>
           <Avatar
