@@ -20,22 +20,6 @@ type key int
 
 const requestIDKey key = 0
 
-// Esto que yo sepa no se usa
-func RoleMiddleware(requiredRoles ...string) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			role := r.Context().Value("role").(string)
-			for _, requiredRole := range requiredRoles {
-				if role == requiredRole {
-					next.ServeHTTP(w, r)
-					return
-				}
-			}
-			http.Error(w, "Forbidden: insufficient privileges", http.StatusForbidden)
-		})
-	}
-}
-
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Skip authentication for auth routes and health check
@@ -45,28 +29,17 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 
-		// Si es una petición interna, omitir la autenticación
-		if r.Header.Get("X-Internal-Request") == "true" {
-			next.ServeHTTP(w, r)
-			return
-		}
-
 		// Si es una solicitud OPTIONS, respondemos inmediatamente
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
-		// haz que el servidor muestre por pantalla el path de la solicitud
-		fmt.Println(r.URL.Path)
+		config.App.Logger.Debug().Msgf("Authenticating request to: %s", r.URL.Path)
 
 		// Asi para que a las solicitudes get(y las que son a auth) no se les pida autenticacion
 		if strings.Contains(r.URL.Path, "/api/auth") || r.URL.Path == "/health" || r.Method == http.MethodGet {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		if strings.Contains(r.URL.Path, "translate") {
+			config.App.Logger.Debug().Msg("Request to auth, health or a GET request. Passing without authentication.")
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -75,14 +48,14 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		cookie, err := r.Cookie("jwt_token")
 		if err != nil {
 			http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
-			fmt.Errorf("Missing token")
+			config.App.Logger.Error().Err(err).Msg("Missing jwt_token cookie.")
 			return
 		}
 
 		cookieRole, err := r.Cookie("role")
 		if err != nil {
 			http.Error(w, "Unauthorized: missing role", http.StatusUnauthorized)
-			fmt.Errorf("Missing role")
+			config.App.Logger.Error().Err(err).Msg("Missing role cookie.")
 			return
 		}
 
