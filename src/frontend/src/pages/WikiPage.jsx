@@ -44,7 +44,7 @@ function WikiPage() {
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const isLoggedIn = !!sessionStorage.getItem("user"); // Verifica si el usuario está logueado
+  const isLoggedIn = !!sessionStorage.getItem("appUser"); // Verifica si el usuario está logueado
 
   const { selectedOption, setSelectedOption } = useLanguage();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -200,8 +200,8 @@ function WikiPage() {
                       <EntradaCard
                         id={entrada.id}
                         title={entrada.translatedFields &&
-                            entrada.translatedFields[selectedOption] &&
-                            entrada.translatedFields[selectedOption].title
+                          entrada.translatedFields[selectedOption] &&
+                          entrada.translatedFields[selectedOption].title
                           ? entrada.translatedFields[selectedOption].title
                           : entrada.title}
                         author={entrada.author}
@@ -264,18 +264,18 @@ function WikiPage() {
                 {["admin", "editor", "redactor"].includes(
                   sessionStorage.getItem("role"),
                 ) && (
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    sx={{ mt: 2 }}
-                    onClick={(e) => {
-                      setAnchorEl(e.currentTarget);
-                      setPendingLanguage("translate"); // Indicate this is for translation
-                    }}
-                  >
-                    Traducir
-                  </Button>
-                )}
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      sx={{ mt: 2 }}
+                      onClick={(e) => {
+                        setAnchorEl(e.currentTarget);
+                        setPendingLanguage("translate"); // Indicate this is for translation
+                      }}
+                    >
+                      Traducir
+                    </Button>
+                  )}
 
                 {sessionStorage.getItem("role") == "admin" && (
                   <Button

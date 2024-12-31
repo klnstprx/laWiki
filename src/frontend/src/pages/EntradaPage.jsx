@@ -52,7 +52,7 @@ function EntradaPage() {
   const formRef = useRef(null);
 
   const [actualVersionId, setActualVersionId] = useState(versionId || null);
-  const isLoggedIn = !!sessionStorage.getItem("user"); // Verifica si el usuario está logueado
+  const isLoggedIn = !!sessionStorage.getItem("appUser"); // Verifica si el usuario está logueado
 
   const geoCacheRef = useRef(
     JSON.parse(sessionStorage.getItem("geoCache")) || {},
@@ -73,11 +73,10 @@ function EntradaPage() {
     }
 
     // Si no está en el cache, realiza la solicitud a la API
-    const url = `https://nominatim.openstreetmap.org/search?q=${
-      encodeURIComponent(
-        address,
-      )
-    }&format=json&addressdetails=1&limit=1`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+      address,
+    )
+      }&format=json&addressdetails=1&limit=1`;
 
     try {
       const response = await fetch(url);
@@ -434,18 +433,18 @@ function EntradaPage() {
               {["admin", "editor", "redactor"].includes(
                 sessionStorage.getItem("role"),
               ) && (
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  sx={{ mt: 2 }}
-                  onClick={(e) => {
-                    setAnchorEl(e.currentTarget);
-                    setPendingLanguage("translate");
-                  }}
-                >
-                  Traducir
-                </Button>
-              )}
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    sx={{ mt: 2 }}
+                    onClick={(e) => {
+                      setAnchorEl(e.currentTarget);
+                      setPendingLanguage("translate");
+                    }}
+                  >
+                    Traducir
+                  </Button>
+                )}
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
@@ -495,24 +494,24 @@ function EntradaPage() {
         {loadingVersion
           ? <Typography variant="body1">Cargando versión...</Typography>
           : versionError
-          ? <Alert severity="error">{versionError}</Alert>
-          : !version
-          ? (
-            <Alert severity="info">
-              No se ha encontrado niguna version asignada a esta entrada.
-            </Alert>
-          )
-          : (
-            <Version
-              content={getTranslatedFieldVersion("content")}
-              editor={version.editor}
-              created_at={version.created_at}
-              entry_id={version.entry_id}
-              address={version.address}
-              coordinates={coordinates}
-              media_ids={version.media_ids}
-            />
-          )}
+            ? <Alert severity="error">{versionError}</Alert>
+            : !version
+              ? (
+                <Alert severity="info">
+                  No se ha encontrado niguna version asignada a esta entrada.
+                </Alert>
+              )
+              : (
+                <Version
+                  content={getTranslatedFieldVersion("content")}
+                  editor={version.editor}
+                  created_at={version.created_at}
+                  entry_id={version.entry_id}
+                  address={version.address}
+                  coordinates={coordinates}
+                  media_ids={version.media_ids}
+                />
+              )}
       </Paper>
 
       {entryError && <Alert severity="error">{entryError}</Alert>}

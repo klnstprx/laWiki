@@ -38,7 +38,7 @@ function HomePage() {
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const selectedWikis = wikis.slice(startIndex, startIndex + itemsPerPage);
-  const isLoggedIn = !!sessionStorage.getItem("user"); // Verifica si el usuario está logueado
+  const isLoggedIn = !!sessionStorage.getItem("appUser"); // Verifica si el usuario está logueado
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
