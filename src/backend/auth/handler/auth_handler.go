@@ -108,6 +108,15 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	// Check if a user with the same email already exists
+	var existingUser model.User
+	err := database.UsuarioCollection.FindOne(ctx, bson.M{"email": usuario.Email}).Decode(&existingUser)
+	if err == nil {
+		// User already exists
+		http.Error(w, "User already exists", http.StatusConflict)
+		return
+	}
+
 	result, err := database.UsuarioCollection.InsertOne(ctx, usuario)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
@@ -331,6 +340,33 @@ func AddUserNotification(w http.ResponseWriter, r *http.Request) {
 	if result.MatchedCount == 0 {
 		config.App.Logger.Warn().Str("id", id).Msg("User not found for update")
 		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+}
+
+func GetUserByEmail(w http.ResponseWriter, r *http.Request) {
+	email := r.URL.Query().Get("email")
+	if email == "" {
+		http.Error(w, "Missing user email", http.StatusBadRequest)
+		return
+	}
+
+	var user model.User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := database.UsuarioCollection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("User not found")
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(user); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 }
