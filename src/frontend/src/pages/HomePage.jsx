@@ -38,7 +38,19 @@ function HomePage() {
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const selectedWikis = wikis.slice(startIndex, startIndex + itemsPerPage);
-  const isLoggedIn = !!sessionStorage.getItem("user"); // Verifica si el usuario está logueado
+  // Retrieve the JSON string for 'appUser' from sessionStorage
+  const appUserJson = sessionStorage.getItem("appUser");
+
+  // Check if 'appUser' exists in sessionStorage
+  const isLoggedIn = !!appUserJson;
+
+  let role = null;
+
+  if (isLoggedIn) {
+    const appUser = JSON.parse(appUserJson);
+
+    role = appUser.role;
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -50,7 +62,7 @@ function HomePage() {
         <Typography variant="h2" gutterBottom>
           Wikis
         </Typography>
-        {isLoggedIn && (sessionStorage.getItem("role") != "redactor") && (
+        {isLoggedIn && (role != "redactor") && (
           <Button
             variant="contained"
             color="primary"
@@ -74,7 +86,7 @@ function HomePage() {
                 sx={{
                   display: "flex",
                   justifyContent: "center",
-                  alignItems: "center",
+                  alignItems: "top",
                 }}
               >
                 {selectedWikis.map((wiki) => (

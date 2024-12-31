@@ -31,7 +31,7 @@ function WikiPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  const { id } = useParams();
+  const { wikiId } = useParams();
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
@@ -44,14 +44,26 @@ function WikiPage() {
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const isLoggedIn = !!sessionStorage.getItem("user"); // Verifica si el usuario está logueado
+  // Retrieve the JSON string for 'appUser' from sessionStorage
+  const appUserJson = sessionStorage.getItem("appUser");
+
+  // Check if 'appUser' exists in sessionStorage
+  const isLoggedIn = !!appUserJson;
+
+  let role = null;
+
+  if (isLoggedIn) {
+    const appUser = JSON.parse(appUserJson);
+
+    role = appUser.role;
+  }
 
   const { selectedOption, setSelectedOption } = useLanguage();
   const [anchorEl, setAnchorEl] = useState(null);
   const [pendingLanguage, setPendingLanguage] = useState(null);
 
   useEffect(() => {
-    getWiki(id)
+    getWiki(wikiId)
       .then((data) => {
         if (data && Object.keys(data).length > 0) {
           setWiki(data);
@@ -60,10 +72,10 @@ function WikiPage() {
         }
       })
       .catch((err) => setError(err.message));
-  }, [id]);
+  }, [wikiId]);
 
   useEffect(() => {
-    searchEntries({ wikiID: id })
+    searchEntries({ wikiID: `${wikiId}` })
       .then((data) => {
         if (data && Array.isArray(data)) {
           setEntradas(data);
@@ -72,7 +84,7 @@ function WikiPage() {
         }
       })
       .catch((err) => setError(err.message));
-  }, [id]);
+  }, [wikiId]);
 
   const handleDeleteEntry = async (entryID) => {
     try {
@@ -89,16 +101,13 @@ function WikiPage() {
 
   const handleDeleteWiki = async () => {
     try {
-      await deleteWiki(id);
+      await deleteWiki(wikiId);
       showToast("Wiki eliminada correctamente", "success");
       navigate("/");
     } catch (error) {
       console.error("Error al eliminar la wiki:", error);
       showToast("Error al eliminar la wiki", "error");
     }
-  };
-  const handleDropdownClick = (event) => {
-    setAnchorEl(event.currentTarget);
   };
 
   const handleDropdownClose = () => {
@@ -114,17 +123,17 @@ function WikiPage() {
   const handleTranslateWiki = async () => {
     if (wiki.sourceLang !== pendingLanguage) {
       try {
-        await translateWiki(id, pendingLanguage);
+        await translateWiki(wikiId, pendingLanguage);
         showToast(
           `Wiki traducida a ${pendingLanguage} correctamente`,
           "success",
         );
         // Fetch the updated wiki data to reflect the translation
-        const updatedWiki = await getWiki(id);
+        const updatedWiki = await getWiki(wikiId);
         setWiki(updatedWiki);
         setSelectedOption(pendingLanguage);
         // Fetch the updated entries to reflect the translation
-        const updatedEntries = await searchEntries({ wikiID: id });
+        const updatedEntries = await searchEntries({ wikiID: wikiId });
         setEntradas(updatedEntries);
       } catch (error) {
         console.error("Error al traducir la wiki:", error);
@@ -224,12 +233,25 @@ function WikiPage() {
             />
           </Paper>
 
-          {/* Buttons */}
+          {/* Language Change Button - Available for all users */}
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ mt: 2, mb: 2 }}
+            onClick={(e) => {
+              setAnchorEl(e.currentTarget);
+              setPendingLanguage(null);
+            }}
+          >
+            Cambiar Idioma: {selectedOption || "Seleccionar"}
+          </Button>
+
+          {/* Buttons requiring login */}
           {isLoggedIn && (
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Button
                 component={Link}
-                to={`/crear-entrada/${id}`}
+                to={`/entrada/form/${wikiId}`}
                 variant="contained"
                 color="primary"
                 sx={{ mt: 2 }}
@@ -238,54 +260,89 @@ function WikiPage() {
               </Button>
 
               <Box>
-                {sessionStorage.getItem("role") != "redactor" &&
-                  (
-                    <Button
-                      component={Link}
-                      to={`/wiki/form/${id}`}
-                      variant="outlined"
-                      color="primary"
-                      sx={{ mt: 2, mr: 2 }}
-                    >
-                      Editar Wiki
-                    </Button>
-                  )}
-                {sessionStorage.getItem("role") == "admin" &&
-                  (
+                {role != "redactor" && (
+                  <Button
+                    component={Link}
+                    to={`/wiki/form/${wikiId}`}
+                    variant="outlined"
+                    color="primary"
+                    sx={{ mt: 2, mr: 2 }}
+                  >
+                    Editar Wiki
+                  </Button>
+                )}
+
+                {["admin", "editor", "redactor"].includes(
+                  role,
+                ) && (
                     <Button
                       variant="contained"
-                      color="error"
+                      color="secondary"
                       sx={{ mt: 2 }}
-                      onClick={() => setIsModalOpen(true)}
+                      onClick={(e) => {
+                        setAnchorEl(e.currentTarget);
+                        setPendingLanguage("translate");
+                      }}
                     >
-                      Borrar Wiki
+                      Traducir
                     </Button>
                   )}
-                <Button
-                  variant="contained"
-                  color="primary"
-                  sx={{ mt: 2, ml: 2 }}
-                  onClick={handleDropdownClick}
-                >
-                  Cambiar Idioma: {selectedOption || "Seleccionar"}
-                </Button>
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleDropdownClose}
-                >
-                  {availableLanguages.map((lang) => (
-                    <MenuItem
-                      key={lang.code}
-                      onClick={() => handleOptionSelect(lang.code)}
-                    >
-                      {lang.name}
-                    </MenuItem>
-                  ))}
-                </Menu>
+
+                {role == "admin" && (
+                  <Button
+                    variant="contained"
+                    color="error"
+                    sx={{ mt: 2, ml: 2 }}
+                    onClick={() => setIsModalOpen(true)}
+                  >
+                    Borrar Wiki
+                  </Button>
+                )}
               </Box>
             </Box>
           )}
+
+          {/* Menu - Available for all users */}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleDropdownClose}
+          >
+            {availableLanguages.map((lang) => {
+              // For language change, only show available translations
+              if (!pendingLanguage) {
+                if (
+                  wiki.translatedFields?.[lang.code] ||
+                  wiki.sourceLang === lang.code
+                ) {
+                  return (
+                    <MenuItem
+                      key={lang.code}
+                      onClick={() => {
+                        setSelectedOption(lang.code);
+                        handleDropdownClose();
+                      }}
+                    >
+                      {lang.name}
+                    </MenuItem>
+                  );
+                }
+                return null;
+              } // For translation, show all languages except source
+              else if (wiki.sourceLang !== lang.code) {
+                return (
+                  <MenuItem
+                    key={lang.code}
+                    onClick={() => handleOptionSelect(lang.code)}
+                  >
+                    {lang.name}{" "}
+                    {wiki.translatedFields?.[lang.code] ? "(Actualizar)" : ""}
+                  </MenuItem>
+                );
+              }
+              return null;
+            })}
+          </Menu>
 
           {/* Confirmation Modal */}
           <ConfirmationModal

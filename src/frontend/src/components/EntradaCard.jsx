@@ -4,14 +4,14 @@ import {
   Card,
   CardActionArea,
   CardContent,
-  Typography,
   IconButton,
+  Typography,
 } from "@mui/material";
-import Grid from "@mui/joy/Grid";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ConfirmationModal from "../components/ConfirmationModal.jsx"; // add import
-import { useState, useEffect } from "react"; // add import
-import { getUser} from "../api/AuthApi"; // add import
+import Grid from "@mui/joy/Grid";
+import ConfirmationModal from "../components/ConfirmationModal.jsx";
+import { useEffect, useState } from "react";
+import { getUser } from "../api/AuthApi";
 
 const EntradaCard = ({
   id,
@@ -27,9 +27,21 @@ const EntradaCard = ({
     }
   };
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // add state
-  const [usuario, setUsuario] = useState({}); // add state
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [usuario, setUsuario] = useState({});
+  // Retrieve the JSON string for 'appUser' from sessionStorage
+  const appUserJson = sessionStorage.getItem("appUser");
+
+  // Check if 'appUser' exists in sessionStorage
+  const isLoggedIn = !!appUserJson;
+
+  let role = null;
+
+  if (isLoggedIn) {
+    const appUser = JSON.parse(appUserJson);
+
+    role = appUser.role;
+  }
 
   //cargar usuario de la base de datos
   useEffect(() => {
@@ -38,7 +50,7 @@ const EntradaCard = ({
       setUsuario(user);
     };
     fetchUser();
-  } , [author]);
+  }, [author]);
 
   const handleDelete = () => {
     setShowDeleteModal(true);
@@ -50,7 +62,15 @@ const EntradaCard = ({
   };
 
   return (
-    <Card sx={{ mb: 2 }}>
+    <Card
+      sx={{
+        mb: 2,
+        "&:hover": {
+          boxShadow: 6,
+        },
+        transition: "box-shadow 0.3s",
+      }}
+    >
       <CardActionArea
         component={Link}
         to={`/entrada/${id}`}
@@ -78,19 +98,27 @@ const EntradaCard = ({
           </Grid>
         </CardContent>
       </CardActionArea>
-      <Grid xs={6}>
-              <Typography variant="subtitle1" color="textSecondary">
-                Autor
-              </Typography>
-              <Typography variant="body2"><a href={`/perfil/${usuario.id}`}>{usuario.name}</a></Typography>
+
+      <CardContent sx={{ pt: 0 }}>
+        <Grid container alignItems="center" justifyContent="space-between">
+          <Grid xs={12} sm={6}>
+            <Typography variant="subtitle1" color="textSecondary">
+              Autor
+            </Typography>
+            <Typography variant="body2">
+              <Link to={`/perfil/${usuario.id}`}>{usuario.name}</Link>
+            </Typography>
+          </Grid>
+          {isLoggedIn && role !== "redactor" && (
+            <Grid>
+              <IconButton color="error" onClick={handleDelete}>
+                <DeleteIcon />
+              </IconButton>
             </Grid>
-      {isLoggedIn && (sessionStorage.getItem("role") != "redactor") &&(      
-      <Grid>
-        <IconButton color="error" onClick={handleDelete}>
-          <DeleteIcon />
-        </IconButton>
-      </Grid>
-      )}
+          )}
+        </Grid>
+      </CardContent>
+
       <ConfirmationModal
         show={showDeleteModal}
         handleClose={() => setShowDeleteModal(false)}
