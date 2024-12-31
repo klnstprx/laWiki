@@ -1,6 +1,5 @@
 import apiRequest from "./Api.js";
 
-
 export async function getAllUsers() {
   return apiRequest("/auth");
 }
@@ -16,6 +15,10 @@ export async function getUser(id) {
   return apiRequest(`/auth/user?id=${id}`);
 }
 
+export async function getUserByEmail(email) {
+  return apiRequest(`/auth/user/email?email=${email}`);
+}
+
 export async function putUser(id, data) {
   return apiRequest(`/auth/user?id=${id}`, {
     method: "PUT",
@@ -28,3 +31,4 @@ export async function deleteUser(id) {
     method: "DELETE",
   });
 }
+

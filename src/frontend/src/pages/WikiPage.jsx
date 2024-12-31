@@ -31,7 +31,7 @@ function WikiPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  const { id } = useParams();
+  const { wikiId } = useParams();
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
@@ -51,7 +51,7 @@ function WikiPage() {
   const [pendingLanguage, setPendingLanguage] = useState(null);
 
   useEffect(() => {
-    getWiki(id)
+    getWiki(wikiId)
       .then((data) => {
         if (data && Object.keys(data).length > 0) {
           setWiki(data);
@@ -60,10 +60,10 @@ function WikiPage() {
         }
       })
       .catch((err) => setError(err.message));
-  }, [id]);
+  }, [wikiId]);
 
   useEffect(() => {
-    searchEntries({ wikiID: id })
+    searchEntries({ wikiId })
       .then((data) => {
         if (data && Array.isArray(data)) {
           setEntradas(data);
@@ -72,7 +72,7 @@ function WikiPage() {
         }
       })
       .catch((err) => setError(err.message));
-  }, [id]);
+  }, [wikiId]);
 
   const handleDeleteEntry = async (entryID) => {
     try {
@@ -89,7 +89,7 @@ function WikiPage() {
 
   const handleDeleteWiki = async () => {
     try {
-      await deleteWiki(id);
+      await deleteWiki(wikiId);
       showToast("Wiki eliminada correctamente", "success");
       navigate("/");
     } catch (error) {
@@ -114,17 +114,17 @@ function WikiPage() {
   const handleTranslateWiki = async () => {
     if (wiki.sourceLang !== pendingLanguage) {
       try {
-        await translateWiki(id, pendingLanguage);
+        await translateWiki(wikiId, pendingLanguage);
         showToast(
           `Wiki traducida a ${pendingLanguage} correctamente`,
           "success",
         );
         // Fetch the updated wiki data to reflect the translation
-        const updatedWiki = await getWiki(id);
+        const updatedWiki = await getWiki(wikiId);
         setWiki(updatedWiki);
         setSelectedOption(pendingLanguage);
         // Fetch the updated entries to reflect the translation
-        const updatedEntries = await searchEntries({ wikiID: id });
+        const updatedEntries = await searchEntries({ wikiID: wikiId });
         setEntradas(updatedEntries);
       } catch (error) {
         console.error("Error al traducir la wiki:", error);
@@ -203,8 +203,8 @@ function WikiPage() {
                       <EntradaCard
                         id={entrada.id}
                         title={entrada.translatedFields &&
-                          entrada.translatedFields[selectedOption] &&
-                          entrada.translatedFields[selectedOption].title
+                            entrada.translatedFields[selectedOption] &&
+                            entrada.translatedFields[selectedOption].title
                           ? entrada.translatedFields[selectedOption].title
                           : entrada.title}
                         author={entrada.author}
@@ -229,7 +229,7 @@ function WikiPage() {
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Button
                 component={Link}
-                to={`/crear-entrada/${id}`}
+                to={`/entrada/form/${wikiId}`}
                 variant="contained"
                 color="primary"
                 sx={{ mt: 2 }}
@@ -242,7 +242,7 @@ function WikiPage() {
                   (
                     <Button
                       component={Link}
-                      to={`/wiki/form/${id}`}
+                      to={`/wiki/form/${wikiId}`}
                       variant="outlined"
                       color="primary"
                       sx={{ mt: 2, mr: 2 }}

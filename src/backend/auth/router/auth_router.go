@@ -18,6 +18,7 @@ func NewRouter() http.Handler {
 			r.Get("/", handler.GetUserByID)
 			r.Put("/", handler.PutUser)
 			r.Delete("/", handler.DeleteUser)
+			r.Get("/email", handler.GetUserByEmail)
 		})
 
 		r.Route("/notifications", func(r chi.Router) {
