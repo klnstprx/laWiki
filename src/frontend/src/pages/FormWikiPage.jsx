@@ -41,7 +41,7 @@ function FormWikiPage() {
   const [upload, setUpload] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  const isLoggedIn = !!sessionStorage.getItem("appUser"); // Suponiendo que guardas el estado de inicio de sesión en sessionStorage
+  const isLoggedIn = !!sessionStorage.getItem("appUser");
 
   useEffect(() => {
     if (!isLoggedIn) {
