@@ -85,4 +85,3 @@ WikiCard.propTypes = {
 };
 
 export default WikiCard;
-
