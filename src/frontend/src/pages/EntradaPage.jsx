@@ -55,7 +55,7 @@ function EntradaPage() {
   const isLoggedIn = !!sessionStorage.getItem("user"); // Verifica si el usuario está logueado
 
   const geoCacheRef = useRef(
-    JSON.parse(sessionStorage.getItem("geoCache")) || {},
+    JSON.parse(sessionStorage.getItem("geoCache")) || {}
   ); // cache de geocoding
 
   const saveCacheToSessionStorage = () => {
@@ -67,17 +67,15 @@ function EntradaPage() {
     if (geoCacheRef.current[address]) {
       console.log(
         "Obteniendo coordenadas desde el cache en memoria:",
-        geoCacheRef.current[address],
+        geoCacheRef.current[address]
       );
       return geoCacheRef.current[address]; // Retorna las coordenadas almacenadas
     }
 
     // Si no está en el cache, realiza la solicitud a la API
-    const url = `https://nominatim.openstreetmap.org/search?q=${
-      encodeURIComponent(
-        address,
-      )
-    }&format=json&addressdetails=1&limit=1`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+      address
+    )}&format=json&addressdetails=1&limit=1`;
 
     try {
       const response = await fetch(url);
@@ -195,7 +193,7 @@ function EntradaPage() {
           if (versions && versions.length > 0) {
             // Sort the versions by createdAt descending to get the latest
             versions.sort(
-              (a, b) => new Date(b.created_at) - new Date(a.created_at),
+              (a, b) => new Date(b.created_at) - new Date(a.created_at)
             );
             const latestVersion = versions[0];
             setActualVersionId(latestVersion.id);
@@ -269,31 +267,36 @@ function EntradaPage() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [pendingLanguage, setPendingLanguage] = useState(null);
 
-  const handleDropdownClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
   const handleDropdownClose = () => {
     setAnchorEl(null);
   };
 
   const handleOptionSelect = (option) => {
     setPendingLanguage(option);
+    handleDropdownClose();
     setIsModalOpen(true);
-    setAnchorEl(null);
   };
 
   const handleTranslateEntry = async () => {
     if (entry.sourceLang !== pendingLanguage) {
       try {
         await translateEntry(entryId, pendingLanguage);
+<<<<<<< HEAD
         showToast(
           `Entrada traducida a ${pendingLanguage} correctamente`,
           "success",
         );
         // Fetch the updated entry data to reflect the translation
+=======
+        showToast(`Entrada traducida a ${pendingLanguage} correctamente`, "success");
+
+        // Fetch both updated entry and version data
+>>>>>>> middleware-tweaks
         const updatedEntry = await getEntry(entryId);
+        const updatedVersion = await getVersion(actualVersionId);
+
         setEntry(updatedEntry);
+        setVersion(updatedVersion);
         setSelectedOption(pendingLanguage);
       } catch (error) {
         console.error("Error al traducir la entrada:", error);
@@ -330,8 +333,9 @@ function EntradaPage() {
     if (entry.sourceLang === selectedOption) {
       return version[field];
     } else {
-      return version.translatedFields?.[selectedOption]?.[field] ||
-        version[field];
+      return (
+        version.translatedFields?.[selectedOption]?.[field] || version[field]
+      );
     }
   };
 
@@ -342,134 +346,172 @@ function EntradaPage() {
           Inicio
         </Typography>
 
-        {wiki
-          ? (
-            <Typography
-              className="breadcrumb-link"
-              component={Link}
-              to={`/wiki/${wiki.id}`}
-            >
-              {getTranslatedFieldWiki("title")}
-            </Typography>
-          )
-          : (
-            <Typography className="breadcrumb-link">
-              Cargando wiki...
-            </Typography>
-          )}
-
-        {entry
-          ? (
-            <Typography className="breadcrumb-active">
-              {getTranslatedField("title")}
-            </Typography>
-          )
-          : (
-            <Typography className="breadcrumb-active">
-              Cargando entrada...
-            </Typography>
-          )}
-      </Breadcrumbs>
-
-      {/* Entry Title */}
-      {!entryError && entry && (
-        <Paper
-          elevation={3}
-          sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}
-        >
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
+        {wiki ? (
+          <Typography
+            className="breadcrumb-link"
+            component={Link}
+            to={`/wiki/${wiki.id}`}
           >
-            <Typography variant="subtitle2">
-              Autor: <a href={`/perfil/${usuario.id}`}>{usuario.name}</a>
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {new Date(entry.created_at).toLocaleDateString()}
-            </Typography>
-          </Stack>
+            {getTranslatedFieldWiki("title")}
+          </Typography>
+        ) : (
+          <Typography className="breadcrumb-link">Cargando wiki...</Typography>
+        )}
 
-          <Divider sx={{ my: 2 }} />
-
-          <Typography variant="h2" component="h1" style={{ padding: "16px" }}>
+        {entry ? (
+          <Typography className="breadcrumb-active">
             {getTranslatedField("title")}
           </Typography>
-          <Divider sx={{ my: 2 }} />
-          {isLoggedIn && (
+        ) : (
+          <Typography className="breadcrumb-active">
+            Cargando entrada...
+          </Typography>
+        )}
+      </Breadcrumbs >
+
+      {/* Entry Title */}
+      {
+        !entryError && entry && (
+          <Paper
+            elevation={3}
+            sx={{ p: 2, mb: 4, textAlign: "center", borderRadius: 1 }}
+          >
             <Stack
               direction="row"
-              spacing={2}
-              justifyContent="center"
+              justifyContent="space-between"
               alignItems="center"
             >
-              <Button
-                variant="contained"
-                component={Link}
-                to={`/versiones/${entry.id}/`}
-                startIcon={<HistoryIcon />}
-              >
-                Ver historial
-              </Button>
-              <Button
-                variant="contained"
-                component={Link}
-                to={`/entrada/form/${entry.id}/${actualVersionId || ""}`}
-                startIcon={<EditIcon />}
-              >
-                Editar contenido
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleDropdownClick}
-              >
-                Cambiar Idioma:{" "}
-                {availableLanguages.find((lang) => lang.code === selectedOption)
-                  ?.name || "Seleccionar"}
-              </Button>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleDropdownClose}
-              >
-                {availableLanguages.map((lang) => (
-                  <MenuItem
-                    key={lang.code}
-                    onClick={() => handleOptionSelect(lang.code)}
-                  >
-                    {lang.name}
-                  </MenuItem>
-                ))}
-              </Menu>
+              <Typography variant="subtitle2">
+                Autor: <a href={`/perfil/${usuario.id}`}>{usuario.name}</a>
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {new Date(entry.created_at).toLocaleDateString()}
+              </Typography>
             </Stack>
-          )}
-        </Paper>
-      )}
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="h2" component="h1" style={{ padding: "16px" }}>
+              {getTranslatedField("title")}
+            </Typography>
+            <Divider sx={{ my: 2 }} />
+            {isLoggedIn && (
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                alignItems="center"
+              >
+                <Button
+                  variant="contained"
+                  component={Link}
+                  to={`/versiones/${entry.id}/`}
+                  startIcon={<HistoryIcon />}
+                >
+                  Ver historial
+                </Button>
+                <Button
+                  variant="contained"
+                  component={Link}
+                  to={`/entrada/form/${entry.id}/${actualVersionId || ""}`}
+                  startIcon={<EditIcon />}
+                >
+                  Editar contenido
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2, mr: 2 }}
+                  onClick={(e) => {
+                    setAnchorEl(e.currentTarget);
+                    setPendingLanguage(null);
+                  }}
+                >
+                  Cambiar Idioma: {selectedOption || "Seleccionar"}
+                </Button>
+                {["admin", "editor", "redactor"].includes(
+                  sessionStorage.getItem("role")
+                ) && (
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      sx={{ mt: 2 }}
+                      onClick={(e) => {
+                        setAnchorEl(e.currentTarget);
+                        setPendingLanguage("translate");
+                      }}
+                    >
+                      Traducir
+                    </Button>
+                  )}
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleDropdownClose}
+                >
+                  {availableLanguages.map((lang) => {
+                    if (!pendingLanguage) {
+                      if (
+                        entry.translatedFields?.[lang.code] ||
+                        entry.sourceLang === lang.code
+                      ) {
+                        return (
+                          <MenuItem
+                            key={lang.code}
+                            onClick={() => {
+                              setSelectedOption(lang.code);
+                              handleDropdownClose();
+                            }}
+                          >
+                            {lang.name}
+                          </MenuItem>
+                        );
+                      }
+                      return null;
+                    } else if (entry.sourceLang !== lang.code) {
+                      return (
+                        <MenuItem
+                          key={lang.code}
+                          onClick={() => handleOptionSelect(lang.code)}
+                        >
+                          {lang.name}{" "}
+                          {entry.translatedFields?.[lang.code]
+                            ? "(Actualizar)"
+                            : ""}
+                        </MenuItem>
+                      );
+                    }
+                    return null;
+                  })}
+                </Menu >
+              </Stack >
+            )
+            }
+          </Paper >
+        )
+      }
 
       {/* Version Content */}
       <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-        {loadingVersion
-          ? <Typography variant="body1">Cargando versión...</Typography>
-          : versionError
-          ? <Alert severity="error">{versionError}</Alert>
-          : !version
-          ? (
-            <Alert severity="info">
-              No se ha encontrado niguna version asignada a esta entrada.
-            </Alert>
-          )
-          : (
-            <Version
-              content={getTranslatedFieldVersion("content")}
-              editor={version.editor}
-              created_at={version.created_at}
-              entry_id={version.entry_id}
-              address={version.address}
-              coordinates={coordinates}
-              media_ids={version.media_ids}
-            />
-          )}
+        {loadingVersion ? (
+          <Typography variant="body1">Cargando versión...</Typography>
+        ) : versionError ? (
+          <Alert severity="error">{versionError}</Alert>
+        ) : !version ? (
+          <Alert severity="info">
+            No se ha encontrado niguna version asignada a esta entrada.
+          </Alert>
+        ) : (
+          <Version
+            content={getTranslatedFieldVersion("content")}
+            editor={version.editor}
+            created_at={version.created_at}
+            entry_id={version.entry_id}
+            address={version.address}
+            coordinates={coordinates}
+            media_ids={version.media_ids}
+          />
+        )}
       </Paper>
 
       {entryError && <Alert severity="error">{entryError}</Alert>}
@@ -480,74 +522,74 @@ function EntradaPage() {
           Comentarios
         </Typography>
         {commentsError && <Alert severity="error">{commentsError}</Alert>}
-        {!commentsError && comments.length > 0
-          ? (
-            <Stack spacing={2} sx={{ mb: 2 }}>
-              {comments.map((comment) => (
-                <Comentario
-                  key={comment.id}
-                  id={comment.id}
-                  content={comment.content}
-                  rating={comment.rating}
-                  created_at={comment.created_at}
-                  author={comment.author}
-                  onDelete={(id) => handleDeleteComment(id)}
-                />
-              ))}
-            </Stack>
+        {!commentsError && comments.length > 0 ? (
+          <Stack spacing={2} sx={{ mb: 2 }}>
+            {comments.map((comment) => (
+              <Comentario
+                key={comment.id}
+                id={comment.id}
+                content={comment.content}
+                rating={comment.rating}
+                created_at={comment.created_at}
+                author={comment.author}
+                onDelete={(id) => handleDeleteComment(id)}
+              />
+            ))}
+          </Stack>
+        ) : (
+          !commentsError && (
+            <Alert severity="info">No se encontraron comentarios.</Alert>
           )
-          : (
-            !commentsError && (
-              <Alert severity="info">No se encontraron comentarios.</Alert>
-            )
-          )}
-      </Paper>
+        )}
+      </Paper >
 
       {/* Form to Add Comment */}
-      {isLoggedIn && (
-        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            Añadir comentario
-          </Typography>
-          <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
-            <Grid container spacing={2}>
-              <Grid xs={12}>
-                <TextField
-                  id="content"
-                  name="content"
-                  label="Contenido"
-                  multiline
-                  required
-                  fullWidth
-                  rows={4}
-                  slotProps={{
-                    inputLabel: {
-                      shrink: true,
-                    },
-                  }}
-                />
+      {
+        isLoggedIn && (
+          <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
+            <Typography variant="h5" gutterBottom>
+              Añadir comentario
+            </Typography>
+            <form id="miFormulario" ref={formRef} onSubmit={subirComentario}>
+              <Grid container spacing={2}>
+                <Grid xs={12}>
+                  <TextField
+                    id="content"
+                    name="content"
+                    label="Contenido"
+                    multiline
+                    required
+                    fullWidth
+                    rows={4}
+                    slotProps={{
+                      inputLabel: {
+                        shrink: true,
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid xs={12} sm={6} md={4}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Valoración:
+                  </Typography>
+                  <Rating name="rating" id="rating" size="large" />
+                </Grid>
+                <Grid xs={12} md={4}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    sx={{ height: "100%" }}
+                  >
+                    Enviar
+                  </Button>
+                </Grid>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Valoración:
-                </Typography>
-                <Rating name="rating" id="rating" size="large" />
-              </Grid>
-              <Grid xs={12} md={4}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  sx={{ height: "100%" }}
-                >
-                  Enviar
-                </Button>
-              </Grid>
-            </Grid>
-          </form>
-        </Paper>
-      )}
+            </form>
+          </Paper>
+        )
+      }
 
       <ConfirmationModal
         message="¿Estás seguro de que quieres crear este comentario?"
@@ -569,7 +611,7 @@ function EntradaPage() {
         handleConfirm={handleTranslateEntry}
         message={`¿Estás seguro de que quieres traducir esta entrada a ${pendingLanguage}?`}
       />
-    </Container>
+    </Container >
   );
 }
 
