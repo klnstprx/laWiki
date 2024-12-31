@@ -72,22 +72,20 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		// Get the JWT token from the cookie
-		cookie, err := r.Cookie("jwt_token")
-		if err != nil {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
 			http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
-			fmt.Errorf("Missing token")
 			return
 		}
 
-		cookieRole, err := r.Cookie("role")
-		if err != nil {
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		roleHeader := r.Header.Get("Role")
+		if roleHeader == "" {
 			http.Error(w, "Unauthorized: missing role", http.StatusUnauthorized)
-			fmt.Errorf("Missing role")
 			return
 		}
 
-		tokenString := cookie.Value
-		role := cookieRole.Value
+		role := roleHeader
 		fmt.Println(role)
 
 		// Parse and validate the token using RS256 and public key
