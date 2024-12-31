@@ -1,10 +1,10 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { Card, CardContent, Typography, IconButton } from "@mui/material";
+import { Card, CardContent, IconButton, Typography } from "@mui/material";
+import Grid from "@mui/joy/Grid";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
 import { useState } from "react";
-import Grid from "@mui/joy/Grid";
 
 const VersionCard = ({
   entradaId,
@@ -14,7 +14,7 @@ const VersionCard = ({
   onDelete,
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const isLoggedIn = !!sessionStorage.getItem('user'); // Verifica si el usuario está logueado
+  const isLoggedIn = !!sessionStorage.getItem("appUser"); // Verifica si el usuario está logueado
 
   const handleDelete = () => {
     setShowDeleteModal(true);
@@ -26,10 +26,18 @@ const VersionCard = ({
   };
 
   return (
-    <Card sx={{ mb: 2 }}>
+    <Card
+      sx={{
+        mb: 2,
+        "&:hover": {
+          boxShadow: 6,
+        },
+        transition: "box-shadow 0.3s",
+      }}
+    >
       <CardContent>
         <Grid container spacing={2} alignItems="center">
-          <Grid xs={12} sm={5}>
+          <Grid item xs={12} sm={5}>
             <Typography variant="body1">
               <strong>Fecha:</strong>{" "}
               {new Date(created_at).toLocaleString("es-ES", {
@@ -41,23 +49,23 @@ const VersionCard = ({
               })}
             </Typography>
           </Grid>
-          <Grid xs={12} sm={5}>
+          <Grid item xs={12} sm={5}>
             <Typography variant="body1">
               <strong>Editor:</strong> {editor}
             </Typography>
           </Grid>
-          <Grid xs={12} sm={2}>
+          <Grid item xs={12} sm={2}>
             <Typography variant="body1">
               <Link to={`/entrada/${entradaId}/${versionId}`}>Ver</Link>
             </Typography>
           </Grid>
-          <Grid>
-          {isLoggedIn && (sessionStorage.getItem("role") != "redactor") &&(
-            <IconButton color="error" onClick={handleDelete}>
-              <DeleteIcon />
-            </IconButton>
+          {isLoggedIn && sessionStorage.getItem("role") !== "redactor" && (
+            <Grid item xs="auto">
+              <IconButton color="error" onClick={handleDelete}>
+                <DeleteIcon />
+              </IconButton>
+            </Grid>
           )}
-          </Grid>
         </Grid>
       </CardContent>
       <ConfirmationModal

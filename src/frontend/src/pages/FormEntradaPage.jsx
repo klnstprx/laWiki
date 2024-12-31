@@ -47,7 +47,7 @@ function FormEntradaPage() {
   const [versionError, setVersionError] = useState(null);
 
   const formRef = useRef(null);
-  const isLoggedIn = !!sessionStorage.getItem("user");
+  const isLoggedIn = !!sessionStorage.getItem("appUser");
   const userId = sessionStorage.getItem("id");
 
   // Determine if we're creating a new entry

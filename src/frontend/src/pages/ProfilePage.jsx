@@ -26,9 +26,9 @@ const ProfilePage = () => {
   const [mediaRating, setMediaRating] = useState(0);
   const [showRatingForm, setShowRatingForm] = useState(true); // Estado para controlar la visibilidad del formulario
   const [selectedRole, setSelectedRole] = useState(""); // Estado para manejar el rol seleccionado
-  const isLoggedIn = !!sessionStorage.getItem("user"); // Verifica si el usuario está logueado
+  const isLoggedIn = !!sessionStorage.getItem("appUser"); // Verifica si el usuario está logueado
   // Obtener el email del usuario logueado desde sessionStorage
-  const loggedInUser = JSON.parse(sessionStorage.getItem("user"));
+  const loggedInUser = JSON.parse(sessionStorage.getItem("appUser"));
   const loggedInUserEmail = loggedInUser ? loggedInUser.email : null;
 
   const handleRatingChange = (event, newValue) => {
@@ -261,34 +261,33 @@ const ProfilePage = () => {
         {/* Formulario para cambiar rol */}
         {isLoggedIn && (sessionStorage.getItem("role") === "admin") &&
           user.email != loggedInUserEmail && (
-          <Box
-            component="form"
-            onSubmit={handleSubmitRoleChange}
-            sx={{ mt: 4 }}
-          >
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel id="role-select-label">Rol</InputLabel>
-              <Select
-                labelId="role-select-label"
-                id="role-select"
-                value={selectedRole}
-                label="Rol"
-                onChange={handleRoleChange}
-              >
-                <MenuItem value="admin">admin</MenuItem>
-                <MenuItem value="editor">editor</MenuItem>
-                <MenuItem value="redactor">redactor</MenuItem>
-              </Select>
-            </FormControl>
-            <Button type="submit" variant="contained" fullWidth>
-              Cambiar rol
-            </Button>
-          </Box>
-        )}
+            <Box
+              component="form"
+              onSubmit={handleSubmitRoleChange}
+              sx={{ mt: 4 }}
+            >
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel id="role-select-label">Rol</InputLabel>
+                <Select
+                  labelId="role-select-label"
+                  id="role-select"
+                  value={selectedRole}
+                  label="Rol"
+                  onChange={handleRoleChange}
+                >
+                  <MenuItem value="admin">admin</MenuItem>
+                  <MenuItem value="editor">editor</MenuItem>
+                  <MenuItem value="redactor">redactor</MenuItem>
+                </Select>
+              </FormControl>
+              <Button type="submit" variant="contained" fullWidth>
+                Cambiar rol
+              </Button>
+            </Box>
+          )}
       </Paper>
     </Box>
   );
 };
 
 export default ProfilePage;
-
