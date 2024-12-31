@@ -74,7 +74,7 @@ function HomePage() {
                 sx={{
                   display: "flex",
                   justifyContent: "center",
-                  alignItems: "center",
+                  alignItems: "top",
                 }}
               >
                 {selectedWikis.map((wiki) => (

@@ -125,7 +125,7 @@ function VersionPage() {
                   <VersionCard
                     entradaId={entryId}
                     versionId={version.id}
-                    editor={version.editor}
+                    editorId={version.editor}
                     created_at={version.created_at}
                     onDelete={handleDeleteVersion}
                   />

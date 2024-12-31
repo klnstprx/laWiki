@@ -4,12 +4,13 @@ import { Card, CardContent, IconButton, Typography } from "@mui/material";
 import Grid from "@mui/joy/Grid";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getUser } from "../api/AuthApi";
 
 const VersionCard = ({
   entradaId,
   versionId,
-  editor,
+  editorId,
   created_at,
   onDelete,
 }) => {
@@ -24,6 +25,23 @@ const VersionCard = ({
     onDelete(versionId);
     setShowDeleteModal(false);
   };
+
+  const [editor, setEditor] = useState({}); // add state
+
+  useEffect(() => {
+    const fetchUsuario = async () => {
+      try {
+        const userData = await getUser(editorId);
+        setEditor(userData);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+
+    if (editorId) {
+      fetchUsuario();
+    }
+  }, [editorId]);
 
   return (
     <Card
@@ -51,7 +69,7 @@ const VersionCard = ({
           </Grid>
           <Grid item xs={12} sm={5}>
             <Typography variant="body1">
-              <strong>Editor:</strong> {editor}
+              Editor: <a href={`/perfil/${editor.id}`}>{editor.name}</a>
             </Typography>
           </Grid>
           <Grid item xs={12} sm={2}>
@@ -81,7 +99,7 @@ const VersionCard = ({
 VersionCard.propTypes = {
   entradaId: PropTypes.string.isRequired,
   versionId: PropTypes.string.isRequired,
-  editor: PropTypes.string.isRequired,
+  editorId: PropTypes.string.isRequired,
   created_at: PropTypes.string.isRequired,
   onDelete: PropTypes.func.isRequired,
 };
