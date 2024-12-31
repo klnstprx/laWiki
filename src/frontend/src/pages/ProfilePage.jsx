@@ -26,10 +26,22 @@ const ProfilePage = () => {
   const [mediaRating, setMediaRating] = useState(0);
   const [showRatingForm, setShowRatingForm] = useState(true); // Estado para controlar la visibilidad del formulario
   const [selectedRole, setSelectedRole] = useState(""); // Estado para manejar el rol seleccionado
-  const isLoggedIn = !!sessionStorage.getItem("appUser"); // Verifica si el usuario está logueado
-  // Obtener el email del usuario logueado desde sessionStorage
-  const loggedInUser = JSON.parse(sessionStorage.getItem("appUser"));
-  const loggedInUserEmail = loggedInUser ? loggedInUser.email : null;
+
+  // Retrieve the JSON string for 'appUser' from sessionStorage
+  const appUserJson = sessionStorage.getItem("appUser");
+
+  // Check if 'appUser' exists in sessionStorage
+  const isLoggedIn = !!appUserJson;
+
+  let loggedInUserEmail = null;
+  let role = null;
+
+  if (isLoggedIn) {
+    const appUser = JSON.parse(appUserJson);
+
+    loggedInUserEmail = appUser ? appUser.email : null;
+    role = appUser.role;
+  }
 
   const handleRatingChange = (event, newValue) => {
     setNewRating(newValue);
@@ -259,7 +271,7 @@ const ProfilePage = () => {
         )}
 
         {/* Formulario para cambiar rol */}
-        {isLoggedIn && (sessionStorage.getItem("role") === "admin") &&
+        {isLoggedIn && (role === "admin") &&
           user.email != loggedInUserEmail && (
             <Box
               component="form"

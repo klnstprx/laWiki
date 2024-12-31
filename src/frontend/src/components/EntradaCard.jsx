@@ -29,7 +29,19 @@ const EntradaCard = ({
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [usuario, setUsuario] = useState({});
-  const isLoggedIn = !!sessionStorage.getItem("appUser");
+  // Retrieve the JSON string for 'appUser' from sessionStorage
+  const appUserJson = sessionStorage.getItem("appUser");
+
+  // Check if 'appUser' exists in sessionStorage
+  const isLoggedIn = !!appUserJson;
+
+  let role = null;
+
+  if (isLoggedIn) {
+    const appUser = JSON.parse(appUserJson);
+
+    role = appUser.role;
+  }
 
   //cargar usuario de la base de datos
   useEffect(() => {
@@ -97,7 +109,7 @@ const EntradaCard = ({
               <Link to={`/perfil/${usuario.id}`}>{usuario.name}</Link>
             </Typography>
           </Grid>
-          {isLoggedIn && sessionStorage.getItem("role") !== "redactor" && (
+          {isLoggedIn && role !== "redactor" && (
             <Grid>
               <IconButton color="error" onClick={handleDelete}>
                 <DeleteIcon />

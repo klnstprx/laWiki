@@ -21,10 +21,8 @@ export default async function apiRequest(endpoint, options = {}) {
   if (response.status === 401) {
     window.location.href = "/";
     //cerrar sesion ususario
-    sessionStorage.removeItem("user");
-    sessionStorage.removeItem("usuario");
-    sessionStorage.removeItem("id");
-    sessionStorage.removeItem("role");
+    sessionStorage.removeItem("appUser");
+    sessionStorage.removeItem("googleUser");
     //Elimina el token de las cookies
     document.cookie = `jwt_token=; path=/;`;
     document.cookie = `role=; path=/;`;

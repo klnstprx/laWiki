@@ -15,7 +15,19 @@ const VersionCard = ({
   onDelete,
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const isLoggedIn = !!sessionStorage.getItem("appUser"); // Verifica si el usuario está logueado
+  // Retrieve the JSON string for 'appUser' from sessionStorage
+  const appUserJson = sessionStorage.getItem("appUser");
+
+  // Check if 'appUser' exists in sessionStorage
+  const isLoggedIn = !!appUserJson;
+
+  let role = null;
+
+  if (isLoggedIn) {
+    const appUser = JSON.parse(appUserJson);
+
+    role = appUser.role;
+  }
 
   const handleDelete = () => {
     setShowDeleteModal(true);
@@ -77,7 +89,7 @@ const VersionCard = ({
               <Link to={`/entrada/${entradaId}/${versionId}`}>Ver</Link>
             </Typography>
           </Grid>
-          {isLoggedIn && sessionStorage.getItem("role") !== "redactor" && (
+          {isLoggedIn && role !== "redactor" && (
             <Grid item xs="auto">
               <IconButton color="error" onClick={handleDelete}>
                 <DeleteIcon />
