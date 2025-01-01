@@ -24,7 +24,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
 import { getVersion, postVersion } from "../api/VersionApi.js";
-import { getEntry, postEntry } from "../api/EntryApi.js";
+import { getEntry, postEntry, putEntry } from "../api/EntryApi.js";
 import { getWiki } from "../api/WikiApi.js";
 import { getMedia, postMedia } from "../api/MediaApi.js";
 import ConfirmationModal from "../components/ConfirmationModal.jsx";
@@ -91,7 +91,7 @@ function FormEntradaPage() {
           setVersionError("Se produjo un error al obtener la wiki asociada.")
         );
     }
-  }, [entry, wikiId]);
+  }, [entry.wiki_id, wikiId]);
 
   // Fetch the entry details if editing
   useEffect(() => {
@@ -131,18 +131,19 @@ function FormEntradaPage() {
   }, [versionId]);
 
   // Fetch existing images
-  const fetchExistingImages = async (mediaIds) => {
-    try {
-      const mediaPromises = mediaIds.map((id) => getMedia(id));
-      const mediaResults = await Promise.all(mediaPromises);
-      const imagesWithVisibility = mediaResults.map((image) => ({
-        ...image,
-        isVisible: true,
-      }));
-      setExistingImages(imagesWithVisibility);
-    } catch (error) {
-      console.error("Error fetching existing images:", error);
-    }
+  const fetchExistingImages = (mediaIds) => {
+    const mediaPromises = mediaIds.map((id) => getMedia(id));
+    return Promise.all(mediaPromises)
+      .then((mediaResults) => {
+        const imagesWithVisibility = mediaResults.map((image) => ({
+          ...image,
+          isVisible: true,
+        }));
+        setExistingImages(imagesWithVisibility);
+      })
+      .catch((error) => {
+        console.error("Error fetching existing images:", error);
+      });
   };
 
   // Handler for ReactQuill editor change
@@ -188,17 +189,22 @@ function FormEntradaPage() {
     const files = Array.from(event.target.files);
     setError(null);
 
+    const errors = [];
     const validFiles = files.filter((file) => {
       if (!ALLOWED_TYPES.includes(file.type)) {
-        setError(`Tipo de archivo no permitido: ${file.name}`);
+        errors.push(`Tipo de archivo no permitido: ${file.name}`);
         return false;
       }
       if (file.size > MAX_FILE_SIZE) {
-        setError(`Archivo demasiado grande: ${file.name}`);
+        errors.push(`Archivo demasiado grande: ${file.name}`);
         return false;
       }
       return true;
     });
+
+    if (errors.length > 0) {
+      setError(errors.join("\n"));
+    }
 
     if (validFiles.length === 0) {
       return;
@@ -260,9 +266,22 @@ function FormEntradaPage() {
     setOpenConfirmDialog(false);
 
     if (!validate()) {
+      setError("El formulario ya no es válido. Por favor, revise los campos.");
       return;
     }
 
+    if (!wiki || !wiki.id) {
+      setError(
+        "La wiki no está cargada. Por favor, inténtelo de nuevo más tarde.",
+      );
+      return;
+    }
+
+    if (!userId) {
+      setError("Usuario no autenticado. Por favor, inicie sesión nuevamente.");
+      navigate("/");
+      return;
+    }
     let newMediaIds = [];
 
     const entryData = {
@@ -273,18 +292,19 @@ function FormEntradaPage() {
 
     // Upload new images
     if (uploads.length > 0) {
-      for (const file of uploads) {
-        const formData = new FormData();
-        formData.append("image", file);
+      try {
+        const uploadPromises = uploads.map((file) => {
+          const formData = new FormData();
+          formData.append("image", file);
+          return postMedia(formData);
+        });
 
-        try {
-          const response = await postMedia(formData);
-          newMediaIds.push(response.id);
-        } catch (error) {
-          console.error(`Error uploading file ${file.name}:`, error);
-          setError(`Error uploading file ${file.name}`);
-          return;
-        }
+        const responses = await Promise.all(uploadPromises);
+        newMediaIds = responses.map((response) => response.id);
+      } catch (error) {
+        console.error("Error uploading files:", error);
+        setError("Error al subir las imágenes. Por favor, inténtelo de nuevo.");
+        return;
       }
     }
 
@@ -306,8 +326,7 @@ function FormEntradaPage() {
         versionData.entry_id = newEntry.id; // Set the new entry ID
       } else {
         versionData.entry_id = entryId;
-        // Update the entry if necessary
-        await postEntry({ ...entryData, id: entryId });
+        await putEntry(entryId, { ...entryData });
       }
 
       await postVersion(versionData);
@@ -331,14 +350,16 @@ function FormEntradaPage() {
         <Typography className="breadcrumb-link" component={Link} to="/">
           Inicio
         </Typography>
-        <Typography
-          className="breadcrumb-link"
-          component={Link}
-          to={`/wiki/${wiki.id}`}
-        >
-          {wiki.title}
-        </Typography>
-        {!isNewEntry && (
+        {wiki && (
+          <Typography
+            className="breadcrumb-link"
+            component={Link}
+            to={`/wiki/${wiki.id}`}
+          >
+            {wiki.title}
+          </Typography>
+        )}
+        {!isNewEntry && entry && (
           <Typography
             className="breadcrumb-link"
             component={Link}
@@ -523,6 +544,7 @@ function FormEntradaPage() {
               variant="contained"
               color="primary"
               sx={{ mr: 2 }}
+              disabled={!wiki || !wiki.id || !userId}
             >
               Enviar
             </Button>

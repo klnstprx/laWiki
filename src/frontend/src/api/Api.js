@@ -19,14 +19,17 @@ export default async function apiRequest(endpoint, options = {}) {
 
   // Si la respuesta es un 401 Unauthorized, redirigimos al usuario a la página de inicio de sesión
   if (response.status === 401) {
-    window.location.href = "/";
-    //cerrar sesion ususario
+    // Remove session data
     sessionStorage.removeItem("appUser");
     sessionStorage.removeItem("googleUser");
-    //Elimina el token de las cookies
     document.cookie = `jwt_token=; path=/;`;
     document.cookie = `role=; path=/;`;
-    return;
+
+    // Redirect to home page
+    window.location.href = "/";
+
+    // Throw an error to prevent further execution
+    throw new Error("No autorizado. Redirigiendo al inicio de sesión.");
   }
 
   // Comprobamos si la respuesta fue correcta (status 200-299)

@@ -207,7 +207,7 @@ const ProfilePage = () => {
           />
           {/* Nombre */}
           <Typography variant="h5" fontWeight="bold">
-            <span>{user.name} ({user.valoration.length})</span>
+            <span>{user.name}</span>
           </Typography>
           {/* Correo electrónico */}
           <Typography variant="body1" color="text.secondary">
@@ -220,6 +220,9 @@ const ProfilePage = () => {
             precision={0.5}
             readOnly
           />
+          <Typography variant="subtitle2">
+            {user.valoration.length} valoraciones
+          </Typography>
         </Box>
 
         {/* Formulario para activar notificaciones por correo */}
