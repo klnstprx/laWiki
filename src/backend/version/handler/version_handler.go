@@ -556,6 +556,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 
 		config.App.Logger.Info().Str("url", mediaServiceURL).Msg("Sending delete request to media service")
 		req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
+		config.App.Logger.Debug().Str("secret", config.App.JWTSecret)
 		resp, err := client.Do(req)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to send delete request to media service")

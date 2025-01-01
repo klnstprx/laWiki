@@ -51,6 +51,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		config.App.Logger.Debug().Str("X-Internal-Auth", internalAuthHeader)
+
 		// Get the JWT token from the cookie
 		cookie, err := r.Cookie("jwt_token")
 		if err != nil {
