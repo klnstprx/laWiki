@@ -8,6 +8,18 @@ export default async function apiRequest(endpoint, options = {}) {
     headers["Content-Type"] = "application/json";
   }
 
+  // Header de autorización con el token JWT almacenado en session storage
+  const jwtToken = sessionStorage.getItem("jwt_token");
+  if (jwtToken) {
+    headers["Authorization"] = `Bearer ${jwtToken}`;
+  }
+
+  // Header de Role con el rol del usuario almacenado en session storage
+  const role = sessionStorage.getItem("role");
+  if (role) {
+    headers["Role"] = role;
+  }
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     mode: "cors", // Esto indica que la solicitud será una solicitud CORS
     credentials: "include",
@@ -20,12 +32,12 @@ export default async function apiRequest(endpoint, options = {}) {
   // Si la respuesta es un 401 Unauthorized, redirigimos al usuario a la página de inicio de sesión
   if (response.status === 401) {
     window.location.href = "/";
-    //cerrar sesion ususario
+    //cerrar sesion usuario
     sessionStorage.removeItem("appUser");
     sessionStorage.removeItem("googleUser");
-    //Elimina el token de las cookies
-    document.cookie = `jwt_token=; path=/;`;
-    document.cookie = `role=; path=/;`;
+
+    sessionStorage.removeItem("jwt_token");
+    sessionStorage.removeItem("role");
     return;
   }
 

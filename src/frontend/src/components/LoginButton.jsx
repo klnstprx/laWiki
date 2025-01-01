@@ -50,8 +50,8 @@ const LoginButton = () => {
       sessionStorage.setItem("googleUser", JSON.stringify(decodedGoogleUser));
       setGoogleUser(decodedGoogleUser);
 
-      // Store the JWT token in cookies
-      document.cookie = `jwt_token=${credentialResponse.credential}; path=/`;
+      // Store the JWT token in sessionstorage
+      sessionStorage.setItem("jwt_token", credentialResponse.credential);
 
       const newUser = {
         email: decodedGoogleUser.email,
@@ -74,14 +74,14 @@ const LoginButton = () => {
         console.log("User already registered");
         setAppUser(existingUser);
         sessionStorage.setItem("appUser", JSON.stringify(existingUser));
-        document.cookie = `role=${existingUser.role}; path=/`;
+        sessionStorage.setItem("role", existingUser.role);
       } else {
         console.log("User not registered");
         const addedUser = await postUser(newUser);
         sessionStorage.setItem("id", addedUser.id);
         setAppUser(addedUser);
         sessionStorage.setItem("appUser", JSON.stringify(addedUser));
-        document.cookie = `role=${addedUser.role}; path=/`;
+        sessionStorage.setItem("role", addedUser.role);
       }
       window.location.reload();
     } catch (error) {
@@ -98,7 +98,7 @@ const LoginButton = () => {
     sessionStorage.removeItem("googleUser");
     sessionStorage.removeItem("appUser");
     // Remove tokens from cookies
-    document.cookie = `jwt_token=; path=/;`;
+    sessionStorage.removeItem("jwt_token");
     document.cookie = `role=; path=/;`;
     setGoogleUser(null);
     setAppUser({ notifications: [] });

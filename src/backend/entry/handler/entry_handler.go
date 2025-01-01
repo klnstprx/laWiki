@@ -785,6 +785,8 @@ func TranslateEntry(w http.ResponseWriter, r *http.Request) {
 					Timeout: 5 * time.Second,
 				}
 
+				req.Header.Set("X-Internal-Request", "true")
+
 				// Send the request
 				resp, err := client.Do(req)
 				if err != nil {
@@ -963,6 +965,8 @@ func TranslateAssociatedVersions(entryID string, targetLang string) {
 		client := &http.Client{
 			Timeout: 5 * time.Second,
 		}
+
+		req.Header.Set("X-Internal-Request", "true")
 
 		// Send the request
 		resp, err := client.Do(req)

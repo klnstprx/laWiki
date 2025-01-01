@@ -42,7 +42,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		w.Header().Set("Access-Control-Allow-Origin", config.App.FrontendURL) // Reemplaza con el dominio del frontend
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Role")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 		// Si es una petición interna, omitir la autenticación
@@ -66,12 +66,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if strings.Contains(r.URL.Path, "translate") {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		// Get the JWT token from the cookie
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
@@ -79,7 +73,9 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
 		roleHeader := r.Header.Get("Role")
+
 		if roleHeader == "" {
 			http.Error(w, "Unauthorized: missing role", http.StatusUnauthorized)
 			return
@@ -130,6 +126,10 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		// Extract user claims and add them to the request context, chequea que el rol sea el correcto
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			ctx := context.WithValue(r.Context(), "user", claims)
+
+			if strings.Contains((r.URL.Path), "translate") {
+				next.ServeHTTP(w, r.WithContext(ctx))
+			}
 
 			if role == "redactor" {
 				if strings.Contains(r.URL.Path, "/api/entries") || strings.Contains(r.URL.Path, "/api/comments") || strings.Contains(r.URL.Path, "/api/media") || strings.Contains(r.URL.Path, "/api/versions") {
