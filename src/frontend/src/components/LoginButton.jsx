@@ -184,7 +184,7 @@ const LoginButton = () => {
               anchorEl={anchorEl}
               open={open}
               onClose={handleClose}
-              notifications={appUser.notifications}
+              notifications={appUser.notifications || []}
               clearNotifications={clearNotifications}
             />
 
