@@ -586,7 +586,6 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Str("url", commentServiceURL).Msg("Sending request to delete associated comments")
 	req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
-	config.App.Logger.Debug().Str("secret", config.App.JWTSecret).Msg("secret.")
 	resp, err := client.Do(req)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to send request to comment service")
@@ -805,7 +804,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 		}
 		req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
 
-		config.App.Logger.Info().Str("jwt_secret", config.App.JWTSecret).Str("url", commentServiceURL).Msg("Sending delete request to comment service")
+		config.App.Logger.Info().Str("url", commentServiceURL).Msg("Sending delete request to comment service")
 
 		resp, err := client.Do(req)
 		if err != nil {
