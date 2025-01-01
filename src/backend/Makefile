@@ -1,6 +1,6 @@
 .PHONY: all build push $(SERVICES:%=build-%) run-all run-api-gateway run-wiki-service run-entry-service run-comment-service run-version-service run-media-service clean combine-swagger
 # Define your services
-SERVICES = auth comment entry gateway media translation wiki
+SERVICES = auth comment entry gateway media translation wiki version
 
 # Default target when you run 'make' without arguments
 all: build push
