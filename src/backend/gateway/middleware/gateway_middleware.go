@@ -38,7 +38,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		config.App.Logger.Debug().Msgf("Authenticating request to: %s", r.URL.Path)
 
 		// Asi para que a las solicitudes get(y las que son a auth) no se les pida autenticacion
-		if strings.Contains(r.URL.Path, "/api/auth") || r.URL.Path == "/health" || r.Method == http.MethodGet {
+		if (strings.Contains(r.URL.Path, "/api/auth") && r.URL.Path != "/api/auth/" && r.Method != http.MethodPut && r.Method != http.MethodDelete) || r.URL.Path == "/health" || (r.Method == http.MethodGet) {
 			config.App.Logger.Debug().Msg("Request to auth, health or a GET request. Passing without authentication.")
 			next.ServeHTTP(w, r)
 			return

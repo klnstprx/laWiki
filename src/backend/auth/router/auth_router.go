@@ -13,6 +13,8 @@ func NewRouter() http.Handler {
 	r.Route("/", func(r chi.Router) {
 		r.Get("/", handler.GetUsers)
 		r.Post("/", handler.PostUser)
+		r.Get("/health", handler.HealthCheck)
+		r.Get("/token", handler.GetToken)
 
 		r.Route("/user", func(r chi.Router) {
 			r.Get("/", handler.GetUserByID)

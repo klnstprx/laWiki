@@ -370,3 +370,19 @@ func GetUserByEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func GetToken(w http.ResponseWriter, r *http.Request) {
+	// Get the JWT token from the cookie
+
+	cookie, err := r.Cookie("jwt_token")
+	if err != nil {
+		http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
+		config.App.Logger.Error().Err(err).Msg("Missing jwt_token cookie.")
+		return
+	}
+
+	//return it via response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(cookie.Value))
+}
