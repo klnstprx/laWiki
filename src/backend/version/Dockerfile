@@ -6,11 +6,11 @@ RUN apk update && apk add --no-cache git ca-certificates
 
 COPY go.mod go.sum ./
 
-RUN go mod tidy
+RUN go mod download
 
 COPY . .
 
-RUN go build -o version-service . && chmod +x version-service
+RUN CGO_ENABLED=0 GOOS=linux go build -o version-service . && chmod +x version-service
 
 # Final stage
 FROM alpine:3.18

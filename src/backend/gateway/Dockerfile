@@ -6,11 +6,11 @@ RUN apk update && apk add --no-cache git ca-certificates
 
 COPY go.mod go.sum ./
 
-RUN go mod tidy
+RUN go mod download
 
 COPY . .
 
-RUN go build -o api-gateway . && chmod +x api-gateway
+RUN CGO_ENABLED=0 GOOS=linux go build -o api-gateway . && chmod +x api-gateway
 
 # Final stage
 FROM alpine:3.18

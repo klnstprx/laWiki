@@ -19,6 +19,7 @@ type GlobalConfig struct {
 	Debug           *bool  `toml:"DEBUG"`
 	MongoDBURI      string `toml:"MONGODB_URI"`
 	DBName          string `toml:"DB_NAME"`
+	JWTSecret       string `toml:"JWT_SECRET"`
 }
 
 // MediaConfig holds the configuration specific to the Media service
@@ -46,6 +47,7 @@ type AppConfig struct {
 	DBCollectionName string
 	DBName           string
 	MB_LIMIT         int64
+	JWTSecret        string
 }
 
 // App holds app configuration
@@ -118,6 +120,12 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 	} else {
 		cfg.MongoDBURI = "mongodb://localhost:27017" // Default to locally hosted DB
 		log.Warn().Msg("DMONGODB_URI not set in config file. Using default 'mongodb://localhost:27017'.")
+	}
+	// JWT_SECRET is required
+	if config.Global.JWTSecret == "" {
+		missingVars = append(missingVars, "JWT_SECRET")
+	} else {
+		cfg.JWTSecret = config.Global.JWTSecret
 	}
 
 	// Initialize Cloudinary

@@ -44,6 +44,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		internalAuthHeader := r.Header.Get("X-Internal-Auth")
+		if internalAuthHeader == config.App.JWTSecret {
+			config.App.Logger.Debug().Msg("Internal request authenticated.")
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		// Get the JWT token from the cookie
 		cookie, err := r.Cookie("jwt_token")
 		if err != nil {

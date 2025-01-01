@@ -19,6 +19,7 @@ type GlobalConfig struct {
 	Debug           *bool  `toml:"DEBUG"`
 	MongoDBURI      string `toml:"MONGODB_URI"`
 	DBName          string `toml:"DB_NAME"`
+	JWTSecret       string `toml:"JWT_SECRET"`
 }
 
 // TranslationConfig holds the configuration specific to the Translation service
@@ -43,6 +44,7 @@ type AppConfig struct {
 	DBName           string
 	MB_LIMIT         int64
 	DeepLKey         string
+	JWTSecret        string
 }
 
 // App holds app configuration
@@ -115,6 +117,12 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		cfg.DeepLKey = config.Translation.DeepLKey
 	} else {
 		missingVars = append(missingVars, "DEEPL_KEY")
+	}
+	// JWT_SECRET is required
+	if config.Global.JWTSecret == "" {
+		missingVars = append(missingVars, "JWT_SECRET")
+	} else {
+		cfg.JWTSecret = config.Global.JWTSecret
 	}
 
 	// If there are missing required variables, log them and exit

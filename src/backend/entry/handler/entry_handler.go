@@ -394,7 +394,7 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
-	req.Header.Set("X-Internal-Request", "true")
+	req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
 	resp, err := client.Do(req)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to send request to version service")
@@ -458,7 +458,7 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
 		return
 	}
-	req.Header.Set("X-Internal-Request", "true")
+	req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
 	resp, err = client.Do(req)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
@@ -564,7 +564,7 @@ func DeleteEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 		client := &http.Client{
 			Timeout: 10 * time.Second,
 		}
-		req.Header.Set("X-Internal-Request", "true")
+		req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
 		resp, err := client.Do(req)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to send request to version service")
@@ -673,7 +673,7 @@ func notifyInterno(mensaje string, editor string) {
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Internal-Request", "true")
+	req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
 	// Enviar la solicitud
 	resp, err := client.Do(req)
 	if err != nil {

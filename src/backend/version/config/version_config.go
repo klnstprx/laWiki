@@ -18,6 +18,7 @@ type GlobalConfig struct {
 	Debug           *bool  `toml:"DEBUG"`
 	MongoDBURI      string `toml:"MONGODB_URI"`
 	DBName          string `toml:"DB_NAME"`
+	JWTSecret       string `toml:"JWT_SECRET"`
 }
 
 // VersionConfig holds the configuration specific to the version service
@@ -42,6 +43,7 @@ type AppConfig struct {
 	DBName           string
 	API_GATEWAY_URL  string
 	DeepLKey         string
+	JWTSecret        string
 }
 
 // App holds app configuration
@@ -122,6 +124,12 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		cfg.API_GATEWAY_URL = config.Global.API_GATEWAY_URL
 	} else {
 		missingVars = append(missingVars, "API_GATEWAY_URL")
+	}
+	// JWT_SECRET is required
+	if config.Global.JWTSecret == "" {
+		missingVars = append(missingVars, "JWT_SECRET")
+	} else {
+		cfg.JWTSecret = config.Global.JWTSecret
 	}
 
 	// If there are missing required variables, log them and exit

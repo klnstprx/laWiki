@@ -365,7 +365,7 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 		Timeout: 5 * time.Second,
 	}
 
-	//get the media ID, found in the wiki object
+	// get the media ID, found in the wiki object
 	var wiki model.Wiki
 	objID, err := primitive.ObjectIDFromHex(wikiID)
 	if err != nil {
@@ -393,7 +393,7 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		req.Header.Set("X-Internal-Request", "true")
+		req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
 
 		resp, err := client.Do(req)
 		if err != nil {
@@ -428,7 +428,7 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Sending request to delete associated entries")
 
-	req.Header.Set("X-Internal-Request", "true")
+	req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
 
 	resp, err := client.Do(req)
 	if err != nil {
