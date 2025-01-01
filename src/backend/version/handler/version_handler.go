@@ -556,7 +556,6 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 
 		config.App.Logger.Info().Str("url", mediaServiceURL).Msg("Sending delete request to media service")
 		req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
-		config.App.Logger.Debug().Str("secret", config.App.JWTSecret)
 		resp, err := client.Do(req)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to send delete request to media service")
@@ -587,6 +586,7 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Str("url", commentServiceURL).Msg("Sending request to delete associated comments")
 	req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
+	config.App.Logger.Debug().Str("secret", config.App.JWTSecret).Msg("secret.")
 	resp, err := client.Do(req)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to send request to comment service")
@@ -783,7 +783,6 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
 				return
 			}
-			defer resp.Body.Close()
 			if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 				bodyBytes, _ := io.ReadAll(resp.Body)
 				bodyString := string(bodyBytes)
@@ -791,6 +790,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Failed to delete associated media files", http.StatusInternalServerError)
 				return
 			}
+			resp.Body.Close()
 		}
 	}
 
@@ -803,7 +803,6 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
 
 		config.App.Logger.Info().Str("url", commentServiceURL).Msg("Sending delete request to comment service")
@@ -817,7 +816,6 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 			bodyBytes, _ := io.ReadAll(resp.Body)
@@ -829,6 +827,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to delete associated comments", http.StatusInternalServerError)
 			return
 		}
+		defer resp.Body.Close()
 	}
 
 	config.App.Logger.Info().Str("entryID", entryID).Msg("Associated comments deleted successfully")

@@ -571,7 +571,6 @@ func DeleteEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusNotFound {
 			bodyBytes, _ := io.ReadAll(resp.Body)
@@ -583,6 +582,7 @@ func DeleteEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to delete associated versions", http.StatusInternalServerError)
 			return
 		}
+		resp.Body.Close()
 
 		config.App.Logger.Info().Str("entryID", entryID).Msg("Associated versions deleted successfully")
 	}
