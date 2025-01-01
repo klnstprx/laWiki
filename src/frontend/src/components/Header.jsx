@@ -182,9 +182,6 @@ const Header = () => {
                 sx={{
                   color: "inherit",
                   textDecoration: "none",
-                  "&:hover": {
-                    color: "pink",
-                  },
                 }}
               >
                 Home

@@ -56,6 +56,7 @@ const AdvancedSearchPage = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -68,6 +69,7 @@ const AdvancedSearchPage = () => {
   const handleSearch = async () => {
     setLoading(true);
     setError("");
+    setHasSearched(true);
     try {
       // Build search parameters for each entity
       const wikiSearchParams = {};
@@ -526,7 +528,7 @@ const AdvancedSearchPage = () => {
           </Typography>
         </div>
       ) : (
-        <SearchResultsList results={searchResults} />
+        hasSearched && <SearchResultsList results={searchResults} />
       )}
     </Container>
   );
