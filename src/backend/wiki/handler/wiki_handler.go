@@ -365,7 +365,7 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 		Timeout: 5 * time.Second,
 	}
 
-	// get the media ID, found in the wiki object
+	//get the media ID, found in the wiki object
 	var wiki model.Wiki
 	objID, err := primitive.ObjectIDFromHex(wikiID)
 	if err != nil {
@@ -393,20 +393,7 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		cookie, err := r.Cookie("jwt_token")
-		if err == nil {
-			req.AddCookie(cookie)
-		} else {
-			config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-		}
-
-		cookieRole, err := r.Cookie("role")
-		if err == nil {
-			req.AddCookie(cookieRole)
-		} else {
-			config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-		}
-		req.WithContext(r.Context())
+		req.Header.Set("X-Internal-Request", "true")
 
 		resp, err := client.Do(req)
 		if err != nil {
@@ -441,19 +428,7 @@ func DeleteWiki(w http.ResponseWriter, r *http.Request) {
 
 	config.App.Logger.Info().Str("url", entryServiceURL).Msg("Sending request to delete associated entries")
 
-	cookie, err := r.Cookie("jwt_token")
-	if err == nil {
-		req.AddCookie(cookie)
-	} else {
-		config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-	}
-	cookieRole, err := r.Cookie("role")
-	if err == nil {
-		req.AddCookie(cookieRole)
-	} else {
-		config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-	}
-	req.WithContext(r.Context())
+	req.Header.Set("X-Internal-Request", "true")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -591,20 +566,6 @@ func TranslateWiki(w http.ResponseWriter, r *http.Request) {
 					config.App.Logger.Error().Err(err).Str("entryID", entry.ID).Msg("Failed to create TranslateEntry request")
 					continue
 				}
-
-				cookie, err := r.Cookie("jwt_token")
-				if err == nil {
-					req.AddCookie(cookie)
-				} else {
-					config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-				}
-				cookieRole, err := r.Cookie("role")
-				if err == nil {
-					req.AddCookie(cookieRole)
-				} else {
-					config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-				}
-				req.WithContext(r.Context())
 
 				client := &http.Client{
 					Timeout: 10 * time.Second,

@@ -394,19 +394,7 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
-	cookie, err := r.Cookie("jwt_token")
-	if err == nil {
-		req.AddCookie(cookie)
-	} else {
-		config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-	}
-	cookieRole, err := r.Cookie("role")
-	if err == nil {
-		req.AddCookie(cookieRole)
-	} else {
-		config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-	}
-	req.WithContext(r.Context())
+	req.Header.Set("X-Internal-Request", "true")
 	resp, err := client.Do(req)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to send request to version service")
@@ -470,19 +458,7 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request) {
 		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
 		return
 	}
-	cookie, err = r.Cookie("jwt_token")
-	if err == nil {
-		req.AddCookie(cookie)
-	} else {
-		config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-	}
-	cookieRole, err = r.Cookie("role")
-	if err == nil {
-		req.AddCookie(cookieRole)
-	} else {
-		config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-	}
-	req.WithContext(r.Context())
+	req.Header.Set("X-Internal-Request", "true")
 	resp, err = client.Do(req)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to send request to user service")
@@ -588,19 +564,7 @@ func DeleteEntriesByWikiID(w http.ResponseWriter, r *http.Request) {
 		client := &http.Client{
 			Timeout: 10 * time.Second,
 		}
-		cookie, err := r.Cookie("jwt_token")
-		if err == nil {
-			req.AddCookie(cookie)
-		} else {
-			config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-		}
-		cookieRole, err := r.Cookie("role")
-		if err == nil {
-			req.AddCookie(cookieRole)
-		} else {
-			config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-		}
-		req.WithContext(r.Context())
+		req.Header.Set("X-Internal-Request", "true")
 		resp, err := client.Do(req)
 		if err != nil {
 			config.App.Logger.Error().Err(err).Msg("Failed to send request to version service")
@@ -709,6 +673,7 @@ func notifyInterno(mensaje string, editor string) {
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Internal-Request", "true")
 	// Enviar la solicitud
 	resp, err := client.Do(req)
 	if err != nil {
@@ -815,19 +780,6 @@ func TranslateEntry(w http.ResponseWriter, r *http.Request) {
 					config.App.Logger.Error().Err(err).Str("versionID", version.ID).Msg("Failed to create TranslateVersion request")
 					continue
 				}
-				cookie, err := r.Cookie("jwt_token")
-				if err == nil {
-					req.AddCookie(cookie)
-				} else {
-					config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-				}
-				cookieRole, err := r.Cookie("role")
-				if err == nil {
-					req.AddCookie(cookieRole)
-				} else {
-					config.App.Logger.Error().Err(err).Msg("Error adding cookie.")
-				}
-				req.WithContext(r.Context())
 
 				client := &http.Client{
 					Timeout: 5 * time.Second,
