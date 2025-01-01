@@ -37,6 +37,12 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		config.App.Logger.Debug().Msgf("Authenticating request to: %s", r.URL.Path)
 
+		if strings.Contains(r.URL.Path, "/api/auth") && r.Method == http.MethodPost {
+			config.App.Logger.Info().Msg("Request to create new user, skipping authentication.")
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		// Asi para que a las solicitudes get(y las que son a auth) no se les pida autenticacion
 		if (strings.Contains(r.URL.Path, "/api/auth") && r.Method != http.MethodPut && r.Method != http.MethodDelete) || r.URL.Path == "/health" || (r.Method == http.MethodGet) {
 			if r.URL.Path != "/api/auth" { // Para no poder ver todos los usuarios sin autenticacion
@@ -73,7 +79,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		tokenString := cookie.Value
 		role := cookieRole.Value
-		fmt.Println(role)
+		config.App.Logger.Debug().Str("role", role)
 
 		// Parse and validate the token using RS256 and public key
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
