@@ -106,7 +106,7 @@ const LoginButton = () => {
   };
 
   const goToProfile = () => {
-    navigate("/perfil/" + sessionStorage.getItem("id"));
+    navigate(`/perfil/${appUser.id}`);
   };
 
   const handleClick = (event) => {
