@@ -805,10 +805,7 @@ func DeleteVersionsByEntryID(w http.ResponseWriter, r *http.Request) {
 		}
 		req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
 
-		config.App.Logger.Info().Str("url", commentServiceURL).Msg("Sending delete request to comment service")
-		client := &http.Client{
-			Timeout: 10 * time.Second,
-		}
+		config.App.Logger.Info().Str("jwt_secret", config.App.JWTSecret).Str("url", commentServiceURL).Msg("Sending delete request to comment service")
 
 		resp, err := client.Do(req)
 		if err != nil {
