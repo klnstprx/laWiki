@@ -78,7 +78,6 @@ const LoginButton = () => {
       } else {
         console.log("User not registered");
         const addedUser = await postUser(newUser);
-        sessionStorage.setItem("id", addedUser.id);
         setAppUser(addedUser);
         sessionStorage.setItem("appUser", JSON.stringify(addedUser));
         document.cookie = `role=${addedUser.role}; path=/`;
@@ -125,7 +124,7 @@ const LoginButton = () => {
     sessionStorage.setItem("appUser", JSON.stringify(updatedAppUser));
 
     // Call the API to update in the database
-    putUser(sessionStorage.getItem("id"), { notifications: [] })
+    putUser(appUser.id, { notifications: [] })
       .then(() => {
         console.log("Notifications cleared in the database.");
       })
