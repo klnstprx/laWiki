@@ -763,50 +763,7 @@ func TranslateEntry(w http.ResponseWriter, r *http.Request) {
 			Msg("Title is already translated to the target language, skipping translation")
 
 		// Continue translating versions even if title is already translated
-		go func(entryID string, targetLang string) {
-			versions, err := fetchVersions(entryID)
-			if err != nil {
-				config.App.Logger.Error().Err(err).Str("entryID", entryID).Msg("Failed to fetch versions for translation")
-				return
-			}
-
-			for _, version := range versions {
-				// Prepare TranslateVersion request URL
-				translateVersionURL := fmt.Sprintf("%s/api/versions/%s/translate?targetLang=%s", config.App.API_GATEWAY_URL, version.ID, targetLang)
-
-				// Create an empty POST request to TranslateVersion
-				req, err := http.NewRequest("POST", translateVersionURL, nil)
-				if err != nil {
-					config.App.Logger.Error().Err(err).Str("versionID", version.ID).Msg("Failed to create TranslateVersion request")
-					continue
-				}
-
-				client := &http.Client{
-					Timeout: 5 * time.Second,
-				}
-
-				// Send the request
-				resp, err := client.Do(req)
-				if err != nil {
-					config.App.Logger.Error().Err(err).Str("versionID", version.ID).Msg("Failed to send TranslateVersion request")
-					continue
-				}
-				resp.Body.Close()
-
-				if resp.StatusCode != http.StatusOK {
-					config.App.Logger.Warn().
-						Int("status", resp.StatusCode).
-						Str("versionID", version.ID).
-						Msg("TranslateVersion returned non-OK status")
-					continue
-				}
-
-				config.App.Logger.Info().
-					Str("versionID", version.ID).
-					Str("targetLang", targetLang).
-					Msg("Successfully initiated translation for Version")
-			}
-		}(entry.ID, targetLang)
+		TranslateAssociatedVersions(entry.ID, targetLang)
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(entry)
@@ -840,7 +797,16 @@ func TranslateEntry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Make the HTTP POST request to the translation service
-	resp, err := client.Post(translationURL, "application/json", bytes.NewBuffer(reqBody))
+	req, err := http.NewRequest("POST", translationURL, bytes.NewBuffer(reqBody))
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to create request")
+		http.Error(w, "Failed to create request", http.StatusInternalServerError)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
+	resp, err := client.Do(req)
+
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to call translation service")
 		http.Error(w, "Failed to call translation service", http.StatusBadGateway)
@@ -963,6 +929,8 @@ func TranslateAssociatedVersions(entryID string, targetLang string) {
 		client := &http.Client{
 			Timeout: 5 * time.Second,
 		}
+
+		req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
 
 		// Send the request
 		resp, err := client.Do(req)

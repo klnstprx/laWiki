@@ -1038,10 +1038,18 @@ func TranslateVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Make the HTTP POST request to the translation service
-	resp, err := client.Post(translationURL, "application/json", bytes.NewBuffer(reqBody))
+	req, err := http.NewRequest("POST", translationURL, bytes.NewBuffer(reqBody))
 	if err != nil {
-		config.App.Logger.Error().Err(err).Msg("Failed to call translation service")
-		http.Error(w, "Failed to call translation service", http.StatusBadGateway)
+		config.App.Logger.Error().Err(err).Msg("Failed to create request to user service")
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
+	// Enviar la solicitud
+	resp, err := client.Do(req)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send request to translation service")
+		http.Error(w, "Failed to send request to translation service", http.StatusInternalServerError)
 		return
 	}
 	defer resp.Body.Close()
