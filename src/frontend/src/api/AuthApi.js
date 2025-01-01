@@ -16,7 +16,14 @@ export async function getUser(id) {
 }
 
 export async function getUserByEmail(email) {
-  return apiRequest(`/auth/user/email?email=${email}`);
+  try {
+    return await apiRequest(`/auth/user/email?email=${email}`);
+  } catch (error) {
+    if (error.status === 404) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function putUser(id, data) {
@@ -31,4 +38,3 @@ export async function deleteUser(id) {
     method: "DELETE",
   });
 }
-
