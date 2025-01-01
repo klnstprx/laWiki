@@ -116,7 +116,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			ctx := context.WithValue(r.Context(), "user", claims)
 
 			if role == "redactor" {
-				if strings.Contains(r.URL.Path, "/api/entries") || strings.Contains(r.URL.Path, "/api/comments") || strings.Contains(r.URL.Path, "/api/media") || strings.Contains(r.URL.Path, "/api/versions") {
+				if strings.Contains(r.URL.Path, "/api/entries") || strings.Contains(r.URL.Path, "/api/comments") || strings.Contains(r.URL.Path, "/api/media") || strings.Contains(r.URL.Path, "/api/versions") || strings.Contains(r.URL.Path, "/api/auth") {
 					if r.Method == http.MethodPost || r.Method == http.MethodPut {
 						next.ServeHTTP(w, r.WithContext(ctx))
 						return
@@ -129,7 +129,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 					return
 				}
 			} else if role == "editor" {
-				if strings.Contains(r.URL.Path, "/api/media") || strings.Contains(r.URL.Path, "/api/wikis") {
+				if strings.Contains(r.URL.Path, "/api/media") || strings.Contains(r.URL.Path, "/api/wikis") || strings.Contains(r.URL.Path, "/api/auth") {
 					if r.Method == http.MethodPost || r.Method == http.MethodPut {
 						next.ServeHTTP(w, r.WithContext(ctx))
 						return
