@@ -386,3 +386,27 @@ func GetToken(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(cookie.Value))
 }
+
+func GetRoleByEmail(w http.ResponseWriter, r *http.Request) {
+	email := r.URL.Query().Get("email")
+	if email == "" {
+		http.Error(w, "Missing user email", http.StatusBadRequest)
+		return
+	}
+
+	var user model.User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := database.UsuarioCollection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("User not found")
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(user.Role))
+}

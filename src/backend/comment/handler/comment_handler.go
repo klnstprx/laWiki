@@ -618,9 +618,14 @@ func notifyEmail(subject string, text string, html string, destinoNombre string,
 	message.SetTags(tags)
 	message.SetPersonalization(personalization)
 
-	res, _ := ms.Email.Send(ctx, message)
+	res, err := ms.Email.Send(ctx, message)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to send email")
+		//need more detailed error handling
 
-	fmt.Printf(res.Header.Get("X-Message-Id"))
+		config.App.Logger.Info().Interface("response", res).Msg("Email sent")
+		return
+	}
 }
 
 func notifyInterno(mensaje string, editor string) {

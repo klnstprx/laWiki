@@ -29,6 +29,7 @@ type GatewayConfig struct {
 	CommentServiceURL     string `toml:"COMMENT_SERVICE_URL"`
 	MediaServiceURL       string `toml:"MEDIA_SERVICE_URL"`
 	TranslationServiceURL string `toml:"TRANSLATION_SERVICE_URL"`
+	ApiGatewayURL         string `toml:"API_GATEWAY_URL"`
 }
 
 // Config represents the structure of the config.toml file
@@ -50,6 +51,7 @@ type AppConfig struct {
 	MediaServiceURL       string
 	TranslationServiceURL string
 	FrontendURL           string
+	ApiGatewayURL         string
 	JWTSecret             string
 }
 

@@ -23,6 +23,8 @@ func NewRouter() http.Handler {
 			r.Get("/email", handler.GetUserByEmail)
 		})
 
+		r.Get("/role", handler.GetRoleByEmail)
+
 		r.Route("/notifications", func(r chi.Router) {
 			r.Post("/", handler.AddUserNotification)
 		})

@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"runtime/debug"
 	"strings"
@@ -70,16 +71,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		cookieRole, err := r.Cookie("role")
-		if err != nil {
-			http.Error(w, "Unauthorized: missing role", http.StatusUnauthorized)
-			config.App.Logger.Error().Err(err).Msg("Missing role cookie.")
-			return
-		}
-
 		tokenString := cookie.Value
-		role := cookieRole.Value
-		config.App.Logger.Debug().Str("role", role)
 
 		// Parse and validate the token using RS256 and public key
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -123,6 +115,51 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		// Extract user claims and add them to the request context, chequea que el rol sea el correcto
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			ctx := context.WithValue(r.Context(), "user", claims)
+
+			//get the email from the claims
+			email := claims["email"].(string)
+
+			// Check if the user has the correct role for the route, calling auth service
+			url := fmt.Sprintf("%s/api/auth/role?email=%s", config.App.ApiGatewayURL, email)
+
+			config.App.Logger.Debug().Str("url: ", url)
+
+			req, err := http.NewRequest(http.MethodGet, url, nil)
+
+			if err != nil {
+				http.Error(w, "Unauthorized: invalid token claims", http.StatusUnauthorized)
+				return
+			}
+
+			req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
+			req.Header.Set("Content-Type", "application/json")
+
+			client := &http.Client{
+				Timeout: 10 * time.Second,
+			}
+			resp, err := client.Do(req)
+
+			if err != nil {
+				http.Error(w, "Unauthorized: invalid token claims", http.StatusUnauthorized)
+				return
+			}
+
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				http.Error(w, "Unauthorized: invalid token claims", http.StatusUnauthorized)
+				return
+			}
+			roleBytes, err := io.ReadAll(resp.Body)
+			if err != nil {
+				http.Error(w, "Error reading response from auth service", http.StatusInternalServerError)
+				return
+			}
+
+			role := string(roleBytes)
+			role = strings.TrimSpace(role)
+
+			config.App.Logger.Debug().Str("role: ", role)
 
 			if role == "redactor" {
 				if strings.Contains(r.URL.Path, "/api/entries") || strings.Contains(r.URL.Path, "/api/comments") || strings.Contains(r.URL.Path, "/api/media") || strings.Contains(r.URL.Path, "/api/versions") || strings.Contains(r.URL.Path, "/api/auth") {
