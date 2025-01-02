@@ -134,7 +134,10 @@ function WikiPage() {
         setSelectedOption(pendingLanguage);
         // Fetch the updated entries to reflect the translation
         const updatedEntries = await searchEntries({ wikiID: wikiId });
+        // si no es vacia la lista de entradas, entonces se actualiza
+        if (updatedEntries && Array.isArray(updatedEntries)){
         setEntradas(updatedEntries);
+        }
       } catch (error) {
         console.error("Error al traducir la wiki:", error);
         showToast("Error al traducir la wiki", "error");

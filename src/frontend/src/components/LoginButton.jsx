@@ -74,13 +74,11 @@ const LoginButton = () => {
         console.log("User already registered");
         setAppUser(existingUser);
         sessionStorage.setItem("appUser", JSON.stringify(existingUser));
-        document.cookie = `role=${existingUser.role}; path=/`;
       } else {
         console.log("User not registered");
         const addedUser = await postUser(newUser);
         setAppUser(addedUser);
         sessionStorage.setItem("appUser", JSON.stringify(addedUser));
-        document.cookie = `role=${addedUser.role}; path=/`;
       }
       window.location.reload();
     } catch (error) {
@@ -98,7 +96,6 @@ const LoginButton = () => {
     sessionStorage.removeItem("appUser");
     // Remove tokens from cookies
     document.cookie = `jwt_token=; path=/;`;
-    document.cookie = `role=; path=/;`;
     setGoogleUser(null);
     setAppUser({ notifications: [] });
     window.location.reload();
