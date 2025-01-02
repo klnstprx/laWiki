@@ -578,15 +578,15 @@ func DeleteCommentsByVersionID(w http.ResponseWriter, r *http.Request) {
 }
 
 func notifyEmail(subject string, text string, html string, destinoNombre string, destinoEmail string, entryTitle string) {
-	ms := mailersend.NewMailersend("mlsn.9938f4dc11ca834ac853af3f07c9d9552a39e8007391e356dfb28d76094516c8")
+	ms := mailersend.NewMailersend(config.App.MailSenderAPIKey)
 
 	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	from := mailersend.From{
-		Name:  "laWiki",
-		Email: "laWiki@trial-x2p0347d0v94zdrn.mlsender.net",
+		Name:  config.App.MailSenderName,
+		Email: config.App.MailSenderDomain,
 	}
 
 	recipients := []mailersend.Recipient{

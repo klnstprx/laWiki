@@ -13,12 +13,15 @@ import (
 
 // GlobalConfig holds the configuration for the application
 type GlobalConfig struct {
-	API_GATEWAY_URL string `toml:"API_GATEWAY_URL"`
-	PrettyLogs      *bool  `toml:"PRETTY_LOGS"`
-	Debug           *bool  `toml:"DEBUG"`
-	JWTSecret       string `toml:"JWT_SECRET"`
-	MongoDBURI      string `toml:"MONGODB_URI"`
-	DBName          string `toml:"DB_NAME"`
+	API_GATEWAY_URL  string `toml:"API_GATEWAY_URL"`
+	PrettyLogs       *bool  `toml:"PRETTY_LOGS"`
+	Debug            *bool  `toml:"DEBUG"`
+	JWTSecret        string `toml:"JWT_SECRET"`
+	MongoDBURI       string `toml:"MONGODB_URI"`
+	DBName           string `toml:"DB_NAME"`
+	MailSenderAPIKey string `toml:"MAIL_SENDER_API_KEY"`
+	MailSenderDomain string `toml:"MAIL_SENDER_DOMAIN"`
+	MailSenderName   string `toml:"MAIL_SENDER_NAME"`
 }
 
 // CommentConfig holds the configuration specific to the entry service
@@ -43,6 +46,9 @@ type AppConfig struct {
 	API_GATEWAY_URL  string
 	DeepLKey         string
 	JWTSecret        string
+	MailSenderAPIKey string
+	MailSenderDomain string
+	MailSenderName   string
 }
 
 // App holds app configuration
@@ -128,6 +134,24 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		missingVars = append(missingVars, "JWT_SECRET")
 	} else {
 		cfg.JWTSecret = config.Global.JWTSecret
+	}
+
+	if config.Global.MailSenderAPIKey == "" {
+		missingVars = append(missingVars, "MAILSENDER_API_KEY")
+	} else {
+		cfg.MailSenderAPIKey = config.Global.MailSenderAPIKey
+	}
+
+	if config.Global.MailSenderDomain == "" {
+		missingVars = append(missingVars, "MAILSENDER_DOMAIN")
+	} else {
+		cfg.MailSenderDomain = config.Global.MailSenderDomain
+	}
+
+	if config.Global.MailSenderName == "" {
+		missingVars = append(missingVars, "MAILSENDER_NAME")
+	} else {
+		cfg.MailSenderName = config.Global.MailSenderName
 	}
 
 	// If there are missing required variables, log them and exit

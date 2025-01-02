@@ -119,8 +119,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			//get the email from the claims
 			email := claims["email"].(string)
 
-			config.App.Logger.Debug().Msgf("email: %s", email)
-
 			// Check if the user has the correct role for the route, calling auth service
 			url := fmt.Sprintf("%s/api/auth/role?email=%s", config.App.ApiGatewayURL, email)
 
@@ -138,8 +136,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 				Timeout: 10 * time.Second,
 			}
 			resp, err := client.Do(req)
-
-			config.App.Logger.Debug().Msgf("url: %s", url)
 
 			if err != nil {
 				http.Error(w, "Unauthorized: invalid token claims", http.StatusUnauthorized)
@@ -162,8 +158,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 			role := string(roleBytes)
 			role = strings.TrimSpace(role)
-
-			config.App.Logger.Debug().Msgf("role: %s", role)
 
 			if role == "redactor" {
 				if strings.Contains(r.URL.Path, "/api/entries") || strings.Contains(r.URL.Path, "/api/comments") || strings.Contains(r.URL.Path, "/api/media") || strings.Contains(r.URL.Path, "/api/versions") || strings.Contains(r.URL.Path, "/api/auth") {
