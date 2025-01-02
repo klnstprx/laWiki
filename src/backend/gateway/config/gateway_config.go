@@ -13,10 +13,11 @@ import (
 
 // GlobalConfig holds the configuration for the application
 type GlobalConfig struct {
-	PrettyLogs  *bool  `toml:"PRETTY_LOGS"`
-	Debug       *bool  `toml:"DEBUG"`
-	JWTSecret   string `toml:"JWT_SECRET"`
-	FrontendURL string `toml:"FRONTEND_URL"`
+	PrettyLogs    *bool  `toml:"PRETTY_LOGS"`
+	Debug         *bool  `toml:"DEBUG"`
+	JWTSecret     string `toml:"JWT_SECRET"`
+	FrontendURL   string `toml:"FRONTEND_URL"`
+	ApiGatewayURL string `toml:"API_GATEWAY_URL"`
 }
 
 // GatewayConfig holds the configuration specific to the gateway service
@@ -29,7 +30,6 @@ type GatewayConfig struct {
 	CommentServiceURL     string `toml:"COMMENT_SERVICE_URL"`
 	MediaServiceURL       string `toml:"MEDIA_SERVICE_URL"`
 	TranslationServiceURL string `toml:"TRANSLATION_SERVICE_URL"`
-	ApiGatewayURL         string `toml:"API_GATEWAY_URL"`
 }
 
 // Config represents the structure of the config.toml file
@@ -165,6 +165,12 @@ func (cfg *AppConfig) LoadConfig(configPath string) {
 		missingVars = append(missingVars, "TRANSLATION_SERVICE_URL")
 	} else {
 		cfg.TranslationServiceURL = config.Gateway.TranslationServiceURL
+	}
+
+	if config.Global.ApiGatewayURL == "" {
+		missingVars = append(missingVars, "API_GATEWAY_URL")
+	} else {
+		cfg.ApiGatewayURL = config.Global.ApiGatewayURL
 	}
 
 	// If there are missing required variables, log them and exit
