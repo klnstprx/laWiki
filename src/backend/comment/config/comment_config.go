@@ -19,9 +19,9 @@ type GlobalConfig struct {
 	JWTSecret        string `toml:"JWT_SECRET"`
 	MongoDBURI       string `toml:"MONGODB_URI"`
 	DBName           string `toml:"DB_NAME"`
-	MailSenderAPIKey string `toml:"MAIL_SENDER_API_KEY"`
-	MailSenderDomain string `toml:"MAIL_SENDER_DOMAIN"`
-	MailSenderName   string `toml:"MAIL_SENDER_NAME"`
+	MailSenderAPIKey string `toml:"MAILSENDER_API_KEY"`
+	MailSenderDomain string `toml:"MAILSENDER_DOMAIN"`
+	MailSenderName   string `toml:"MAILSENDER_NAME"`
 }
 
 // CommentConfig holds the configuration specific to the entry service
