@@ -20,6 +20,7 @@ import { searchWikis } from "../api/WikiApi";
 import { searchEntries } from "../api/EntryApi";
 import { searchComments } from "../api/CommentApi";
 import { searchVersions } from "../api/VersionApi";
+import { getUsersByIds } from "../api/AuthApi";
 import SearchResultsList from "./SearchResultsList";
 import LoginButton from "./LoginButton";
 
@@ -108,6 +109,7 @@ const Header = () => {
   const performSearch = async (query) => {
     setLoading(true);
     try {
+      // Perform searches
       const [wikis, entries, comments, versions] = await Promise.all([
         searchWikis({ title: query }),
         searchEntries({ title: query }),
@@ -115,11 +117,60 @@ const Header = () => {
         searchVersions({ content: query }),
       ]);
 
+      // Ensure that each result is an array
+      const wikisArray = Array.isArray(wikis) ? wikis : [];
+      const entriesArray = Array.isArray(entries) ? entries : [];
+      const commentsArray = Array.isArray(comments) ? comments : [];
+      const versionsArray = Array.isArray(versions) ? versions : [];
+
+      // Map to hold user IDs and names for display purposes
+      const userIdToName = {};
+
+      // Collect user IDs from search results
+      const allUserIds = new Set();
+      entriesArray.forEach((entry) => {
+        if (entry.author) allUserIds.add(entry.author);
+      });
+      commentsArray.forEach((comment) => {
+        if (comment.author) allUserIds.add(comment.author);
+      });
+      versionsArray.forEach((version) => {
+        if (version.editor) allUserIds.add(version.editor);
+      });
+
+      // Fetch user data for IDs
+      const missingUserIds = Array.from(allUserIds).filter(
+        (id) => !userIdToName[id],
+      );
+      if (missingUserIds.length > 0) {
+        const additionalUsers = await getUsersByIds(missingUserIds);
+        additionalUsers.forEach((user) => {
+          userIdToName[user.id] = user.name;
+        });
+      }
+
+      // Prepare the results with user names
+      const processedEntries = entriesArray.map((entry) => ({
+        ...entry,
+        authorName: userIdToName[entry.author] || "Usuario desconocido",
+      }));
+
+      const processedComments = commentsArray.map((comment) => ({
+        ...comment,
+        authorName: userIdToName[comment.author] || "Usuario desconocido",
+      }));
+
+      const processedVersions = versionsArray.map((version) => ({
+        ...version,
+        editorName: userIdToName[version.editor] || "Usuario desconocido",
+      }));
+
+      // Set the search results
       setSearchResults({
-        wikis: Array.isArray(wikis) ? wikis : [],
-        entries: Array.isArray(entries) ? entries : [],
-        comments: Array.isArray(comments) ? comments : [],
-        versions: Array.isArray(versions) ? versions : [],
+        wikis: wikisArray,
+        entries: processedEntries,
+        comments: processedComments,
+        versions: processedVersions,
       });
       setOpen(true);
     } catch (error) {
