@@ -1,4 +1,4 @@
-import apiRequest from "./Api.js";
+import { apiRequest } from "./Api.js";
 
 export async function getAllUsers() {
   return apiRequest("/auth");
@@ -26,6 +26,15 @@ export async function getUserByEmail(email) {
   }
 }
 
+export async function getUsersByIds(ids) {
+  const idsParam = ids.map(encodeURIComponent).join(",");
+  return apiRequest(`/auth/user/ids?ids=${idsParam}`);
+}
+
+export async function getUsersByName(name) {
+  return await apiRequest(`/auth?name=${encodeURIComponent(name)}`);
+}
+
 export async function putUser(id, data) {
   return apiRequest(`/auth/user?id=${id}`, {
     method: "PUT",
@@ -34,7 +43,7 @@ export async function putUser(id, data) {
 }
 
 export async function deleteUser(id) {
-  return apiRequest(`/auth/users/${encodeURIComponent(id)}`, {
+  return apiRequest(`/auth/user/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
 }

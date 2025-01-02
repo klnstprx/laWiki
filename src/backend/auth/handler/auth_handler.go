@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/laWiki/auth/config"
@@ -20,11 +21,17 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var usuarios []model.User
+	filter := bson.M{}
+	name := r.URL.Query().Get("name")
+
+	if name != "" {
+		filter["name"] = bson.M{"$regex": name, "$options": "i"}
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cursor, err := database.UsuarioCollection.Find(ctx, bson.M{})
+	cursor, err := database.UsuarioCollection.Find(ctx, filter)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Database error")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -90,6 +97,72 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(version); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+// GetUsersByIDs handles requests to get multiple users by their IDs
+func GetUsersByIDs(w http.ResponseWriter, r *http.Request) {
+	// Parse the 'ids' query parameter
+	idsParam := r.URL.Query().Get("ids")
+	if idsParam == "" {
+		http.Error(w, "Missing ids parameter", http.StatusBadRequest)
+		return
+	}
+
+	// Split the IDs and convert them to ObjectIDs
+	idStrings := strings.Split(idsParam, ",")
+	var objIDs []primitive.ObjectID
+	for _, idStr := range idStrings {
+		objID, err := primitive.ObjectIDFromHex(idStr)
+		if err != nil {
+			http.Error(w, "Invalid user ID: "+idStr, http.StatusBadRequest)
+			return
+		}
+		objIDs = append(objIDs, objID)
+	}
+
+	// Build the filter to fetch users with matching IDs
+	filter := bson.M{"_id": bson.M{"$in": objIDs}}
+
+	var users []model.User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := database.UsuarioCollection.Find(ctx, filter)
+	if err != nil {
+		config.App.Logger.Error().Err(err).Msg("Database error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var user model.User
+		if err := cursor.Decode(&user); err != nil {
+			config.App.Logger.Error().Err(err).Msg("Failed to decode user")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		users = append(users, user)
+	}
+
+	if err := cursor.Err(); err != nil {
+		config.App.Logger.Error().Err(err).Msg("Cursor error")
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(users) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(users); err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to encode response")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
@@ -381,7 +454,7 @@ func GetToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//return it via response
+	// return it via response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(cookie.Value))

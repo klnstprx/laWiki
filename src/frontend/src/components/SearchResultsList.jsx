@@ -1,11 +1,11 @@
 import PropTypes from "prop-types";
 import {
-  Typography,
+  Divider,
   List,
   ListItem,
-  ListItemText,
-  Divider,
   ListItemButton,
+  ListItemText,
+  Typography,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -54,7 +54,7 @@ const SearchResultsList = ({ results = {}, onItemClick }) => {
                 >
                   <ListItemText
                     primary={entry.title}
-                    secondary={`Autor: ${entry.author}`}
+                    secondary={`Autor: ${entry.authorName}`}
                   />
                 </ListItemButton>
               </ListItem>
@@ -79,7 +79,7 @@ const SearchResultsList = ({ results = {}, onItemClick }) => {
                 >
                   <ListItemText
                     primary={comment.content}
-                    secondary={`Autor: ${comment.author}`}
+                    secondary={`Autor: ${comment.authorName}`}
                   />
                 </ListItemButton>
               </ListItem>
@@ -103,10 +103,11 @@ const SearchResultsList = ({ results = {}, onItemClick }) => {
                   onClick={onItemClick}
                 >
                   <ListItemText
-                    primary={`Editor: ${version.editor}`}
+                    primary={`Editor: ${version.editorName}`}
                     secondary={`Fecha: ${new Date(
-                      version.created_at
-                    ).toLocaleDateString()}`}
+                      version.created_at,
+                    ).toLocaleDateString()
+                      }`}
                   />
                 </ListItemButton>
               </ListItem>

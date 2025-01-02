@@ -136,7 +136,7 @@ func GetCommentByID(w http.ResponseWriter, r *http.Request) {
 func SearchComments(w http.ResponseWriter, r *http.Request) {
 	// Parse query parameters
 	content := r.URL.Query().Get("content")
-	author := r.URL.Query().Get("author")
+	authorIDs := r.URL.Query()["author"] // Retrieve 'author' query parameters as a slice of strings
 	createdAtFromString := r.URL.Query().Get("createdAtFrom")
 	createdAtToString := r.URL.Query().Get("createdAtTo")
 	ratingString := r.URL.Query().Get("rating")
@@ -153,8 +153,9 @@ func SearchComments(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if author != "" {
-		filter["author"] = author
+	// Handle 'author' parameter (multiple IDs as strings)
+	if len(authorIDs) > 0 {
+		filter["author"] = bson.M{"$in": authorIDs}
 	}
 
 	if createdAtFromString != "" || createdAtToString != "" {
@@ -621,7 +622,7 @@ func notifyEmail(subject string, text string, html string, destinoNombre string,
 	res, err := ms.Email.Send(ctx, message)
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to send email")
-		//need more detailed error handling
+		// need more detailed error handling
 
 		config.App.Logger.Info().Interface("response", res).Msg("Email sent")
 		return

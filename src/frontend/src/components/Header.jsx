@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import { Tune as TuneIcon } from "@mui/icons-material";
 import {
   AppBar,
   Box,
@@ -141,10 +140,6 @@ const Header = () => {
     setOpen(false);
   };
 
-  const handleAdvancedSearch = () => {
-    navigate("/advanced-search");
-  };
-
   const goHome = () => {
     navigate("/");
   };
@@ -260,37 +255,6 @@ const Header = () => {
             </Search>
           )}
 
-        {isMobile
-          ? (
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleAdvancedSearch}
-              sx={{
-                p: 1,
-                minWidth: "auto",
-              }}
-            >
-              <TuneIcon />
-            </Button>
-          )
-          : (
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleAdvancedSearch}
-              startIcon={<SearchIcon />}
-              sx={{
-                p: 1,
-              }}
-            >
-              <Typography
-                noWrap
-              >
-                Búsqueda Avanzada
-              </Typography>
-            </Button>
-          )}
         <LoginButton />
       </Toolbar>
       {isMobile && showSearch && (

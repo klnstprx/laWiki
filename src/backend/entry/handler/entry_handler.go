@@ -138,14 +138,17 @@ func SearchEntries(w http.ResponseWriter, r *http.Request) {
 	// Parse query parameters
 	title := r.URL.Query().Get("title")
 	exactTitle := r.URL.Query().Get("exact_title")
-	author := r.URL.Query().Get("author")
+	authorIDs := r.URL.Query()["author"] // Retrieve 'author' query parameters as a slice of strings
 	createdAtFromString := r.URL.Query().Get("createdAtFrom")
 	createdAtToString := r.URL.Query().Get("createdAtTo")
 	wikiID := r.URL.Query().Get("wikiID")
 
 	// Build the MongoDB filter dynamically
 	filter := bson.M{}
-
+	// Handle 'author' parameter (multiple IDs as strings)
+	if len(authorIDs) > 0 {
+		filter["author"] = bson.M{"$in": authorIDs}
+	}
 	if title != "" {
 		filter["title"] = bson.M{
 			"$regex":   title,
@@ -155,10 +158,6 @@ func SearchEntries(w http.ResponseWriter, r *http.Request) {
 
 	if exactTitle != "" {
 		filter["title"] = exactTitle
-	}
-
-	if author != "" {
-		filter["author"] = author
 	}
 
 	if createdAtFromString != "" || createdAtToString != "" {
@@ -806,7 +805,6 @@ func TranslateEntry(w http.ResponseWriter, r *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Internal-Auth", config.App.JWTSecret)
 	resp, err := client.Do(req)
-
 	if err != nil {
 		config.App.Logger.Error().Err(err).Msg("Failed to call translation service")
 		http.Error(w, "Failed to call translation service", http.StatusBadGateway)

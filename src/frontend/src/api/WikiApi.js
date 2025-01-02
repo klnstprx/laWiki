@@ -1,4 +1,4 @@
-import apiRequest from "./Api.js";
+import { apiRequest } from "./Api.js";
 export async function getAllWikis() {
   return apiRequest("/wikis");
 }
@@ -34,7 +34,10 @@ export async function searchWikis(params) {
 
 export async function translateWiki(id, targetLang) {
   const queryString = new URLSearchParams({ targetLang }).toString();
-  return apiRequest(`/wikis/${encodeURIComponent(id)}/translate?${queryString}`, {
-    method: "POST",
-  });
+  return apiRequest(
+    `/wikis/${encodeURIComponent(id)}/translate?${queryString}`,
+    {
+      method: "POST",
+    },
+  );
 }

@@ -1,4 +1,4 @@
-import apiRequest from "./Api.js";
+import { apiRequest, buildQueryString } from "./Api.js";
 
 export async function getAllEntries() {
   return apiRequest("/entries");
@@ -29,13 +29,19 @@ export async function deleteEntry(id) {
 }
 
 export async function searchEntries(params) {
-  const queryString = new URLSearchParams(params).toString();
+  const queryString = buildQueryString(params);
   return apiRequest(`/entries/search?${queryString}`);
 }
 
 export async function translateEntry(id, targetLang) {
   const queryString = new URLSearchParams({ targetLang }).toString();
-  return apiRequest(`/entries/${encodeURIComponent(id)}/translate?${queryString}`, {
-    method: "POST",
-  });
+  return apiRequest(
+    `/entries/${encodeURIComponent(id)}/translate?${queryString}`,
+    {
+      method: "POST",
+    },
+  );
+}
+export async function getUsersByName(name) {
+  return apiRequest(`/auth?name=${encodeURIComponent(name)}`);
 }

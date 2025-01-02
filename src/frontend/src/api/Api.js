@@ -1,6 +1,18 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export default async function apiRequest(endpoint, options = {}) {
+export function buildQueryString(params) {
+  const query = new URLSearchParams();
+  for (const key in params) {
+    const value = params[key];
+    if (Array.isArray(value)) {
+      value.forEach((v) => query.append(key, v));
+    } else {
+      query.append(key, value);
+    }
+  }
+  return query.toString();
+}
+export async function apiRequest(endpoint, options = {}) {
   const headers = options.headers || {};
 
   // Si no hay un Content-Type y el cuerpo no es un FormData, asignamos application/json

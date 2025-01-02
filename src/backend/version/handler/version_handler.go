@@ -141,7 +141,7 @@ func GetVersionByID(w http.ResponseWriter, r *http.Request) {
 // @Router       /api/versions/search [get]
 func SearchVersions(w http.ResponseWriter, r *http.Request) {
 	content := r.URL.Query().Get("content")
-	editor := r.URL.Query().Get("editor")
+	editorIDs := r.URL.Query()["editor"]
 	createdAtFromString := r.URL.Query().Get("createdAtFrom")
 	createdAtToString := r.URL.Query().Get("createdAtTo")
 	entryID := r.URL.Query().Get("entryID")
@@ -154,9 +154,9 @@ func SearchVersions(w http.ResponseWriter, r *http.Request) {
 			"$options": "i",
 		}
 	}
-
-	if editor != "" {
-		filter["editor"] = editor
+	// Handle 'author' parameter (multiple IDs as strings)
+	if len(editorIDs) > 0 {
+		filter["editor"] = bson.M{"$in": editorIDs}
 	}
 
 	if createdAtFromString != "" || createdAtToString != "" {

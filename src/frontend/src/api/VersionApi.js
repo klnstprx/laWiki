@@ -1,4 +1,4 @@
-import apiRequest from "./Api.js";
+import { apiRequest, buildQueryString } from "./Api.js";
 
 export async function getAllVersions() {
   return apiRequest("/versions");
@@ -29,13 +29,17 @@ export async function deleteVersion(id) {
 }
 
 export async function searchVersions(params) {
-  const queryString = new URLSearchParams(params).toString();
+  const queryString = buildQueryString(params);
   return apiRequest(`/versions/search?${queryString}`);
 }
 
 export async function translateVersion(id, targetLang) {
   const queryString = new URLSearchParams({ targetLang }).toString();
-  return apiRequest(`/versions/${encodeURIComponent(id)}/translate?${queryString}`, {
-    method: "POST",
-  });
+  return apiRequest(
+    `/versions/${encodeURIComponent(id)}/translate?${queryString}`,
+    {
+      method: "POST",
+    },
+  );
 }
+

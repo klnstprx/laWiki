@@ -21,6 +21,7 @@ func NewRouter() http.Handler {
 			r.Put("/", handler.PutUser)
 			r.Delete("/", handler.DeleteUser)
 			r.Get("/email", handler.GetUserByEmail)
+			r.Get("/ids", handler.GetUsersByIDs)
 		})
 
 		r.Get("/role", handler.GetRoleByEmail)

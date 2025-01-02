@@ -1,4 +1,4 @@
-import apiRequest from "./Api.js";
+import { apiRequest, buildQueryString } from "./Api.js";
 
 export async function getAllComments() {
   return apiRequest("/comments");
@@ -29,6 +29,6 @@ export async function deleteComment(id) {
 }
 
 export async function searchComments(params) {
-  const queryString = new URLSearchParams(params).toString();
+  const queryString = buildQueryString(params);
   return apiRequest(`/comments/search?${queryString}`);
 }

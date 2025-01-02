@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
-  Container,
-  TextField,
   Button,
-  Typography,
+  CircularProgress,
+  Container,
   Paper,
   Rating,
-  CircularProgress,
+  TextField,
+  Typography,
 } from "@mui/material";
 import Grid from "@mui/joy/Grid";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -14,10 +14,11 @@ import Autocomplete from "@mui/material/Autocomplete";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import { Link } from "react-router-dom";
 import SearchResultsList from "../components/SearchResultsList";
-import { searchWikis, getAllWikis } from "../api/WikiApi";
+import { getAllWikis, searchWikis } from "../api/WikiApi";
 import { searchEntries } from "../api/EntryApi";
 import { searchComments } from "../api/CommentApi";
 import { searchVersions } from "../api/VersionApi";
+import { getUsersByIds, getUsersByName } from "../api/AuthApi";
 
 const AdvancedSearchPage = () => {
   const [params, setParams] = useState({
@@ -70,9 +71,83 @@ const AdvancedSearchPage = () => {
     setLoading(true);
     setError("");
     setHasSearched(true);
+
     try {
-      // Build search parameters for each entity
+      // Initialize search parameters
       const wikiSearchParams = {};
+      const entriesSearchParams = {};
+      const commentsSearchParams = {};
+      const versionsSearchParams = {};
+
+      // Map to hold user IDs and names for display purposes
+      const userIdToName = {};
+
+      // Fetch user IDs based on input names
+      let entryAuthorIds = [];
+      if (params.entryAuthor.trim() !== "") {
+        const entryAuthors = await getUsersByName(params.entryAuthor.trim());
+        if (!entryAuthors || entryAuthors.length === 0) {
+          // No matching authors found; set empty results
+          setSearchResults({
+            wikis: [],
+            entries: [],
+            comments: [],
+            versions: [],
+          });
+          setLoading(false);
+          return;
+        }
+        entryAuthorIds = entryAuthors.map((user) => {
+          userIdToName[user.id] = user.name;
+          return user.id;
+        });
+      }
+
+      // Repeat for comment authors and version editors
+      let commentAuthorIds = [];
+      if (params.commentAuthor.trim() !== "") {
+        const commentAuthors = await getUsersByName(
+          params.commentAuthor.trim(),
+        );
+        if (!commentAuthors || commentAuthors.length === 0) {
+          setSearchResults({
+            wikis: [],
+            entries: [],
+            comments: [],
+            versions: [],
+          });
+          setLoading(false);
+          return;
+        }
+        commentAuthorIds = commentAuthors.map((user) => {
+          userIdToName[user.id] = user.name;
+          return user.id;
+        });
+      }
+
+      let versionEditorIds = [];
+      if (params.versionEditor.trim() !== "") {
+        const versionEditors = await getUsersByName(
+          params.versionEditor.trim(),
+        );
+        if (!versionEditors || versionEditors.length === 0) {
+          setSearchResults({
+            wikis: [],
+            entries: [],
+            comments: [],
+            versions: [],
+          });
+          setLoading(false);
+          return;
+        }
+        versionEditorIds = versionEditors.map((user) => {
+          userIdToName[user.id] = user.name;
+          return user.id;
+        });
+      }
+
+      // Build search parameters for each entity using IDs
+      // Wikis
       if (params.wikiTitle.trim() !== "") {
         wikiSearchParams.title = params.wikiTitle.trim();
       }
@@ -86,16 +161,16 @@ const AdvancedSearchPage = () => {
         wikiSearchParams.createdAtTo = params.wikiCreatedAtTo.toISOString();
       }
 
-      const entriesSearchParams = {};
+      // Entries
       if (params.entryTitle.trim() !== "") {
         entriesSearchParams.title = params.entryTitle.trim();
       }
-      if (params.entryAuthor.trim() !== "") {
-        entriesSearchParams.author = params.entryAuthor.trim();
+      if (entryAuthorIds.length > 0) {
+        entriesSearchParams.author = entryAuthorIds; // Note that this is an array
       }
       if (params.entryCreatedAtFrom) {
-        entriesSearchParams.createdAtFrom =
-          params.entryCreatedAtFrom.toISOString();
+        entriesSearchParams.createdAtFrom = params.entryCreatedAtFrom
+          .toISOString();
       }
       if (params.entryCreatedAtTo) {
         entriesSearchParams.createdAtTo = params.entryCreatedAtTo.toISOString();
@@ -104,84 +179,108 @@ const AdvancedSearchPage = () => {
         entriesSearchParams.wikiID = params.wikiID;
       }
 
-      const commentsSearchParams = {};
+      // Comments
       if (params.commentContent.trim() !== "") {
         commentsSearchParams.content = params.commentContent.trim();
       }
-      if (params.commentAuthor.trim() !== "") {
-        commentsSearchParams.author = params.commentAuthor.trim();
+      if (commentAuthorIds.length > 0) {
+        commentsSearchParams.author = commentAuthorIds; // This is an array
       }
       if (params.commentCreatedAtFrom) {
-        commentsSearchParams.createdAtFrom =
-          params.commentCreatedAtFrom.toISOString();
+        commentsSearchParams.createdAtFrom = params.commentCreatedAtFrom
+          .toISOString();
       }
       if (params.commentCreatedAtTo) {
-        commentsSearchParams.createdAtTo =
-          params.commentCreatedAtTo.toISOString();
+        commentsSearchParams.createdAtTo = params.commentCreatedAtTo
+          .toISOString();
       }
       if (params.commentRating != null) {
         commentsSearchParams.rating = params.commentRating;
       }
 
-      const versionsSearchParams = {};
+      // Versions
       if (params.versionContent.trim() !== "") {
         versionsSearchParams.content = params.versionContent.trim();
       }
-      if (params.versionEditor.trim() !== "") {
-        versionsSearchParams.editor = params.versionEditor.trim();
+      if (versionEditorIds.length > 0) {
+        versionsSearchParams.editor = versionEditorIds; // This is an array
       }
       if (params.versionCreatedAtFrom) {
-        versionsSearchParams.createdAtFrom =
-          params.versionCreatedAtFrom.toISOString();
+        versionsSearchParams.createdAtFrom = params.versionCreatedAtFrom
+          .toISOString();
       }
       if (params.versionCreatedAtTo) {
-        versionsSearchParams.createdAtTo =
-          params.versionCreatedAtTo.toISOString();
+        versionsSearchParams.createdAtTo = params.versionCreatedAtTo
+          .toISOString();
       }
 
-      const wikisPromise =
+      // Perform searches
+      const [wikis, entries, comments, versions] = await Promise.all([
         Object.keys(wikiSearchParams).length > 0
           ? searchWikis(wikiSearchParams)
-          : Promise.resolve([]);
-
-      const entriesPromise =
+          : Promise.resolve([]),
         Object.keys(entriesSearchParams).length > 0
           ? searchEntries(entriesSearchParams)
-          : Promise.resolve([]);
-
-      const commentsPromise =
+          : Promise.resolve([]),
         Object.keys(commentsSearchParams).length > 0
           ? searchComments(commentsSearchParams)
-          : Promise.resolve([]);
-
-      const versionsPromise =
+          : Promise.resolve([]),
         Object.keys(versionsSearchParams).length > 0
           ? searchVersions(versionsSearchParams)
-          : Promise.resolve([]);
-
-      const [wikis, entries, comments, versions] = await Promise.all([
-        wikisPromise,
-        entriesPromise,
-        commentsPromise,
-        versionsPromise,
+          : Promise.resolve([]),
       ]);
 
+      // Collect user IDs from search results
+      const allUserIds = new Set();
+      entries.forEach((entry) => {
+        if (entry.author) allUserIds.add(entry.author);
+      });
+      comments.forEach((comment) => {
+        if (comment.author) allUserIds.add(comment.author);
+      });
+      versions.forEach((version) => {
+        if (version.editor) allUserIds.add(version.editor);
+      });
+
+      // Fetch user data for IDs not already in the userIdToName map
+      const missingUserIds = Array.from(allUserIds).filter(
+        (id) => !userIdToName[id],
+      );
+      if (missingUserIds.length > 0) {
+        const additionalUsers = await getUsersByIds(missingUserIds);
+        additionalUsers.forEach((user) => {
+          userIdToName[user.id] = user.name;
+        });
+      }
+
+      // Prepare the results with user names
+      const processedEntries = entries.map((entry) => ({
+        ...entry,
+        authorName: userIdToName[entry.author] || "Usuario desconocido",
+      }));
+
+      const processedComments = comments.map((comment) => ({
+        ...comment,
+        authorName: userIdToName[comment.author] || "Usuario desconocido",
+      }));
+
+      const processedVersions = versions.map((version) => ({
+        ...version,
+        editorName: userIdToName[version.editor] || "Usuario desconocido",
+      }));
+
+      // Set the search results
       setSearchResults({
         wikis: Array.isArray(wikis) ? wikis : [],
-        entries: Array.isArray(entries) ? entries : [],
-        comments: Array.isArray(comments) ? comments : [],
-        versions: Array.isArray(versions) ? versions : [],
+        entries: Array.isArray(processedEntries) ? processedEntries : [],
+        comments: Array.isArray(processedComments) ? processedComments : [],
+        versions: Array.isArray(processedVersions) ? processedVersions : [],
       });
     } catch (error) {
+      // Handle errors
       console.error("Error during advanced search:", error);
-      setSearchResults({
-        wikis: [],
-        entries: [],
-        comments: [],
-        versions: [],
-      });
       setError(
-        "Ocurrió un error durante la búsqueda. Por favor, inténtelo de nuevo."
+        "Ocurrió un error durante la búsqueda. Por favor, inténtelo de nuevo.",
       );
     } finally {
       setLoading(false);
@@ -203,7 +302,7 @@ const AdvancedSearchPage = () => {
   }, []);
 
   const isSearchDisabled = Object.values(params).every(
-    (value) => value === "" || value === null
+    (value) => value === "" || value === null,
   );
 
   return (
@@ -520,16 +619,20 @@ const AdvancedSearchPage = () => {
           {error}
         </Typography>
       )}
-      {loading ? (
-        <div style={{ display: "flex", alignItems: "center", padding: "10px" }}>
-          <CircularProgress size={24} />
-          <Typography variant="body2" sx={{ marginLeft: 2 }}>
-            Cargando...
-          </Typography>
-        </div>
-      ) : (
-        hasSearched && <SearchResultsList results={searchResults} />
-      )}
+      {loading
+        ? (
+          <div
+            style={{ display: "flex", alignItems: "center", padding: "10px" }}
+          >
+            <CircularProgress size={24} />
+            <Typography variant="body2" sx={{ marginLeft: 2 }}>
+              Cargando...
+            </Typography>
+          </div>
+        )
+        : (
+          hasSearched && <SearchResultsList results={searchResults} />
+        )}
     </Container>
   );
 };

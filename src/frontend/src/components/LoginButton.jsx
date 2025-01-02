@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
+import { Search as SearchIcon, Tune as TuneIcon } from "@mui/icons-material";
 import {
   Avatar,
   Box,
@@ -112,6 +113,9 @@ const LoginButton = () => {
   const handleClose = () => {
     setAnchorEl(null);
   };
+  const handleAdvancedSearch = () => {
+    navigate("/advanced-search");
+  };
 
   const clearNotifications = () => {
     const updatedAppUser = { ...appUser, notifications: [] };
@@ -134,10 +138,41 @@ const LoginButton = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
       {googleUser
         ? (
           <>
+            {isMobile
+              ? (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={handleAdvancedSearch}
+                  sx={{
+                    p: 1,
+                    minWidth: "auto",
+                  }}
+                >
+                  <TuneIcon />
+                </Button>
+              )
+              : (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={handleAdvancedSearch}
+                  startIcon={<SearchIcon />}
+                  sx={{
+                    p: 1,
+                  }}
+                >
+                  <Typography
+                    noWrap
+                  >
+                    Búsqueda Avanzada
+                  </Typography>
+                </Button>
+              )}
             {isMobile
               ? (
                 <Button
