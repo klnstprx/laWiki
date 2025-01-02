@@ -1,10 +1,14 @@
 [global]
 API_GATEWAY_URL = "http://localhost:8000"
-DB_NAME = "laWikiCopia2"
+FRONTEND_URL = "http://localhost"
 PRETTY_LOGS = true
 DEBUG = true
+DB_NAME = "laWikiCopia2"
 MONGODB_URI = ""
-JWT_SECRET = "prueba"
+JWT_SECRET = ""
+MAILSENDER_API_KEY = ""
+MAILSENDER_DOMAIN = ""
+MAILSENDER_NAME = ""
 
 [gateway]
 PORT = 8000
@@ -14,6 +18,7 @@ COMMENT_SERVICE_URL = "http://localhost:8003"
 VERSION_SERVICE_URL = "http://localhost:8005"
 AUTH_SERVICE_URL = "http://localhost:8080"
 MEDIA_SERVICE_URL = "http://localhost:8081"
+TRANSLATION_SERVICE_URL = "http://localhost:8082"
 
 [wiki]
 PORT = 8001
@@ -33,10 +38,10 @@ DB_COLLECTION_NAME = "versiones"
 
 [auth]
 PORT = 8080
+GOOGLE_OAUTH_CLIENT_ID = ""
+GOOGLE_OAUTH_CLIENT_SECRET = ""
+GOOGLE_OAUTH_REDIRECT_URL = ""
 DB_COLLECTION_NAME = "usuarios"
-GOOGLE_OAUTH_CLIENT_ID = "prueba"
-GOOGLE_OAUTH_CLIENT_SECRET = "prueba"
-GOOGLE_OAUTH_REDIRECT_URL = "prueba"
 
 [media]
 PORT = 8081
@@ -44,3 +49,7 @@ CLOUDIFY_CLOUD_NAME = ""
 CLOUDIFY_API_KEY = ""
 CLOUDIFY_API_SECRET = ""
 DB_COLLECTION_NAME = "media"
+
+[translation]
+PORT = 8082
+DEEPL_KEY = ""
