@@ -1,245 +1,184 @@
-# Manual
+# LaWiki
 
-**Host de frontend por defecto: localhost:5713**
+LaWiki is a knowledge-sharing platform built using a microservices architecture. It allows users to create, edit, and translate wiki entries, comment on versions, and manage media.
+## Project Description
 
-## Cómo ejecutar los microservicios de forma simultánea (docker + docker-compose)
+LaWiki is composed of the following microservices:
 
-1. Tener docker instalado.
-2. Abrir docker (para ejecutar la mv de docker).
-3. Copiar el contenido `default_config.docker.toml` y pegarlo en un archivo llamado `config.docker.toml`.
-4. Rellenar `config.docker.toml` con los datos necesarios. Por ejemplo: MONGODB_URI="mongodb+srv://username:password@cluster0.rfz8f.mongodb.net/".
-5. `docker compose build`
-6. `docker compose up`
+*   **Auth Service:** Handles user authentication and authorization using Google OAuth 2.0 and JWT (JSON Web Tokens).
+*   **Wiki Service:** Manages the creation, retrieval, updating, and deletion of wiki entries.
+*   **Entry Service:** Manages individual entries within a wiki, including their translated fields.
+*   **Version Service:** Tracks and manages different versions of entries, allowing for content history and rollback capabilities.
+*   **Comment Service:** Enables users to comment on specific versions of entries, fostering discussion and collaboration.
+*   **Media Service:** Handles the uploading, storage, and retrieval of media files (e.g., images) using Cloudinary.
+*   **Translation Service:** Provides translation capabilities for wiki entries using the DeepL API.
+*   **API Gateway:** Acts as a single entry point for all client requests, routing them to the appropriate microservice. Also handles authentication and security concerns.
+*   **Frontend:** A React-based user interface that provides a user-friendly way to interact with the platform.
 
-**Si no funciona "docker compose" prueba con `docker-compose build` (con "-")**.
+## Prerequisites
 
-## Cómo ejecutar el frontend con docker
+Before running the project, ensure that you have the following installed:
 
-1. Tener docker instalado
-2. Abrir docker (para ejecutar la mv de docker).
-3. Navegar hacia el directorio del frontend del proyecto en un CLI.
-4. `docker compose build`
-5. `docker compose up`
-6. Abrir la app en localhost:5173
+*   **Go:** Version 1.22 or later.
+*   **Node.js:** Version 18 or later.
+*   **Docker:**  Required for containerization.
+*   **Docker Compose:**  Required for orchestrating multi-container Docker applications.
+*   **MongoDB:** Ensure you have a MongoDB instance running or accessible.
 
-**Si no funciona "docker compose" prueba con `docker-compose build` (con "-")**.
+You may need to install other dependencies like `npx` for swagger combining, you can check the Makefile for the required dependencies.
 
-## Cómo ejecutar backend sin docker
+## Configuration
 
-1. Tener go instalado.
-2. Copiar el contenido `default_config.toml` y pegarlo en un archivo llamado `config.toml`.
-3. Abrir el directorio de microservicio (Por ejemplo: `cd ./gateway`).
-4. Rellenar `config.toml` con los datos necesarios. Por ejemplo: MONGODB_URI="mongodb+srv://username:password@cluster0.rfz8f.mongodb.net/".
-5. `go run main.go`
+Each backend service utilizes a `config.toml` file to manage its settings.  Example configurations are provided in `src/backend/default_config.toml` and `src/backend/default_config.docker.toml`.
+  * `default_config.toml` is for local development
+  * `default_config.docker.toml` is for running using docker
 
-**La diferencia entre config.toml y config.docker.toml es que en uno llamamos el host de cada microservio por "localhost" y en el otro por el nombre del servicio en docker-compose.**
+Modify these files to match your environment.  Key configuration parameters include:
 
-## Cómo ejecutar frontend sin docker
+*   **MongoDB URI:**  The connection string for your MongoDB instance.
+*   **API Gateway URL:** The URL where the API Gateway service is running.
+*   **JWT Secret:**  A secret key used for signing JWTs.  Keep this secure!
+*   **Service URLs:** The URLs of the other microservices (used by the API Gateway).
+*   **Cloudinary Credentials:** Required for the Media Service if using Cloudinary for media storage.
+*	**MailSender Credentials**: Required for MailSender API
+*   **DeepL API Key:** Required for the Translation Service.
 
-1. Tener Node.js instalado
-2. Ejecutar 'npm install' en el directorio del frontend
-3. 'npm run dev'
-4. Navegar a <http://localhost:5173/>
+**Important:** Store secrets (like API keys and the JWT secret) securely, especially in production environments. Do not commit them directly to your repository.
 
-Estructura del repositorio:
+## Running the Project
 
-```bash
-├── clientexample
-├── docker-compose.yml
-├── docs
-│   ├── component__Diagramas_de_Componentes.png
-│   ├── deployment__Diagrama_de_Despliegue.png
-│   ├── Gateway.postman_collection.json
-│   ├── ifml.json
-│   ├── UML.mdzip
-│   └── UML.mdzip.bak
-├── MEMORIA - PRÁCTICA 2.pdf
-├── MEMORIA - PRÁCTICA 3.pdf
-├── README.md
-└── src
-    ├── backend
-    │   ├── auth
-    │   │   ├── config
-    │   │   │   └── auth_config.go
-    │   │   ├── Dockerfile
-    │   │   ├── docs
-    │   │   │   ├── docs.go
-    │   │   │   ├── swagger.json
-    │   │   │   └── swagger.yaml
-    │   │   ├── go.mod
-    │   │   ├── go.sum
-    │   │   ├── handler
-    │   │   │   └── auth_handler.go
-    │   │   ├── main.go
-    │   │   ├── model
-    │   │   │   └── auth_model.go
-    │   │   ├── README.md
-    │   │   └── router
-    │   │       └── auth_router.go
-    │   ├── comment
-    │   │   ├── config
-    │   │   │   └── comment_config.go
-    │   │   ├── database
-    │   │   │   └── comment_database.go
-    │   │   ├── Dockerfile
-    │   │   ├── docs
-    │   │   │   ├── docs.go
-    │   │   │   ├── swagger.json
-    │   │   │   └── swagger.yaml
-    │   │   ├── go.mod
-    │   │   ├── go.sum
-    │   │   ├── handler
-    │   │   │   └── comment_handler.go
-    │   │   ├── main.go
-    │   │   ├── model
-    │   │   │   └── comment_model.go
-    │   │   └── router
-    │   │       └── comment_router.go
-    │   ├── default_config.docker.toml
-    │   ├── default_config.toml
-    │   ├── docker-compose.yml
-    │   ├── entry
-    │   │   ├── config
-    │   │   │   └── entry_config.go
-    │   │   ├── database
-    │   │   │   └── entry_database.go
-    │   │   ├── Dockerfile
-    │   │   ├── docs
-    │   │   │   ├── docs.go
-    │   │   │   ├── swagger.json
-    │   │   │   └── swagger.yaml
-    │   │   ├── go.mod
-    │   │   ├── go.sum
-    │   │   ├── handler
-    │   │   │   └── entry_handler.go
-    │   │   ├── main.go
-    │   │   ├── model
-    │   │   │   └── entry_model.go
-    │   │   └── router
-    │   │       └── entry_router.go
-    │   ├── gateway
-    │   │   ├── config
-    │   │   │   └── gateway_config.go
-    │   │   ├── Dockerfile
-    │   │   ├── docs
-    │   │   │   ├── docs.go
-    │   │   │   ├── swagger.json
-    │   │   │   └── swagger.yaml
-    │   │   ├── go.mod
-    │   │   ├── go.sum
-    │   │   ├── handler
-    │   │   │   ├── gateway_health.go
-    │   │   │   └── gateway_proxy.go
-    │   │   ├── main.go
-    │   │   ├── middleware
-    │   │   │   └── gateway_middleware.go
-    │   │   └── router
-    │   │       └── gateway_router.go
-    │   ├── Makefile
-    │   ├── media
-    │   │   ├── config
-    │   │   │   └── media_config.go
-    │   │   ├── database
-    │   │   │   └── media_database.go
-    │   │   ├── Dockerfile
-    │   │   ├── docs
-    │   │   │   ├── docs.go
-    │   │   │   ├── swagger.json
-    │   │   │   └── swagger.yaml
-    │   │   ├── go.mod
-    │   │   ├── go.sum
-    │   │   ├── handler
-    │   │   │   └── media_handler.go
-    │   │   ├── main.go
-    │   │   ├── model
-    │   │   │   └── model_media.go
-    │   │   └── router
-    │   │       └── media_router.go
-    │   ├── swagger-config.json
-    │   ├── version
-    │   │   ├── config
-    │   │   │   └── version_config.go
-    │   │   ├── database
-    │   │   │   └── version_database.go
-    │   │   ├── Dockerfile
-    │   │   ├── docs
-    │   │   │   ├── docs.go
-    │   │   │   ├── swagger.json
-    │   │   │   └── swagger.yaml
-    │   │   ├── go.mod
-    │   │   ├── go.sum
-    │   │   ├── handler
-    │   │   │   └── version_handler.go
-    │   │   ├── main.go
-    │   │   ├── model
-    │   │   │   └── version_model.go
-    │   │   └── router
-    │   │       └── version_router.go
-    │   └── wiki
-    │       ├── config
-    │       │   └── wiki_config.go
-    │       ├── database
-    │       │   └── wiki_database.go
-    │       ├── Dockerfile
-    │       ├── docs
-    │       │   ├── docs.go
-    │       │   ├── swagger.json
-    │       │   └── swagger.yaml
-    │       ├── go.mod
-    │       ├── go.sum
-    │       ├── handler
-    │       │   └── wiki_handler.go
-    │       ├── main.go
-    │       ├── model
-    │       │   └── wiki_model.go
-    │       └── router
-    │           └── wiki_router.go
-    └── frontend
-        ├── deno.lock
-        ├── docker-compose.yml
-        ├── Dockerfile
-        ├── eslint.config.js
-        ├── index.html
-        ├── package.json
-        ├── public
-        │   └── vite.svg
-        ├── src
-        │   ├── api
-        │   │   ├── Api.js
-        │   │   ├── CommentApi.js
-        │   │   ├── EntryApi.js
-        │   │   ├── MediaApi.js
-        │   │   ├── VersionApi.js
-        │   │   └── WikiApi.js
-        │   ├── App.jsx
-        │   ├── components
-        │   │   ├── Comentario.jsx
-        │   │   ├── ConfirmationModal.jsx
-        │   │   ├── EntradaCard.jsx
-        │   │   ├── Footer.jsx
-        │   │   ├── Header.jsx
-        │   │   ├── SearchResultsList.jsx
-        │   │   ├── ToastMessage.jsx
-        │   │   ├── VersionCard.jsx
-        │   │   ├── Version.jsx
-        │   │   └── WikiCard.jsx
-        │   ├── context
-        │   │   ├── ToastContext.jsx
-        │   │   └── ToastProvider.jsx
-        │   ├── layout
-        │   │   └── MainLayout.jsx
-        │   ├── main.jsx
-        │   ├── pages
-        │   │   ├── AdvancedSearchPage.jsx
-        │   │   ├── EntradaPage.jsx
-        │   │   ├── FormVersionPage.jsx
-        │   │   ├── FormWikiPage.jsx
-        │   │   ├── HomePage.jsx
-        │   │   ├── VersionPage.jsx
-        │   │   └── WikiPage.jsx
-        │   └── styles
-        │       └── theme.js
-        └── vite.config.js
+There are two primary ways to run the project: using Docker Compose (recommended) or running the services locally.
 
-85 directories, 207 files
-```
+### Method 1: Using Docker Compose
+
+This method simplifies the setup process by containerizing all the services.
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone <repository_url>
+    cd <repository_directory>
+    ```
+
+2.  **Configure Docker environment variables**:
+    If you are using Docker, you can set environment variables directly in the `docker-compose.yml` or within each service's environment section.
+
+3.  **Build and Run the Services:**
+
+    ```bash
+    cd src/backend
+    docker-compose up --build
+    ```
+
+    This command builds the Docker images for all services defined in `docker-compose.yml` and starts them. The `-d` flag can be added to run the containers in detached mode (background).
+
+4.  **Access the Application:**
+
+    *   The frontend will be accessible at `http://localhost:5173` (or the port you configured in `src/frontend/vite.config.js` and `src/backend/default_config.toml`).
+    *   The API Gateway will be accessible at `http://localhost:8000` (or the port you configured in `src/backend/default_config.toml`).
+    *   Swagger documentation for the API can be found at `http://localhost:8000/api/swagger/index.html`.
+
+### Method 2: Running Services Locally
+
+This method requires you to build and run each service individually.
+
+1.  **Navigate to a service directory:**
+
+    ```bash
+    cd src/backend/<service_name>
+    ```
+
+    where `<service_name>` is the name of the service you want to run (e.g., `auth`, `wiki`, `gateway`).
+
+2.  **Build the service:**
+   Use the provided Makefile to build the service.
+
+    ```bash
+    make build-<service_name>
+    ```
+
+    For example, to build the auth service, you'd run:
+
+    ```bash
+    make build-auth
+    ```
+
+3.  **Run the service:**
+   Use the provided Makefile to run the service. This command will build and execute the service.
+
+    ```bash
+    make run-<service_name>-service
+    ```
+
+    For example, to run the auth service, you'd run:
+
+    ```bash
+    make run-auth-service
+    ```
+
+    This compiles the Go code and runs the service.  It also redirects output to a log file and saves the process ID to a `.pid` file for later stopping.
+
+4.  **Repeat steps 1-3 for each backend service.** Make sure to configure each service with the correct ports and service URLs in the config.toml files.
+
+5.  **Frontend setup:**
+    First, navigate to the frontend directory.
+
+    ```bash
+    cd src/frontend
+    ```
+
+6.  **Install dependencies:**
+
+    ```bash
+    npm install
+    ```
+
+7.  **Run the frontend:**
+
+    ```bash
+    npm run dev
+    ```
+
+    This starts the development server, and the frontend will be accessible at `http://localhost:5173` (or the port you configured).
+   **IMPORTANT**: set the `VITE_API_BASE_URL` environment variable in the frontend to the correct `API_GATEWAY_URL`
+
+### Generating and Combining Swagger Documentation
+
+The backend services include Swagger documentation. To generate and combine these documents:
+
+1.  **Navigate to the `src/backend` directory:**
+
+    ```bash
+    cd src/backend
+    ```
+
+2.  **Run the `combine-swagger` target in the Makefile:**
+
+    ```bash
+    make combine-swagger
+    ```
+
+    This command uses `swag` to generate the Swagger documentation for each service and then combines them into a single `swagger.json` file located in the `gateway/docs/` directory. The API Gateway serves this combined documentation.
+
+## Makefile Commands
+
+The `src/backend/Makefile` provides several convenient commands:
+
+*   `make all`: Builds and pushes all backend services to Docker Hub (requires Docker Hub credentials and a suitable Docker Hub repository name).
+*   `make build`: Builds all backend services.
+*   `make push`: Pushes all backend services to Docker Hub.
+*   `make build-<service_name>`: Builds a specific service (e.g., `make build-auth`).
+*   `make push-<service_name>`: Pushes a specific service to Docker Hub.
+*   `make run-all`: Runs all backend services locally (builds them first).
+*   `make run-<service_name>-service`: Runs a specific service locally (e.g., `make run-auth-service`).
+*   `make clean`: Stops all running services and removes their PID files.
+*   `make combine-swagger`: Generates and combines Swagger documentation for all services.
+
+## Frontend Configuration
+
+The frontend's base URL is set by the `VITE_API_BASE_URL` environment variable. This variable points to the API Gateway's address.
+
+
+## License
+
+This project is licensed under the MIT License.
