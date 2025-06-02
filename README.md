@@ -55,18 +55,12 @@ This method simplifies the setup process by containerizing all the services.
 
 1.  **Clone the repository:**
 
-    ```bash
-    git clone <repository_url>
-    cd <repository_directory>
-    ```
-
 2.  **Configure Docker environment variables**:
     If you are using Docker, you can set environment variables directly in the `docker-compose.yml` or within each service's environment section.
 
 3.  **Build and Run the Services:**
 
     ```bash
-    cd src/backend
     docker-compose up --build
     ```
 
@@ -82,28 +76,13 @@ This method simplifies the setup process by containerizing all the services.
 
 This method requires you to build and run each service individually.
 
-1.  **Navigate to a service directory:**
+1.  **Navigate to the backend directory:**
 
     ```bash
-    cd src/backend/<service_name>
+    cd src/backend
     ```
 
-    where `<service_name>` is the name of the service you want to run (e.g., `auth`, `wiki`, `gateway`).
-
-2.  **Build the service:**
-   Use the provided Makefile to build the service.
-
-    ```bash
-    make build-<service_name>
-    ```
-
-    For example, to build the auth service, you'd run:
-
-    ```bash
-    make build-auth
-    ```
-
-3.  **Run the service:**
+2.  **Run the service:**
    Use the provided Makefile to run the service. This command will build and execute the service.
 
     ```bash
@@ -118,7 +97,7 @@ This method requires you to build and run each service individually.
 
     This compiles the Go code and runs the service.  It also redirects output to a log file and saves the process ID to a `.pid` file for later stopping.
 
-4.  **Repeat steps 1-3 for each backend service.** Make sure to configure each service with the correct ports and service URLs in the config.toml files.
+4.  **Repeat step 2 for each backend service.** Make sure to configure each service with the correct ports and service URLs in the config.toml files.
 
 5.  **Frontend setup:**
     First, navigate to the frontend directory.
